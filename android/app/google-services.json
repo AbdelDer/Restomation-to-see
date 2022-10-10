@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "726445879729",
+    "firebase_url": "https://restomation-2022-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "restomation-2022",
+    "storage_bucket": "restomation-2022.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726445879729:android:7d7843e8eb02d9ebb9cd90",
+        "android_client_info": {
+          "package_name": "com.restomation.restomation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "726445879729-efsnptfsdp91q2dksnch7vqlr2l6jl6q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfikhLCVCFP_-t-pyWk5lLLOVQPPTvmnI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "726445879729-efsnptfsdp91q2dksnch7vqlr2l6jl6q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "726445879729-8p6aj8bt3rf4t6u3i5n103atlu5g2ium.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.restomation.restomation"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
