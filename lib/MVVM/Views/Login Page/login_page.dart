@@ -1,10 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:restomation/Screens/Home%20Page/home_page.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
+import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
@@ -22,6 +24,7 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    LoginViewModel loginViewModel = context.watch<LoginViewModel>();
     return Scaffold(
       appBar: BaseAppBar(
           title: "Login",
@@ -34,14 +37,15 @@ class _LoginState extends State<Login> {
           child: SingleChildScrollView(
             child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: loginView(context)),
+                child: SizedBox(
+                    width: 500, child: loginView(context, loginViewModel))),
           ),
         ),
       ),
     );
   }
 
-  Widget loginView(BuildContext context) {
+  Widget loginView(BuildContext context, LoginViewModel loginViewModel) {
     return Form(
       key: _formKey,
       child: Column(
@@ -100,24 +104,30 @@ class _LoginState extends State<Login> {
           ),
           Align(
               alignment: Alignment.center,
-              child: CustomButton(
-                  buttonColor: Colors.amber,
-                  text: "login",
-                  function: () async {
-                    FirebaseAuth auth = FirebaseAuth.instance;
-                    User? loggedInUser;
-                    try {
-                      UserCredential userCredential =
-                          await auth.signInWithEmailAndPassword(
-                              email: email.text, password: password.text);
-                      loggedInUser = userCredential.user;
-                    } on FirebaseAuthException catch (e) {
-                      Fluttertoast.showToast(msg: e.code.toString());
-                    }
-                    if (loggedInUser != null) {
-                      pushScreen();
-                    }
-                  })),
+              child: loginViewModel.loading
+                  ? Column(
+                      children: const [
+                        CustomLoader(),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text("Please wait while we log you in ..")
+                      ],
+                    )
+                  : CustomButton(
+                      buttonColor: Colors.amber,
+                      text: "login",
+                      function: () async {
+                        await loginViewModel.loginUser(email, password);
+                        if (loginViewModel.modelError == null) {
+                          pushScreen();
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: loginViewModel.modelError!.errorResponse
+                                  .toString());
+                          loginViewModel.setModelError(null);
+                        }
+                      })),
           const SizedBox(
             height: 10,
           ),

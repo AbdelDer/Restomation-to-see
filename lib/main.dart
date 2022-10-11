@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:restomation/Screens/Login%20Page/login_page.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
+import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
+import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
 Future<void> main() async {
   await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -15,21 +19,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Restomation',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => LoginViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ResturantViewModel(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Restomation',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const HomePage(),
       ),
-      home: const Login(),
     );
   }
 }
