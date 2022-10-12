@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
+import 'package:restomation/MVVM/Views/Category%20Page/category_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 
 class ResturantDetailPage extends StatelessWidget {
   final String resturantName;
-  const ResturantDetailPage({super.key, required this.resturantName});
+  final String resturantKey;
+  const ResturantDetailPage(
+      {super.key, required this.resturantName, required this.resturantKey});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,11 @@ class ResturantDetailPage extends StatelessWidget {
               "image":
                   "https://thumbs.dreamstime.com/b/vintage-frames-gold-restaurant-bar-food-drinks-cafe-menu-black-background-vector-illustrtor-badge-border-branding-bundle-186691349.jpg",
               "page": () {
-                KRoutes.push(context, const MenuPage());
+                KRoutes.push(
+                    context,
+                    CategoryPage(
+                      resturantKey: resturantKey,
+                    ));
               }
             },
             {

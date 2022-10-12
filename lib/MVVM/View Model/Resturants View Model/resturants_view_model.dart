@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
 import 'package:restomation/MVVM/Models/model_error.dart';
+import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/Repo/api_status.dart';
 
@@ -55,7 +56,7 @@ class ResturantViewModel extends ChangeNotifier {
       String name, String fileExtension, Uint8List bytes) async {
     setLoading(true);
     var response =
-        await StorageService.createResturant(name, fileExtension, bytes);
+        await DatabaseService.createResturant(name, fileExtension, bytes);
     if (response is Success) {
       setResturantsResponse(response.response as String);
     }

@@ -2,36 +2,29 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
+import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
-import 'package:restomation/Widgets/custom_button.dart';
-
+import 'package:restomation/Widgets/custom_text.dart';
+import 'package:restomation/Widgets/custom_text_field.dart';
 import '../../../Utils/contants.dart';
-import '../../../Widgets/custom_text.dart';
-import '../../../Widgets/custom_text_field.dart';
+import '../../../Widgets/custom_button.dart';
 
-class MenuPage extends StatefulWidget {
+class CategoryPage extends StatefulWidget {
   final String resturantKey;
-  final String categoryKey;
-  final String categoryName;
-  const MenuPage(
-      {super.key,
-      required this.resturantKey,
-      required this.categoryKey,
-      required this.categoryName});
+  const CategoryPage({super.key, required this.resturantKey});
 
   @override
-  State<MenuPage> createState() => _MenuPageState();
+  State<CategoryPage> createState() => _CategoryPageState();
 }
 
-class _MenuPageState extends State<MenuPage> {
-  final TextEditingController menuItemController = TextEditingController();
+class _CategoryPageState extends State<CategoryPage> {
+  final TextEditingController categoryController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BaseAppBar(
-        title: widget.categoryName,
+        title: "Categories",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -41,20 +34,34 @@ class _MenuPageState extends State<MenuPage> {
           onPressed: () {
             showCustomDialog(context);
           },
-          label: const CustomText(text: "Add Menu Item")),
+          label: const CustomText(text: "Create Category")),
       body: Center(
         child: FirebaseAnimatedList(
-          query: DatabaseService.getsingleResturantsCategories(
-            widget.resturantKey,
-            widget.categoryKey,
-            widget.categoryName,
-          ),
+          query: DatabaseService.getResturantsCategories(widget.resturantKey),
           itemBuilder: (BuildContext context, DataSnapshot snapshot,
               Animation<double> animation, int index) {
-            Map foodItem = snapshot.value as Map;
-            foodItem["key"] = snapshot.key;
+            Map category = snapshot.value as Map;
+            category["key"] = snapshot.key;
 
-            return CustomFoodCard(data: foodItem);
+            return GestureDetector(
+              onTap: () {
+                KRoutes.push(
+                    context,
+                    MenuPage(
+                        resturantKey: widget.resturantKey,
+                        categoryKey: snapshot.key!,
+                        categoryName: category["categoryName"]));
+              },
+              child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: CircleAvatar(
+                    radius: 100,
+                    backgroundColor: Colors.grey.shade300,
+                    child: CustomText(
+                      text: category["categoryName"],
+                    ),
+                  )),
+            );
           },
         ),
       ),
@@ -72,7 +79,7 @@ class _MenuPageState extends State<MenuPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   FormTextField(
-                    controller: menuItemController,
+                    controller: categoryController,
                     suffixIcon: const Icon(Icons.shower_sharp),
                   ),
                   const SizedBox(
@@ -83,10 +90,8 @@ class _MenuPageState extends State<MenuPage> {
                       text: "create",
                       textColor: kWhite,
                       function: () async {
-                        await DatabaseService.createCategoryItems(
-                                widget.resturantKey,
-                                widget.categoryKey,
-                                widget.categoryName)
+                        await DatabaseService.createCategory(
+                                widget.resturantKey, categoryController.text)
                             .then((value) => KRoutes.pop(context));
                       })
                 ],
@@ -98,7 +103,7 @@ class _MenuPageState extends State<MenuPage> {
 
   @override
   void dispose() {
-    menuItemController.dispose();
+    categoryController.dispose();
     super.dispose();
   }
 }
