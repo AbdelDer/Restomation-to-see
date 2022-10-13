@@ -30,6 +30,7 @@ class ResturantDetailPage extends StatelessWidget {
                     context,
                     CategoryPage(
                       resturantKey: resturantKey,
+                      resturantName: resturantName,
                     ));
               }
             },

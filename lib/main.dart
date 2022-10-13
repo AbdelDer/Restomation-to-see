@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
@@ -31,8 +32,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Restomation',
         theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+            primarySwatch: Colors.blue,
+            textTheme: GoogleFonts.poppinsTextTheme()),
         home: const HomePage(),
       ),
     );

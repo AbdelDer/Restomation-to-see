@@ -1,10 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
 import 'package:restomation/Utils/contants.dart';
@@ -26,9 +24,27 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController resturantController = TextEditingController();
+  Map? resturantsData;
+  @override
+  void initState() {
+    getAllResturants();
+    super.initState();
+  }
+
+  getAllResturants() {
+    DatabaseReference starCountRef =
+        FirebaseDatabase.instance.ref().child("resturants");
+    starCountRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value;
+      data as Map;
+      setState(() {
+        resturantsData = data;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    ResturantViewModel resturantViewModel = context.watch<ResturantViewModel>();
     return Scaffold(
         appBar: BaseAppBar(
             title: "Select Resturant",
@@ -43,64 +59,59 @@ class _HomePageState extends State<HomePage> {
               text: "Create resturant",
               color: kWhite,
             )),
-        body: resturantsView(resturantViewModel));
+        body: resturantsView());
   }
 
-  Widget resturantsView(ResturantViewModel resturantViewModel) {
-    if (resturantViewModel.loading) {
+  Widget resturantsView() {
+    if (resturantsData == null) {
       return const Center(child: CustomLoader());
     }
-    if (resturantViewModel.modelError != null) {
-      return Center(
-        child: Text(resturantViewModel.modelError!.errorResponse.toString()),
-      );
-    }
     return Center(
-        child: FirebaseAnimatedList(
-      query: DatabaseService.getAllresturants(),
-      itemBuilder: (BuildContext context, DataSnapshot snapshot,
-          Animation<double> animation, int index) {
-        Map resturant = snapshot.value as Map;
-        resturant["key"] = snapshot.key;
-        final ref = StorageService.storage.ref().child(resturant["imagePath"]);
-        return GestureDetector(
-          onTap: () {
-            KRoutes.push(
-                context,
-                ResturantDetailPage(
-                  resturantName: resturant["resturantName"],
-                  resturantKey: resturant["key"],
-                ));
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Column(
-              children: [
-                FutureBuilder(
-                  future: ref.getDownloadURL(),
-                  builder: (context, AsyncSnapshot<String> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return CircleAvatar(
-                        radius: 100,
-                        backgroundColor: kWhite,
-                        foregroundImage: NetworkImage(snapshot.data!),
-                      );
-                    }
-                    return const CircleAvatar(
-                        radius: 100,
-                        child: CircularProgressIndicator.adaptive());
-                  },
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(resturant["resturantName"])
-              ],
+      child: Wrap(
+        children: resturantsData!.keys.map((e) {
+          Map resturant = resturantsData![e];
+          resturant["key"] = e;
+          final ref =
+              StorageService.storage.ref().child(resturant["imagePath"]);
+          return GestureDetector(
+            onTap: () {
+              KRoutes.push(
+                  context,
+                  ResturantDetailPage(
+                    resturantName: resturant["resturantName"],
+                    resturantKey: resturant["key"],
+                  ));
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  FutureBuilder(
+                    future: ref.getDownloadURL(),
+                    builder: (context, AsyncSnapshot<String> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return CircleAvatar(
+                          radius: 100,
+                          backgroundColor: kWhite,
+                          foregroundImage: NetworkImage(snapshot.data!),
+                        );
+                      }
+                      return const CircleAvatar(
+                          radius: 100,
+                          child: CircularProgressIndicator.adaptive());
+                    },
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(resturant["resturantName"])
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    ));
+          );
+        }).toList(),
+      ),
+    );
   }
 
   void showCustomDialog(BuildContext context) {
@@ -117,6 +128,10 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    const CustomText(text: "Upload Image"),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     InkWell(
                         onTap: () async {
                           image = await FilePicker.platform.pickFiles(
@@ -149,12 +164,16 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(
                       height: 10,
                     ),
+                    const CustomText(text: "Resturant name"),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     FormTextField(
                       controller: resturantController,
                       suffixIcon: const Icon(Icons.shower_sharp),
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 20,
                     ),
                     resturantViewModel.loading
                         ? const CircularProgressIndicator.adaptive()

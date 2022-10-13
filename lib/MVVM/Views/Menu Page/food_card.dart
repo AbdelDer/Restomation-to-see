@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:restomation/Widgets/add_to_cart.dart';
 
+import '../../Repo/Storage Service/storage_service.dart';
+
 class CustomFoodCard extends StatelessWidget {
   final Map data;
   const CustomFoodCard({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
+    final ref = StorageService.storage.ref().child(data["image"]);
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         SizedBox(
-          width: 250,
+          width: MediaQuery.of(context).size.width / 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -30,7 +33,7 @@ class CustomFoodCard extends StatelessWidget {
                 height: 10,
               ),
               Text(
-                data["price"],
+                "₹${data["price"]}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
@@ -43,7 +46,7 @@ class CustomFoodCard extends StatelessWidget {
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
                 const TextSpan(
-                    text: " more",
+                    text: " ... more",
                     style: TextStyle(
                         fontWeight: FontWeight.bold, color: Colors.black))
               ]))
@@ -55,21 +58,42 @@ class CustomFoodCard extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Container(
-                width: 170,
-                height: 150,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: const [
-                      BoxShadow(
-                          offset: Offset(0, 0),
-                          spreadRadius: 2,
-                          blurRadius: 2,
-                          color: Colors.black12)
-                    ],
-                    image: DecorationImage(
-                        image: NetworkImage(data["image"]), fit: BoxFit.cover)),
-              ),
+              FutureBuilder(
+                  future: ref.getDownloadURL(),
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return Container(
+                        width: 170,
+                        height: 150,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: const [
+                              BoxShadow(
+                                  offset: Offset(0, 0),
+                                  spreadRadius: 2,
+                                  blurRadius: 2,
+                                  color: Colors.black12)
+                            ],
+                            image: DecorationImage(
+                                image: NetworkImage(snapshot.data!),
+                                fit: BoxFit.cover)),
+                      );
+                    }
+                    return Container(
+                      width: 170,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: const [
+                          BoxShadow(
+                              offset: Offset(0, 0),
+                              spreadRadius: 2,
+                              blurRadius: 2,
+                              color: Colors.black12)
+                        ],
+                      ),
+                    );
+                  }),
               const Positioned(bottom: 5, child: AddToCart())
             ],
           ),

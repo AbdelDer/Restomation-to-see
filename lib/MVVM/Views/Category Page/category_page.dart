@@ -5,6 +5,7 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
+import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 import '../../../Utils/contants.dart';
@@ -12,7 +13,9 @@ import '../../../Widgets/custom_button.dart';
 
 class CategoryPage extends StatefulWidget {
   final String resturantKey;
-  const CategoryPage({super.key, required this.resturantKey});
+  final String resturantName;
+  const CategoryPage(
+      {super.key, required this.resturantKey, required this.resturantName});
 
   @override
   State<CategoryPage> createState() => _CategoryPageState();
@@ -24,7 +27,7 @@ class _CategoryPageState extends State<CategoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BaseAppBar(
-        title: "Categories",
+        title: "",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -35,34 +38,45 @@ class _CategoryPageState extends State<CategoryPage> {
             showCustomDialog(context);
           },
           label: const CustomText(text: "Create Category")),
-      body: Center(
-        child: FirebaseAnimatedList(
-          query: DatabaseService.getResturantsCategories(widget.resturantKey),
-          itemBuilder: (BuildContext context, DataSnapshot snapshot,
-              Animation<double> animation, int index) {
-            Map category = snapshot.value as Map;
-            category["key"] = snapshot.key;
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const CustomText(
+              text: "Select a category :",
+              fontsize: 35,
+              fontWeight: FontWeight.bold,
+            ),
+            const CustomSearch(),
+            Expanded(
+              child: FirebaseAnimatedList(
+                query: DatabaseService.getResturantsCategories(
+                    widget.resturantKey),
+                itemBuilder: (BuildContext context, DataSnapshot snapshot,
+                    Animation<double> animation, int index) {
+                  Map category = snapshot.value as Map;
+                  category["key"] = snapshot.key;
 
-            return GestureDetector(
-              onTap: () {
-                KRoutes.push(
-                    context,
-                    MenuPage(
-                        resturantKey: widget.resturantKey,
-                        categoryKey: snapshot.key!,
-                        categoryName: category["categoryName"]));
-              },
-              child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: CircleAvatar(
-                    radius: 100,
-                    backgroundColor: Colors.grey.shade300,
-                    child: CustomText(
+                  return ListTile(
+                    title: CustomText(
                       text: category["categoryName"],
                     ),
-                  )),
-            );
-          },
+                    onTap: () {
+                      KRoutes.push(
+                          context,
+                          MenuPage(
+                            resturantKey: widget.resturantKey,
+                            categoryKey: snapshot.key!,
+                            categoryName: category["categoryName"],
+                            resturantName: widget.resturantName,
+                          ));
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -78,12 +92,16 @@ class _CategoryPageState extends State<CategoryPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  const CustomText(text: "Create Category"),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   FormTextField(
                     controller: categoryController,
                     suffixIcon: const Icon(Icons.shower_sharp),
                   ),
                   const SizedBox(
-                    height: 10,
+                    height: 20,
                   ),
                   CustomButton(
                       buttonColor: primaryColor,

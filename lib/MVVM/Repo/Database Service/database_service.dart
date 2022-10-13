@@ -64,7 +64,16 @@ class DatabaseService extends StorageService {
   }
 
   static Future createCategoryItems(
-      String resturantKey, String categoryKey, String categoryName) async {
+      String resturantKey,
+      String categoryKey,
+      String resturantName,
+      String categoryName,
+      String fileName,
+      Map item,
+      Uint8List bytes) async {
+    await storage
+        .ref("resturants/$resturantName/menu/$categoryName/$fileName")
+        .putData(bytes);
     await db
         .ref()
         .child("resturants")
@@ -73,16 +82,32 @@ class DatabaseService extends StorageService {
         .child(categoryKey)
         .child(categoryName)
         .push()
-        .set(
-      {
-        "name": "Sambar Rice",
-        "price": "₹100",
-        "rating": "4.2",
-        "description": "A typical South Indian mildy spicy sambar rice ...",
-        "image":
-            "https://www.archanaskitchen.com/images/archanaskitchen/0-Archanas-Kitchen-Recipes/Mixed_Vegetable_Sambar_Rice-5.jpg",
-        "reviews": "(142)",
-      },
-    );
+        .set(item);
+  }
+
+  static Future updateCategoryItems(
+      String resturantKey,
+      String categoryKey,
+      String itemKey,
+      String resturantName,
+      String categoryName,
+      String oldImagePath,
+      String fileName,
+      Map item,
+      Uint8List bytes) async {
+    await storage.ref().child(oldImagePath).delete();
+    await storage
+        .ref()
+        .child("resturants/$resturantName/menu/$categoryName/$fileName")
+        .putData(bytes);
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("menu")
+        .child(categoryKey)
+        .child(categoryName)
+        .child(itemKey)
+        .set(item);
   }
 }
