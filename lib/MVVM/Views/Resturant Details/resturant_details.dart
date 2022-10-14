@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:restomation/MVVM/Views/Category%20Page/category_page.dart';
+import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
+import 'package:restomation/MVVM/Views/Staff%20Category%20Page/staff_category_page.dart';
+import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 
@@ -28,7 +30,7 @@ class ResturantDetailPage extends StatelessWidget {
               "page": () {
                 KRoutes.push(
                     context,
-                    CategoryPage(
+                    MenuCategoryPage(
                       resturantKey: resturantKey,
                       resturantName: resturantName,
                     ));
@@ -38,13 +40,26 @@ class ResturantDetailPage extends StatelessWidget {
               "name": "Tables",
               "image":
                   "https://s.alicdn.com/@sc04/kf/H436ab8e73d1244f1a216e047dc16421cd.jpg",
-              "page": () {}
+              "page": () {
+                KRoutes.push(
+                    context,
+                    TablesPage(
+                      resturantKey: resturantKey,
+                    ));
+              }
             },
             {
               "name": "Staff",
               "image":
                   "https://static.vecteezy.com/system/resources/thumbnails/006/903/981/small_2x/restaurant-waiter-serve-dish-to-customer-free-vector.jpg",
-              "page": () {}
+              "page": () {
+                KRoutes.push(
+                    context,
+                    StaffCategoryPage(
+                      resturantKey: resturantKey,
+                      resturantName: resturantName,
+                    ));
+              }
             },
           ]
               .map((e) => Padding(

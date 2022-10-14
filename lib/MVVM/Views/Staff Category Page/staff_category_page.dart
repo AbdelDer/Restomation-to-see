@@ -2,27 +2,28 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
+import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
+import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
-import 'package:restomation/Widgets/custom_search.dart';
-import 'package:restomation/Widgets/custom_text.dart';
-import 'package:restomation/Widgets/custom_text_field.dart';
-import '../../../Utils/contants.dart';
-import '../../../Widgets/custom_button.dart';
+import 'package:restomation/Widgets/custom_button.dart';
 
-class CategoryPage extends StatefulWidget {
+import '../../../Widgets/custom_search.dart';
+import '../../../Widgets/custom_text.dart';
+import '../../../Widgets/custom_text_field.dart';
+
+class StaffCategoryPage extends StatefulWidget {
   final String resturantKey;
   final String resturantName;
-  const CategoryPage(
+  const StaffCategoryPage(
       {super.key, required this.resturantKey, required this.resturantName});
 
   @override
-  State<CategoryPage> createState() => _CategoryPageState();
+  State<StaffCategoryPage> createState() => _StaffCategoryPageState();
 }
 
-class _CategoryPageState extends State<CategoryPage> {
-  final TextEditingController categoryController = TextEditingController();
+class _StaffCategoryPageState extends State<StaffCategoryPage> {
+  final TextEditingController satffCategoryController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,38 +38,42 @@ class _CategoryPageState extends State<CategoryPage> {
           onPressed: () {
             showCustomDialog(context);
           },
-          label: const CustomText(text: "Create Category")),
+          label: const CustomText(
+            text: "Create Staff Category",
+            color: kWhite,
+          )),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const CustomText(
-              text: "Select a category :",
+              text: "Select a staff category :",
               fontsize: 35,
               fontWeight: FontWeight.bold,
             ),
             const CustomSearch(),
             Expanded(
               child: FirebaseAnimatedList(
-                query: DatabaseService.getResturantsCategories(
-                    widget.resturantKey),
+                query: DatabaseService.getStaffCategories(widget.resturantKey),
                 itemBuilder: (BuildContext context, DataSnapshot snapshot,
                     Animation<double> animation, int index) {
-                  Map category = snapshot.value as Map;
-                  category["key"] = snapshot.key;
+                  Map staffCategory = snapshot.value as Map;
+                  staffCategory["key"] = snapshot.key;
 
                   return ListTile(
                     title: CustomText(
-                      text: category["categoryName"],
+                      text: staffCategory["staffCategoryName"].toString(),
+                      fontsize: 20,
                     ),
                     onTap: () {
                       KRoutes.push(
                           context,
-                          MenuPage(
+                          StaffPage(
                             resturantKey: widget.resturantKey,
-                            categoryKey: snapshot.key!,
-                            categoryName: category["categoryName"],
+                            staffCategoryKey: staffCategory["key"],
+                            staffCategoryName:
+                                staffCategory["staffCategoryName"],
                             resturantName: widget.resturantName,
                           ));
                     },
@@ -92,12 +97,12 @@ class _CategoryPageState extends State<CategoryPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CustomText(text: "Create Category"),
+                  const CustomText(text: "Create Staff Category"),
                   const SizedBox(
                     height: 10,
                   ),
                   FormTextField(
-                    controller: categoryController,
+                    controller: satffCategoryController,
                     suffixIcon: const Icon(Icons.shower_sharp),
                   ),
                   const SizedBox(
@@ -108,8 +113,9 @@ class _CategoryPageState extends State<CategoryPage> {
                       text: "create",
                       textColor: kWhite,
                       function: () async {
-                        await DatabaseService.createCategory(
-                                widget.resturantKey, categoryController.text)
+                        await DatabaseService.createStaffCategory(
+                                widget.resturantKey,
+                                satffCategoryController.text)
                             .then((value) => KRoutes.pop(context));
                       })
                 ],
@@ -121,7 +127,7 @@ class _CategoryPageState extends State<CategoryPage> {
 
   @override
   void dispose() {
-    categoryController.dispose();
+    satffCategoryController.dispose();
     super.dispose();
   }
 }

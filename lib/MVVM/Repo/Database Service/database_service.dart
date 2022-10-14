@@ -38,6 +38,22 @@ class DatabaseService extends StorageService {
     return dbref;
   }
 
+  static getStaffCategories(
+    String resturantKey,
+  ) {
+    Query dbref =
+        db.ref().child("resturants").child(resturantKey).child("staff");
+    return dbref;
+  }
+
+  static getResturantsTables(
+    String resturantKey,
+  ) {
+    Query dbref =
+        db.ref().child("resturants").child(resturantKey).child("tables");
+    return dbref;
+  }
+
   static getsingleResturantsCategories(
     String resturantKey,
     String categoryKey,
@@ -53,6 +69,21 @@ class DatabaseService extends StorageService {
     return dbref;
   }
 
+  static getsingleResturantsStaffCategories(
+    String resturantKey,
+    String staffCategoryKey,
+    String staffCategoryName,
+  ) {
+    Query dbref = db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("staff")
+        .child(staffCategoryKey)
+        .child(staffCategoryName);
+    return dbref;
+  }
+
   static Future createCategory(String resturantKey, String categoryName) async {
     await db
         .ref()
@@ -61,6 +92,38 @@ class DatabaseService extends StorageService {
         .child("menu")
         .push()
         .set({"categoryName": categoryName});
+  }
+
+  static Future createStaffCategory(
+      String resturantKey, String staffCategoryName) async {
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("staff")
+        .push()
+        .set({"staffCategoryName": staffCategoryName});
+  }
+
+  static Future createTable(String resturantKey, String tableName) async {
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("tables")
+        .push()
+        .set({"tableName": tableName});
+  }
+
+  static Future updateTable(
+      String resturantKey, String tableKey, String tableName) async {
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("tables")
+        .child(tableKey)
+        .set({"tableName": tableName});
   }
 
   static Future createCategoryItems(
@@ -85,6 +148,28 @@ class DatabaseService extends StorageService {
         .set(item);
   }
 
+  static Future createStaffCategoryPerson(
+      String resturantKey,
+      String resturantName,
+      String staffCategoryKey,
+      String staffCategoryName,
+      String fileName,
+      Map item,
+      Uint8List bytes) async {
+    await storage
+        .ref("resturants/$resturantName/staff/$staffCategoryName/$fileName")
+        .putData(bytes);
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("staff")
+        .child(staffCategoryKey)
+        .child(staffCategoryName)
+        .push()
+        .set(item);
+  }
+
   static Future updateCategoryItems(
       String resturantKey,
       String categoryKey,
@@ -105,6 +190,32 @@ class DatabaseService extends StorageService {
         .child("resturants")
         .child(resturantKey)
         .child("menu")
+        .child(categoryKey)
+        .child(categoryName)
+        .child(itemKey)
+        .set(item);
+  }
+
+  static Future updateStaffCategoryPerson(
+      String resturantKey,
+      String categoryKey,
+      String itemKey,
+      String resturantName,
+      String categoryName,
+      String oldImagePath,
+      String fileName,
+      Map item,
+      Uint8List bytes) async {
+    await storage.ref().child(oldImagePath).delete();
+    await storage
+        .ref()
+        .child("resturants/$resturantName/staff/$categoryName/$fileName")
+        .putData(bytes);
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("staff")
         .child(categoryKey)
         .child(categoryName)
         .child(itemKey)
