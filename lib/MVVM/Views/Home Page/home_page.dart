@@ -8,7 +8,6 @@ import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturan
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
-import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
@@ -24,7 +23,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController resturantController = TextEditingController();
-  Map? resturantsData;
+  Map resturantsData = {};
   @override
   void initState() {
     getAllResturants();
@@ -36,9 +35,11 @@ class _HomePageState extends State<HomePage> {
         FirebaseDatabase.instance.ref().child("resturants");
     starCountRef.onValue.listen((DatabaseEvent event) {
       final data = event.snapshot.value;
-      data as Map;
+      data as Map?;
       setState(() {
-        resturantsData = data;
+        if (data != null) {
+          resturantsData = data;
+        }
       });
     });
   }
@@ -59,57 +60,62 @@ class _HomePageState extends State<HomePage> {
               text: "Create resturant",
               color: kWhite,
             )),
-        body: resturantsView());
+        body: Center(child: resturantsView()));
   }
 
   Widget resturantsView() {
-    if (resturantsData == null) {
-      return const Center(child: CustomLoader());
+    if (resturantsData.keys.isEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [CustomText(text: "No Resturants added Yet !!")],
+      );
     }
     return Center(
-      child: Wrap(
-        children: resturantsData!.keys.map((e) {
-          Map resturant = resturantsData![e];
-          resturant["key"] = e;
-          final ref =
-              StorageService.storage.ref().child(resturant["imagePath"]);
-          return GestureDetector(
-            onTap: () {
-              KRoutes.push(
-                  context,
-                  ResturantDetailPage(
-                    resturantName: resturant["resturantName"],
-                    resturantKey: resturant["key"],
-                  ));
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  FutureBuilder(
-                    future: ref.getDownloadURL(),
-                    builder: (context, AsyncSnapshot<String> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return CircleAvatar(
-                          radius: 100,
-                          backgroundColor: kWhite,
-                          foregroundImage: NetworkImage(snapshot.data!),
-                        );
-                      }
-                      return const CircleAvatar(
-                          radius: 100,
-                          child: CircularProgressIndicator.adaptive());
-                    },
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(resturant["resturantName"])
-                ],
+      child: SingleChildScrollView(
+        child: Wrap(
+          children: resturantsData.keys.map((e) {
+            Map resturant = resturantsData[e];
+            resturant["key"] = e;
+            final ref =
+                StorageService.storage.ref().child(resturant["imagePath"]);
+            return GestureDetector(
+              onTap: () {
+                KRoutes.push(
+                    context,
+                    ResturantDetailPage(
+                      resturantName: resturant["resturantName"],
+                      resturantKey: resturant["key"],
+                    ));
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  children: [
+                    FutureBuilder(
+                      future: ref.getDownloadURL(),
+                      builder: (context, AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          return CircleAvatar(
+                            radius: 100,
+                            backgroundColor: kWhite,
+                            foregroundImage: NetworkImage(snapshot.data!),
+                          );
+                        }
+                        return const CircleAvatar(
+                            radius: 100,
+                            child: CircularProgressIndicator.adaptive());
+                      },
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(resturant["resturantName"])
+                  ],
+                ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

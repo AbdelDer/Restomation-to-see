@@ -1,5 +1,4 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -11,6 +10,7 @@ import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
+import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_button.dart';
 
 class TablesPage extends StatefulWidget {
@@ -23,6 +23,30 @@ class TablesPage extends StatefulWidget {
 
 class _TablesPageState extends State<TablesPage> {
   final TextEditingController tableController = TextEditingController();
+  Map allResturantsTables = {};
+  @override
+  void initState() {
+    getAllResturantsTables();
+    super.initState();
+  }
+
+  getAllResturantsTables() {
+    DatabaseReference ordersCountRef = FirebaseDatabase.instance
+        .ref()
+        .child("resturants")
+        .child(widget.resturantKey)
+        .child("tables");
+    ordersCountRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value;
+      data as Map?;
+      setState(() {
+        if (data != null) {
+          allResturantsTables = data;
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,44 +65,49 @@ class _TablesPageState extends State<TablesPage> {
             text: "Create table",
             color: Colors.white,
           )),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const CustomText(
-              text: "All Tables :",
-              fontsize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-            const CustomSearch(),
-            Expanded(
-              child: FirebaseAnimatedList(
-                query: DatabaseService.getResturantsTables(widget.resturantKey),
-                itemBuilder: (BuildContext context, DataSnapshot snapshot,
-                    Animation<double> animation, int index) {
-                  Map table = snapshot.value as Map;
-                  table["key"] = snapshot.key;
+      body: Center(
+          child:
+              Padding(padding: const EdgeInsets.all(20), child: tableView())),
+    );
+  }
 
-                  return Slidable(
-                    endActionPane: _actionPane(table),
-                    child: ListTile(
-                      title: CustomText(
-                        text: table["tableName"],
-                        fontsize: 20,
-                      ),
-                      trailing: QrImage(
-                        data: '${table["tableName"]}',
-                        version: QrVersions.auto,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+  Widget tableView() {
+    if (allResturantsTables.keys.isEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [Text("No Tables Added Yet !!")],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const CustomText(
+          text: "All Tables :",
+          fontsize: 35,
+          fontWeight: FontWeight.bold,
         ),
-      ),
+        const CustomSearch(),
+        Column(
+          children: allResturantsTables.keys.map((e) {
+            Map table = allResturantsTables[e] as Map;
+            table["key"] = e;
+
+            return Slidable(
+              endActionPane: _actionPane(table),
+              child: ListTile(
+                title: CustomText(
+                  text: table["tableName"],
+                  fontsize: 20,
+                ),
+                trailing: QrImage(
+                  data: '${table["tableName"]}',
+                  version: QrVersions.auto,
+                ),
+              ),
+            );
+          }).toList(),
+        )
+      ],
     );
   }
 
@@ -109,14 +138,21 @@ class _TablesPageState extends State<TablesPage> {
                       text: update ? "Update" : "Create",
                       textColor: kWhite,
                       function: () async {
+                        Alerts.customLoadingAlert(context);
                         if (update) {
                           await DatabaseService.updateTable(widget.resturantKey,
                                   table!["key"], tableController.text)
-                              .then((value) => KRoutes.pop(context));
+                              .then((value) {
+                            KRoutes.pop(context);
+                            return KRoutes.pop(context);
+                          });
                         } else {
                           await DatabaseService.createTable(
                                   widget.resturantKey, tableController.text)
-                              .then((value) => KRoutes.pop(context));
+                              .then((value) {
+                            KRoutes.pop(context);
+                            return KRoutes.pop(context);
+                          });
                         }
                       })
                 ],

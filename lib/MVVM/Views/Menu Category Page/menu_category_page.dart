@@ -1,9 +1,9 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
+import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -23,6 +23,30 @@ class MenuCategoryPage extends StatefulWidget {
 
 class _MenuCategoryPageState extends State<MenuCategoryPage> {
   final TextEditingController categoryController = TextEditingController();
+  Map allResturantsMenuCategories = {};
+  @override
+  void initState() {
+    getAllResturantsMenuCategories();
+    super.initState();
+  }
+
+  getAllResturantsMenuCategories() {
+    DatabaseReference ordersCountRef = FirebaseDatabase.instance
+        .ref()
+        .child("resturants")
+        .child(widget.resturantKey)
+        .child("menu");
+    ordersCountRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value;
+      data as Map?;
+      setState(() {
+        if (data != null) {
+          allResturantsMenuCategories = data;
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,48 +61,55 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
           onPressed: () {
             showCustomDialog(context);
           },
-          label: const CustomText(text: "Create Category")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const CustomText(
-              text: "Select a category :",
-              fontsize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-            const CustomSearch(),
-            Expanded(
-              child: FirebaseAnimatedList(
-                query: DatabaseService.getResturantsCategories(
-                    widget.resturantKey),
-                itemBuilder: (BuildContext context, DataSnapshot snapshot,
-                    Animation<double> animation, int index) {
-                  Map category = snapshot.value as Map;
-                  category["key"] = snapshot.key;
+          label: const CustomText(
+            text: "Create Category",
+            color: kWhite,
+          )),
+      body: Center(
+          child: Padding(
+              padding: const EdgeInsets.all(20), child: menuCategoryView())),
+    );
+  }
 
-                  return ListTile(
-                    title: CustomText(
-                      text: category["categoryName"],
-                    ),
-                    onTap: () {
-                      KRoutes.push(
-                          context,
-                          MenuPage(
-                            resturantKey: widget.resturantKey,
-                            categoryKey: snapshot.key!,
-                            categoryName: category["categoryName"],
-                            resturantName: widget.resturantName,
-                          ));
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+  Widget menuCategoryView() {
+    if (allResturantsMenuCategories.keys.isEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [Text("No categories Yet !!")],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const CustomText(
+          text: "Select a category :",
+          fontsize: 35,
+          fontWeight: FontWeight.bold,
         ),
-      ),
+        const CustomSearch(),
+        Column(
+          children: allResturantsMenuCategories.keys.map((e) {
+            Map category = allResturantsMenuCategories[e] as Map;
+            category["key"] = e;
+
+            return ListTile(
+              title: CustomText(
+                text: category["categoryName"],
+              ),
+              onTap: () {
+                KRoutes.push(
+                    context,
+                    MenuPage(
+                      resturantKey: widget.resturantKey,
+                      categoryKey: category["key"],
+                      categoryName: category["categoryName"],
+                      resturantName: widget.resturantName,
+                    ));
+              },
+            );
+          }).toList(),
+        )
+      ],
     );
   }
 
@@ -108,9 +139,13 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
                       text: "create",
                       textColor: kWhite,
                       function: () async {
+                        Alerts.customLoadingAlert(context);
                         await DatabaseService.createCategory(
                                 widget.resturantKey, categoryController.text)
-                            .then((value) => KRoutes.pop(context));
+                            .then((value) {
+                          KRoutes.pop(context);
+                          return KRoutes.pop(context);
+                        });
                       })
                 ],
               ),

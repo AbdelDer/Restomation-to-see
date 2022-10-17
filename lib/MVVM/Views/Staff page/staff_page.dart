@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,6 +7,7 @@ import 'package:restomation/Widgets/custom_button.dart';
 
 import '../../../Utils/app_routes.dart';
 import '../../../Utils/contants.dart';
+import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_app_bar.dart';
 import '../../../Widgets/custom_search.dart';
 import '../../../Widgets/custom_text.dart';
@@ -36,6 +36,32 @@ class _StaffPageState extends State<StaffPage> {
   final TextEditingController personPhoneController = TextEditingController();
   final TextEditingController personCnicController = TextEditingController();
   final TextEditingController personAddressController = TextEditingController();
+  Map allsingleResturantsStaffCategories = {};
+  @override
+  void initState() {
+    getsingleResturantsStaffCategories();
+    super.initState();
+  }
+
+  getsingleResturantsStaffCategories() {
+    DatabaseReference ordersCountRef = FirebaseDatabase.instance
+        .ref()
+        .child("resturants")
+        .child(widget.resturantKey)
+        .child("staff")
+        .child(widget.staffCategoryKey)
+        .child(widget.staffCategoryName);
+    ordersCountRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value;
+      data as Map?;
+      setState(() {
+        if (data != null) {
+          allsingleResturantsStaffCategories = data;
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,63 +80,64 @@ class _StaffPageState extends State<StaffPage> {
             text: "Create Staff",
             color: Colors.white,
           )),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomText(
-              text: "${widget.staffCategoryName} :",
-              fontsize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-            const CustomSearch(),
-            Expanded(
-              child: FirebaseAnimatedList(
-                query: DatabaseService.getsingleResturantsStaffCategories(
-                    widget.resturantKey,
-                    widget.staffCategoryKey,
-                    widget.staffCategoryName),
-                itemBuilder: (BuildContext context, DataSnapshot snapshot,
-                    Animation<double> animation, int index) {
-                  Map person = snapshot.value as Map;
-                  person["key"] = snapshot.key;
-                  final ref =
-                      StorageService.storage.ref().child(person["image"]);
-                  return Slidable(
-                    endActionPane: _actionPane(person),
-                    child: ListTile(
-                      leading: FutureBuilder(
-                          future: ref.getDownloadURL(),
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              return CircleAvatar(
-                                backgroundColor: kWhite,
-                                foregroundImage: NetworkImage(snapshot.data!),
-                              );
-                            }
-                            return const CircleAvatar(
-                              backgroundColor: kWhite,
-                              child: CircularProgressIndicator.adaptive(),
-                            );
-                          }),
-                      title: CustomText(
-                        text: person["name"],
-                        fontsize: 20,
-                      ),
-                      isThreeLine: true,
-                      subtitle: CustomText(text: person["cnic"]),
-                      trailing: const Icon(Icons.person_outline),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+      body: Center(
+          child:
+              Padding(padding: const EdgeInsets.all(20), child: staffView())),
+    );
+  }
+
+  Widget staffView() {
+    if (allsingleResturantsStaffCategories.keys.isEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CustomText(text: "No ${widget.staffCategoryName} staff added Yet !!")
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CustomText(
+          text: "${widget.staffCategoryName} :",
+          fontsize: 35,
+          fontWeight: FontWeight.bold,
         ),
-      ),
+        const CustomSearch(),
+        Column(
+          children: allsingleResturantsStaffCategories.keys.map((e) {
+            Map person = allsingleResturantsStaffCategories[e] as Map;
+            person["key"] = e;
+            final ref = StorageService.storage.ref().child(person["image"]);
+            return Slidable(
+              endActionPane: _actionPane(person),
+              child: ListTile(
+                leading: FutureBuilder(
+                    future: ref.getDownloadURL(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return CircleAvatar(
+                          backgroundColor: kWhite,
+                          foregroundImage: NetworkImage(snapshot.data!),
+                        );
+                      }
+                      return const CircleAvatar(
+                        backgroundColor: kWhite,
+                        child: CircularProgressIndicator.adaptive(),
+                      );
+                    }),
+                title: CustomText(
+                  text: person["name"],
+                  fontsize: 20,
+                ),
+                isThreeLine: true,
+                subtitle: CustomText(text: person["cnic"]),
+                trailing: const Icon(Icons.person_outline),
+              ),
+            );
+          }).toList(),
+        )
+      ],
     );
   }
 
@@ -233,6 +260,7 @@ class _StaffPageState extends State<StaffPage> {
                                 "phoneNo": personPhoneController.text,
                                 "address": personAddressController.text
                               };
+                              Alerts.customLoadingAlert(context);
                               await DatabaseService.updateStaffCategoryPerson(
                                       widget.resturantKey,
                                       widget.staffCategoryKey,
@@ -248,6 +276,7 @@ class _StaffPageState extends State<StaffPage> {
                                 personNameController.clear();
                                 personCnicController.clear();
                                 personAddressController.clear();
+                                KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
                             } else {
@@ -259,6 +288,7 @@ class _StaffPageState extends State<StaffPage> {
                                 "phoneNo": personPhoneController.text,
                                 "address": personAddressController.text
                               };
+                              Alerts.customLoadingAlert(context);
                               await DatabaseService.createStaffCategoryPerson(
                                       widget.resturantKey,
                                       widget.resturantName,
@@ -272,6 +302,7 @@ class _StaffPageState extends State<StaffPage> {
                                 personPhoneController.clear();
                                 personCnicController.clear();
                                 personAddressController.clear();
+                                KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
                             }
@@ -306,6 +337,7 @@ class _StaffPageState extends State<StaffPage> {
         ),
         SlidableAction(
           onPressed: (context) {
+            Alerts.customLoadingAlert(context);
             DatabaseService.storage.ref().child(person["image"]).delete();
             DatabaseService.db
                 .ref()
@@ -316,6 +348,7 @@ class _StaffPageState extends State<StaffPage> {
                 .child(widget.staffCategoryName)
                 .child(person["key"])
                 .remove();
+            KRoutes.pop(context);
           },
           backgroundColor: const Color(0xFFFE4A49),
           foregroundColor: Colors.white,

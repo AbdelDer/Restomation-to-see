@@ -1,12 +1,12 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/app_routes.dart';
+import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_search.dart';
@@ -36,6 +36,32 @@ class _MenuPageState extends State<MenuPage> {
   final TextEditingController menuItemPriceController = TextEditingController();
   final TextEditingController menuItemDescriptionController =
       TextEditingController();
+  Map allResturantsMenuItems = {};
+  @override
+  void initState() {
+    getAllResturantsMenuItems();
+    super.initState();
+  }
+
+  getAllResturantsMenuItems() {
+    DatabaseReference menuItemsCountRef = FirebaseDatabase.instance
+        .ref()
+        .child("resturants")
+        .child(widget.resturantKey)
+        .child("menu")
+        .child(widget.categoryKey)
+        .child(widget.categoryName);
+    menuItemsCountRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value;
+      data as Map?;
+      setState(() {
+        if (data != null) {
+          allResturantsMenuItems = data;
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,38 +76,39 @@ class _MenuPageState extends State<MenuPage> {
           onPressed: () {
             showCustomDialog(context);
           },
-          label: const CustomText(text: "Add Menu Item")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            CustomText(
-              text: widget.categoryName,
-              fontsize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-            const CustomSearch(),
-            Expanded(
-              child: FirebaseAnimatedList(
-                query: DatabaseService.getsingleResturantsCategories(
-                  widget.resturantKey,
-                  widget.categoryKey,
-                  widget.categoryName,
-                ),
-                itemBuilder: (BuildContext context, DataSnapshot snapshot,
-                    Animation<double> animation, int index) {
-                  Map foodItem = snapshot.value as Map;
-                  foodItem["key"] = snapshot.key;
+          label: const CustomText(
+            text: "Add Menu Item",
+            color: kWhite,
+          )),
+      body: Center(
+          child: Padding(
+              padding: const EdgeInsets.all(20), child: menuItemsView())),
+    );
+  }
 
-                  return Slidable(
-                      endActionPane: _actionPane(foodItem),
-                      child: CustomFoodCard(data: foodItem));
-                },
-              ),
-            ),
-          ],
+  Widget menuItemsView() {
+    if (allResturantsMenuItems.keys.isEmpty) {
+      return CustomText(text: "No ${widget.categoryName} items added yet !!");
+    }
+    return Column(
+      children: [
+        CustomText(
+          text: widget.categoryName,
+          fontsize: 35,
+          fontWeight: FontWeight.bold,
         ),
-      ),
+        const CustomSearch(),
+        Column(
+          children: allResturantsMenuItems.keys.map((e) {
+            Map foodItem = allResturantsMenuItems[e] as Map;
+            foodItem["key"] = e;
+
+            return Slidable(
+                endActionPane: _actionPane(foodItem),
+                child: CustomFoodCard(data: foodItem));
+          }).toList(),
+        )
+      ],
     );
   }
 
@@ -194,6 +221,7 @@ class _MenuPageState extends State<MenuPage> {
                                 "reviews": itemData!["reviews"],
                                 "rating": itemData["rating"]
                               };
+                              Alerts.customLoadingAlert(context);
                               await DatabaseService.updateCategoryItems(
                                       widget.resturantKey,
                                       widget.categoryKey,
@@ -208,6 +236,7 @@ class _MenuPageState extends State<MenuPage> {
                                 menuItemNameController.clear();
                                 menuItemDescriptionController.clear();
                                 menuItemPriceController.clear();
+                                KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
                             } else {
@@ -221,6 +250,7 @@ class _MenuPageState extends State<MenuPage> {
                                 "reviews": "0",
                                 "rating": "0"
                               };
+                              Alerts.customLoadingAlert(context);
                               await DatabaseService.createCategoryItems(
                                       widget.resturantKey,
                                       widget.categoryKey,
@@ -233,6 +263,7 @@ class _MenuPageState extends State<MenuPage> {
                                 menuItemNameController.clear();
                                 menuItemDescriptionController.clear();
                                 menuItemPriceController.clear();
+                                KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
                             }
@@ -264,6 +295,7 @@ class _MenuPageState extends State<MenuPage> {
         ),
         SlidableAction(
           onPressed: (context) {
+            Alerts.customLoadingAlert(context);
             DatabaseService.storage.ref().child(foodItem["image"]).delete();
             DatabaseService.db
                 .ref()
@@ -274,6 +306,7 @@ class _MenuPageState extends State<MenuPage> {
                 .child(widget.categoryName)
                 .child(foodItem["key"])
                 .remove();
+            KRoutes.pop(context);
           },
           backgroundColor: const Color(0xFFFE4A49),
           foregroundColor: Colors.white,

@@ -47,6 +47,7 @@ dependencies:
   google_fonts: ^3.0.1
   flutter_native_splash: ^2.2.11
   qr_flutter: ^4.0.0
+  cool_alert: ^1.1.0
 
 dev_dependencies:
   flutter_test:

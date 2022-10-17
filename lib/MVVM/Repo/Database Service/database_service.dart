@@ -25,10 +25,11 @@ class DatabaseService extends StorageService {
     }
   }
 
-  static getAllresturants() {
+  static getAllResturants() {
     Query dbref = db.ref().child("resturants");
     return dbref;
   }
+
 
   static getResturantsCategories(
     String resturantKey,
