@@ -1,6 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/Repo/api_status.dart';
 
@@ -29,7 +30,6 @@ class DatabaseService extends StorageService {
     Query dbref = db.ref().child("resturants");
     return dbref;
   }
-
 
   static getResturantsCategories(
     String resturantKey,

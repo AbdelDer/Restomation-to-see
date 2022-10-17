@@ -36,6 +36,7 @@ class _MenuPageState extends State<MenuPage> {
   final TextEditingController menuItemPriceController = TextEditingController();
   final TextEditingController menuItemDescriptionController =
       TextEditingController();
+  final TextEditingController controller = TextEditingController();
   Map allResturantsMenuItems = {};
   @override
   void initState() {
@@ -90,6 +91,14 @@ class _MenuPageState extends State<MenuPage> {
     if (allResturantsMenuItems.keys.isEmpty) {
       return CustomText(text: "No ${widget.categoryName} items added yet !!");
     }
+    List categoriesListItems = allResturantsMenuItems.keys.toList();
+    final suggestions = allResturantsMenuItems.keys.toList().where((element) {
+      final categoryTitle =
+          allResturantsMenuItems[element]["name"].toString().toLowerCase();
+      final input = controller.text.toLowerCase();
+      return categoryTitle.contains(input);
+    }).toList();
+    categoriesListItems = suggestions;
     return Column(
       children: [
         CustomText(
@@ -97,9 +106,15 @@ class _MenuPageState extends State<MenuPage> {
           fontsize: 35,
           fontWeight: FontWeight.bold,
         ),
-        const CustomSearch(),
+        CustomSearch(
+          controller: controller,
+          searchText: "Search Items",
+          function: () {
+            setState(() {});
+          },
+        ),
         Column(
-          children: allResturantsMenuItems.keys.map((e) {
+          children: categoriesListItems.map((e) {
             Map foodItem = allResturantsMenuItems[e] as Map;
             foodItem["key"] = e;
 
@@ -322,6 +337,7 @@ class _MenuPageState extends State<MenuPage> {
     menuItemNameController.dispose();
     menuItemPriceController.dispose();
     menuItemDescriptionController.dispose();
+    controller.dispose();
     super.dispose();
   }
 }

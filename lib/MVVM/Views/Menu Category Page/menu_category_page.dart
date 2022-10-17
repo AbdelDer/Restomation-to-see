@@ -23,6 +23,7 @@ class MenuCategoryPage extends StatefulWidget {
 
 class _MenuCategoryPageState extends State<MenuCategoryPage> {
   final TextEditingController categoryController = TextEditingController();
+  final TextEditingController controller = TextEditingController();
   Map allResturantsMenuCategories = {};
   @override
   void initState() {
@@ -78,6 +79,16 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
         children: const [Text("No categories Yet !!")],
       );
     }
+    List categoriesList = allResturantsMenuCategories.keys.toList();
+    final suggestions =
+        allResturantsMenuCategories.keys.toList().where((element) {
+      final categoryTitle = allResturantsMenuCategories[element]["categoryName"]
+          .toString()
+          .toLowerCase();
+      final input = controller.text.toLowerCase();
+      return categoryTitle.contains(input);
+    }).toList();
+    categoriesList = suggestions;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -86,9 +97,15 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
           fontsize: 35,
           fontWeight: FontWeight.bold,
         ),
-        const CustomSearch(),
+        CustomSearch(
+          controller: controller,
+          searchText: "Search Categories",
+          function: () {
+            setState(() {});
+          },
+        ),
         Column(
-          children: allResturantsMenuCategories.keys.map((e) {
+          children: categoriesList.map((e) {
             Map category = allResturantsMenuCategories[e] as Map;
             category["key"] = e;
 
@@ -157,6 +174,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
   @override
   void dispose() {
     categoryController.dispose();
+    controller.dispose();
     super.dispose();
   }
 }

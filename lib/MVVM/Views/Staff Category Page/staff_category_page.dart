@@ -24,6 +24,7 @@ class StaffCategoryPage extends StatefulWidget {
 
 class _StaffCategoryPageState extends State<StaffCategoryPage> {
   final TextEditingController satffCategoryController = TextEditingController();
+  final TextEditingController controller = TextEditingController();
   Map allStaffCategories = {};
   @override
   void initState() {
@@ -79,6 +80,15 @@ class _StaffCategoryPageState extends State<StaffCategoryPage> {
         children: const [Text("No Staff categories yet !!")],
       );
     }
+    List categoriesStaffList = allStaffCategories.keys.toList();
+    final suggestions = allStaffCategories.keys.toList().where((element) {
+      final categoryTitle = allStaffCategories[element]["staffCategoryName"]
+          .toString()
+          .toLowerCase();
+      final input = controller.text.toLowerCase();
+      return categoryTitle.contains(input);
+    }).toList();
+    categoriesStaffList = suggestions;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -87,9 +97,15 @@ class _StaffCategoryPageState extends State<StaffCategoryPage> {
           fontsize: 35,
           fontWeight: FontWeight.bold,
         ),
-        const CustomSearch(),
+        CustomSearch(
+          controller: controller,
+          searchText: "Search Category",
+          function: () {
+            setState(() {});
+          },
+        ),
         Column(
-          children: allStaffCategories.keys.map((e) {
+          children: categoriesStaffList.map((e) {
             Map staffCategory = allStaffCategories[e] as Map;
             staffCategory["key"] = e;
 
@@ -160,6 +176,7 @@ class _StaffCategoryPageState extends State<StaffCategoryPage> {
   @override
   void dispose() {
     satffCategoryController.dispose();
+    controller.dispose();
     super.dispose();
   }
 }

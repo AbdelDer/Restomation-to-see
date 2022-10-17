@@ -23,6 +23,8 @@ class TablesPage extends StatefulWidget {
 
 class _TablesPageState extends State<TablesPage> {
   final TextEditingController tableController = TextEditingController();
+
+  final TextEditingController controller = TextEditingController();
   Map allResturantsTables = {};
   @override
   void initState() {
@@ -78,6 +80,14 @@ class _TablesPageState extends State<TablesPage> {
         children: const [Text("No Tables Added Yet !!")],
       );
     }
+    List resturantsTables = allResturantsTables.keys.toList();
+    final suggestions = allResturantsTables.keys.toList().where((element) {
+      final categoryTitle =
+          allResturantsTables[element]["tableName"].toString().toLowerCase();
+      final input = controller.text.toLowerCase();
+      return categoryTitle.contains(input);
+    }).toList();
+    resturantsTables = suggestions;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -86,9 +96,15 @@ class _TablesPageState extends State<TablesPage> {
           fontsize: 35,
           fontWeight: FontWeight.bold,
         ),
-        const CustomSearch(),
+        CustomSearch(
+          controller: controller,
+          searchText: "Search Tables",
+          function: () {
+            setState(() {});
+          },
+        ),
         Column(
-          children: allResturantsTables.keys.map((e) {
+          children: resturantsTables.map((e) {
             Map table = allResturantsTables[e] as Map;
             table["key"] = e;
 
@@ -201,6 +217,7 @@ class _TablesPageState extends State<TablesPage> {
   @override
   void dispose() {
     tableController.dispose();
+    controller.dispose();
     super.dispose();
   }
 }

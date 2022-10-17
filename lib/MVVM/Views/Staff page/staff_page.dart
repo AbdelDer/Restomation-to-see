@@ -36,6 +36,7 @@ class _StaffPageState extends State<StaffPage> {
   final TextEditingController personPhoneController = TextEditingController();
   final TextEditingController personCnicController = TextEditingController();
   final TextEditingController personAddressController = TextEditingController();
+  final TextEditingController controller = TextEditingController();
   Map allsingleResturantsStaffCategories = {};
   @override
   void initState() {
@@ -95,6 +96,18 @@ class _StaffPageState extends State<StaffPage> {
         ],
       );
     }
+    List singleCategoryStaffList =
+        allsingleResturantsStaffCategories.keys.toList();
+    final suggestions =
+        allsingleResturantsStaffCategories.keys.toList().where((element) {
+      final categoryTitle = allsingleResturantsStaffCategories[element]
+              ["staffCategoryName"]
+          .toString()
+          .toLowerCase();
+      final input = controller.text.toLowerCase();
+      return categoryTitle.contains(input);
+    }).toList();
+    singleCategoryStaffList = suggestions;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -103,9 +116,15 @@ class _StaffPageState extends State<StaffPage> {
           fontsize: 35,
           fontWeight: FontWeight.bold,
         ),
-        const CustomSearch(),
+        CustomSearch(
+          controller: controller,
+          searchText: "Search staff",
+          function: () {
+            setState(() {});
+          },
+        ),
         Column(
-          children: allsingleResturantsStaffCategories.keys.map((e) {
+          children: singleCategoryStaffList.map((e) {
             Map person = allsingleResturantsStaffCategories[e] as Map;
             person["key"] = e;
             final ref = StorageService.storage.ref().child(person["image"]);
@@ -365,6 +384,7 @@ class _StaffPageState extends State<StaffPage> {
     personPhoneController.dispose();
     personCnicController.dispose();
     personAddressController.dispose();
+    controller.dispose();
     super.dispose();
   }
 }
