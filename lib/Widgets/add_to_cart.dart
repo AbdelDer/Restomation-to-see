@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/Provider/cart_provider.dart';
 
 class AddToCart extends StatefulWidget {
-  const AddToCart({super.key});
+  final Map foodData;
+  const AddToCart({super.key, required this.foodData});
 
   @override
   State<AddToCart> createState() => _AddToCartState();
@@ -17,6 +20,8 @@ class _AddToCartState extends State<AddToCart> {
           setState(() {
             initialValue++;
           });
+          widget.foodData["quantity"] = initialValue;
+          context.read<Cart>().addCartItem(widget.foodData);
         }
       },
       child: Container(
@@ -47,6 +52,8 @@ class _AddToCartState extends State<AddToCart> {
                       onTap: () {
                         setState(() {
                           initialValue--;
+                          widget.foodData["quantity"] = initialValue;
+                          context.read<Cart>().deleteCartItem(widget.foodData);
                         });
                       },
                       child: const Icon(
@@ -59,6 +66,8 @@ class _AddToCartState extends State<AddToCart> {
                         setState(() {
                           initialValue++;
                         });
+                        widget.foodData["quantity"] = initialValue;
+                        context.read<Cart>().addCartItem(widget.foodData);
                       },
                       child: const Icon(
                         Icons.add,

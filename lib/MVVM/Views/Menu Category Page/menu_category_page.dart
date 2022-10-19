@@ -14,8 +14,15 @@ import '../../../Widgets/custom_button.dart';
 class MenuCategoryPage extends StatefulWidget {
   final String resturantKey;
   final String resturantName;
-  const MenuCategoryPage(
-      {super.key, required this.resturantKey, required this.resturantName});
+  final String? tableKey;
+  final String? email;
+  const MenuCategoryPage({
+    super.key,
+    required this.resturantKey,
+    required this.resturantName,
+    this.tableKey,
+    this.email,
+  });
 
   @override
   State<MenuCategoryPage> createState() => _MenuCategoryPageState();
@@ -58,14 +65,16 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
         appBarHeight: 50,
         automaticallyImplyLeading: true,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            showCustomDialog(context);
-          },
-          label: const CustomText(
-            text: "Create Category",
-            color: kWhite,
-          )),
+      floatingActionButton: widget.email != null
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () {
+                showCustomDialog(context);
+              },
+              label: const CustomText(
+                text: "Create Category",
+                color: kWhite,
+              )),
       body: Center(
           child: Padding(
               padding: const EdgeInsets.all(20), child: menuCategoryView())),
@@ -121,6 +130,8 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
                       categoryKey: category["key"],
                       categoryName: category["categoryName"],
                       resturantName: widget.resturantName,
+                      tableKey: widget.tableKey,
+                      email: widget.email,
                     ));
               },
             );

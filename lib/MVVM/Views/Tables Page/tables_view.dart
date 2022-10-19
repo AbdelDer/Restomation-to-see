@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -15,7 +16,9 @@ import '../../../Widgets/custom_button.dart';
 
 class TablesPage extends StatefulWidget {
   final String resturantKey;
-  const TablesPage({super.key, required this.resturantKey});
+  final String resturantName;
+  const TablesPage(
+      {super.key, required this.resturantKey, required this.resturantName});
 
   @override
   State<TablesPage> createState() => _TablesPageState();
@@ -115,6 +118,14 @@ class _TablesPageState extends State<TablesPage> {
                   text: table["tableName"],
                   fontsize: 20,
                 ),
+                onTap: () {
+                  KRoutes.push(
+                      context,
+                      CustomerPage(
+                          resturantKey: widget.resturantKey,
+                          resturantName: widget.resturantName,
+                          tableKey: table["key"]));
+                },
                 trailing: QrImage(
                   data: '${table["tableName"]}',
                   version: QrVersions.auto,

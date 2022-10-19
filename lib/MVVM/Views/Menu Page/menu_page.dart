@@ -9,6 +9,7 @@ import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
+import 'package:restomation/Widgets/custom_cart_badge_icon.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 
 import '../../../Utils/contants.dart';
@@ -20,12 +21,16 @@ class MenuPage extends StatefulWidget {
   final String resturantName;
   final String categoryKey;
   final String categoryName;
+  final String? tableKey;
+  final String? email;
   const MenuPage(
       {super.key,
       required this.resturantKey,
       required this.categoryKey,
       required this.categoryName,
-      required this.resturantName});
+      required this.resturantName,
+      this.tableKey,
+      this.email});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -73,14 +78,16 @@ class _MenuPageState extends State<MenuPage> {
         appBarHeight: 50,
         automaticallyImplyLeading: true,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            showCustomDialog(context);
-          },
-          label: const CustomText(
-            text: "Add Menu Item",
-            color: kWhite,
-          )),
+      floatingActionButton: widget.email != null
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () {
+                showCustomDialog(context);
+              },
+              label: const CustomText(
+                text: "Add Menu Item",
+                color: kWhite,
+              )),
       body: Center(
           child: Padding(
               padding: const EdgeInsets.all(20), child: menuItemsView())),
@@ -101,10 +108,16 @@ class _MenuPageState extends State<MenuPage> {
     categoriesListItems = suggestions;
     return Column(
       children: [
-        CustomText(
-          text: widget.categoryName,
-          fontsize: 35,
-          fontWeight: FontWeight.bold,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CustomText(
+              text: widget.categoryName,
+              fontsize: 35,
+              fontWeight: FontWeight.bold,
+            ),
+            if (widget.email != null) const CustomCartBadgeIcon()
+          ],
         ),
         CustomSearch(
           controller: controller,

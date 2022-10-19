@@ -5,6 +5,7 @@ import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_mo
 import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:restomation/Provider/cart_provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -29,9 +30,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => ResturantViewModel(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => Cart(),
+        ),
       ],
       child: MaterialApp(
         title: 'Restomation',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
             primarySwatch: Colors.blue,
             textTheme: GoogleFonts.poppinsTextTheme()),

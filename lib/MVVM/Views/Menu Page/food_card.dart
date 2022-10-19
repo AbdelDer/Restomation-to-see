@@ -94,7 +94,11 @@ class CustomFoodCard extends StatelessWidget {
                       ),
                     );
                   }),
-              const Positioned(bottom: 5, child: AddToCart())
+              Positioned(
+                  bottom: 5,
+                  child: AddToCart(
+                    foodData: data,
+                  ))
             ],
           ),
         )

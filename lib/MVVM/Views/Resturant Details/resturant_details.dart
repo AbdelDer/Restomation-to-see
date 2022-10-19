@@ -47,6 +47,7 @@ class ResturantDetailPage extends StatelessWidget {
                       context,
                       TablesPage(
                         resturantKey: resturantKey,
+                        resturantName: resturantName,
                       ));
                 }
               },
@@ -72,7 +73,7 @@ class ResturantDetailPage extends StatelessWidget {
                       context,
                       OrderScreen(
                         resturantKey: resturantKey,
-                           resturantName: resturantName,
+                        resturantName: resturantName,
                       ));
                 }
               },
