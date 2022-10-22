@@ -11,11 +11,13 @@ class CustomerPage extends StatefulWidget {
   final String resturantKey;
   final String resturantName;
   final String tableKey;
+  final String tableName;
   const CustomerPage(
       {super.key,
       required this.resturantKey,
       required this.resturantName,
-      required this.tableKey});
+      required this.tableKey,
+      required this.tableName});
 
   @override
   State<CustomerPage> createState() => _CustomerPageState();

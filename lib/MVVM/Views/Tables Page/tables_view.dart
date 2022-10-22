@@ -106,33 +106,44 @@ class _TablesPageState extends State<TablesPage> {
             setState(() {});
           },
         ),
-        Column(
-          children: resturantsTables.map((e) {
-            Map table = allResturantsTables[e] as Map;
-            table["key"] = e;
+        SingleChildScrollView(
+          child: Column(
+            children: resturantsTables.map((e) {
+              Map table = allResturantsTables[e] as Map;
+              table["key"] = e;
 
-            return Slidable(
-              endActionPane: _actionPane(table),
-              child: ListTile(
-                title: CustomText(
-                  text: table["tableName"],
-                  fontsize: 20,
-                ),
-                onTap: () {
-                  KRoutes.push(
-                      context,
-                      CustomerPage(
+              return Slidable(
+                endActionPane: _actionPane(table),
+                child: InkWell(
+                  onTap: () {
+                    KRoutes.push(
+                        context,
+                        CustomerPage(
                           resturantKey: widget.resturantKey,
                           resturantName: widget.resturantName,
-                          tableKey: table["key"]));
-                },
-                trailing: QrImage(
-                  data: '${table["tableName"]}',
-                  version: QrVersions.auto,
+                          tableKey: table["key"],
+                          tableName: table["tableName"],
+                        ));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CustomText(
+                        text: table["tableName"],
+                        fontsize: 20,
+                      ),
+                      QrImage(
+                        data:
+                            'https://naqeeb9a.github.io/#/tables/${widget.resturantKey},${widget.resturantName},${table["key"]},${table["tableName"]}',
+                        version: QrVersions.auto,
+                        size: 150,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         )
       ],
     );

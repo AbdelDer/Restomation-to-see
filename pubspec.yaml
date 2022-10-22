@@ -49,6 +49,7 @@ dependencies:
   qr_flutter: ^4.0.0
   cool_alert: ^1.1.0
   badges: ^2.0.3
+  beamer: ^1.5.3
 
 dev_dependencies:
   flutter_test:
