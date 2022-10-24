@@ -131,11 +131,11 @@ class _MyAppState extends State<MyApp> {
                 resturantKey: parameters[1],
               ));
         },
-        "/resturant-staff-category/staff:parameters": (p0, p1, p2) {
+        "/resturant-staff-category/staff/:parameters": (p0, p1, p2) {
           final String resturantParams = p1.pathParameters["parameters"] ?? "";
           List<String> parameters = resturantParams.split(",");
           return BeamPage(
-              key: const ValueKey("staff-category"),
+              key: const ValueKey("staff"),
               title: parameters[0],
               type: BeamPageType.fadeTransition,
               child: StaffPage(
@@ -173,6 +173,18 @@ class _MyAppState extends State<MyApp> {
           );
         },
         "/customer-cart/:parameters": (p0, p1, p2) {
+          final String resturantParams = p1.pathParameters["parameters"] ?? "";
+          List<String> parameters = resturantParams.split(",");
+          return BeamPage(
+              key: const ValueKey("customer-cart"),
+              title: parameters[0],
+              type: BeamPageType.fadeTransition,
+              child: CartPage(
+                  resturantKey: parameters[1],
+                  tableName: parameters[2],
+                  customer: parameters[3]));
+        },
+        "/customer-order/:parameters": (p0, p1, p2) {
           final String resturantParams = p1.pathParameters["parameters"] ?? "";
           List<String> parameters = resturantParams.split(",");
           return BeamPage(

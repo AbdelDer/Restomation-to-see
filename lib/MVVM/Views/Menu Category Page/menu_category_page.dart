@@ -5,6 +5,7 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
@@ -31,29 +32,6 @@ class MenuCategoryPage extends StatefulWidget {
 class _MenuCategoryPageState extends State<MenuCategoryPage> {
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
-  Map allResturantsMenuCategories = {};
-  @override
-  void initState() {
-    getAllResturantsMenuCategories();
-    super.initState();
-  }
-
-  getAllResturantsMenuCategories() {
-    DatabaseReference ordersCountRef = FirebaseDatabase.instance
-        .ref()
-        .child("resturants")
-        .child(widget.resturantKey)
-        .child("menu");
-    ordersCountRef.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
-      data as Map?;
-      setState(() {
-        if (data != null) {
-          allResturantsMenuCategories = data;
-        }
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,17 +55,46 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
               )),
       body: Center(
           child: Padding(
-              padding: const EdgeInsets.all(20), child: menuCategoryView())),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CustomText(
+                    text: "Select a category :",
+                    fontsize: 35,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  CustomSearch(
+                    controller: controller,
+                    searchText: "Search Categories",
+                    function: () {
+                      setState(() {});
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: FirebaseDatabase.instance
+                          .ref()
+                          .child("resturants")
+                          .child(widget.resturantKey)
+                          .child("menu")
+                          .onValue,
+                      builder:
+                          (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+                        return menuCategoryView(snapshot);
+                      }),
+                ],
+              ))),
     );
   }
 
-  Widget menuCategoryView() {
-    if (allResturantsMenuCategories.keys.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [Text("No categories Yet !!")],
-      );
+  Widget menuCategoryView(AsyncSnapshot<DatabaseEvent> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Expanded(child: CustomLoader());
     }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return const Expanded(child: Center(child: Text("No categories Yet !!")));
+    }
+    Map allResturantsMenuCategories = snapshot.data!.snapshot.value as Map;
     List categoriesList = allResturantsMenuCategories.keys.toList();
     final suggestions =
         allResturantsMenuCategories.keys.toList().where((element) {
@@ -99,42 +106,25 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
     }).toList();
     categoriesList = suggestions;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CustomText(
-          text: "Select a category :",
-          fontsize: 35,
-          fontWeight: FontWeight.bold,
-        ),
-        CustomSearch(
-          controller: controller,
-          searchText: "Search Categories",
-          function: () {
-            setState(() {});
-          },
-        ),
-        Column(
-          children: categoriesList.map((e) {
-            Map category = allResturantsMenuCategories[e] as Map;
-            category["key"] = e;
+      children: categoriesList.map((e) {
+        Map category = allResturantsMenuCategories[e] as Map;
+        category["key"] = e;
 
-            return ListTile(
-              title: CustomText(
-                text: category["categoryName"],
-              ),
-              onTap: () {
-                if (widget.email != null) {
-                  Beamer.of(context).beamToNamed(
-                      "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]},${widget.tableName},${widget.email}");
-                } else {
-                  Beamer.of(context).beamToNamed(
-                      "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]}");
-                }
-              },
-            );
-          }).toList(),
-        )
-      ],
+        return ListTile(
+          title: CustomText(
+            text: category["categoryName"],
+          ),
+          onTap: () {
+            if (widget.email != null) {
+              Beamer.of(context).beamToNamed(
+                  "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]},${widget.tableName},${widget.email}");
+            } else {
+              Beamer.of(context).beamToNamed(
+                  "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]}");
+            }
+          },
+        );
+      }).toList(),
     );
   }
 

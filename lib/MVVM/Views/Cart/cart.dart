@@ -1,3 +1,4 @@
+import 'package:beamer/beamer.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -75,17 +76,15 @@ class CartPage extends StatelessWidget {
                 Map data = {
                   "table": tableName,
                   "customer": customer,
-                  "items": {}
                 };
-                for (var i = 0; i < cart.cartItems.length; i++) {
-                  (data["Items"] as Map)
-                      .addAll({"item${i + 1}": cart.cartItems[i]});
-                }
+
                 await DatabaseService()
-                    .createOrder(resturantKey, data)
+                    .createOrder(resturantKey, data, cart.cartItems)
                     .then((value) {
                   KRoutes.pop(context);
                   Fluttertoast.showToast(msg: "Ordered Successfully");
+                  
+                  Beamer.of(context).beamToNamed("");
                 });
               }),
           const SizedBox(

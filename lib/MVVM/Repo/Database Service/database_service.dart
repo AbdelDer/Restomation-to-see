@@ -223,13 +223,19 @@ class DatabaseService extends StorageService {
         .set(item);
   }
 
-  Future createOrder(String resturantKey, Map data) async {
-    await db
+  Future createOrder(String resturantKey, Map data, List cartItems) async {
+    DatabaseReference reference =
+        db.ref().child("resturants").child(resturantKey).child("orders").push();
+    reference.set(data);
+    DatabaseReference itemsRef = db
         .ref()
         .child("resturants")
         .child(resturantKey)
         .child("orders")
-        .push()
-        .set(data);
+        .child(reference.key!)
+        .child("items");
+    for (var element in cartItems) {
+      await itemsRef.push().set(element);
+    }
   }
 }

@@ -10,6 +10,7 @@ import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_cart_badge_icon.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 
 import '../../../Utils/contants.dart';
@@ -42,31 +43,6 @@ class _MenuPageState extends State<MenuPage> {
   final TextEditingController menuItemDescriptionController =
       TextEditingController();
   final TextEditingController controller = TextEditingController();
-  Map allResturantsMenuItems = {};
-  @override
-  void initState() {
-    getAllResturantsMenuItems();
-    super.initState();
-  }
-
-  getAllResturantsMenuItems() {
-    DatabaseReference menuItemsCountRef = FirebaseDatabase.instance
-        .ref()
-        .child("resturants")
-        .child(widget.resturantKey)
-        .child("menu")
-        .child(widget.categoryKey)
-        .child(widget.categoryName);
-    menuItemsCountRef.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
-      data as Map?;
-      setState(() {
-        if (data != null) {
-          allResturantsMenuItems = data;
-        }
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,14 +66,63 @@ class _MenuPageState extends State<MenuPage> {
               )),
       body: Center(
           child: Padding(
-              padding: const EdgeInsets.all(20), child: menuItemsView())),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CustomText(
+                        text: widget.categoryName,
+                        fontsize: 35,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      if (widget.email != null)
+                        CustomCartBadgeIcon(
+                          tableName: widget.tableName!,
+                          resturantKey: widget.resturantKey,
+                          customer: widget.email!,
+                          resturantName: widget.resturantName,
+                        )
+                    ],
+                  ),
+                  CustomSearch(
+                    controller: controller,
+                    searchText: "Search Items",
+                    function: () {
+                      setState(() {});
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: FirebaseDatabase.instance
+                          .ref()
+                          .child("resturants")
+                          .child(widget.resturantKey)
+                          .child("menu")
+                          .child(widget.categoryKey)
+                          .child(widget.categoryName)
+                          .onValue,
+                      builder:
+                          (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                        return menuItemsView(snapshot);
+                      }),
+                ],
+              ))),
     );
   }
 
-  Widget menuItemsView() {
-    if (allResturantsMenuItems.keys.isEmpty) {
-      return CustomText(text: "No ${widget.categoryName} items added yet !!");
+  Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Expanded(child: CustomLoader());
     }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return Expanded(
+          child: Center(
+              child: CustomText(
+                  text: "No ${widget.categoryName} items added yet !!")));
+    }
+    Map allResturantsMenuItems = snapshot.data!.snapshot.value as Map;
     List categoriesListItems = allResturantsMenuItems.keys.toList();
     final suggestions = allResturantsMenuItems.keys.toList().where((element) {
       final categoryTitle =
@@ -107,45 +132,17 @@ class _MenuPageState extends State<MenuPage> {
     }).toList();
     categoriesListItems = suggestions;
     return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            CustomText(
-              text: widget.categoryName,
-              fontsize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-            if (widget.email != null)
-              CustomCartBadgeIcon(
-                tableName: widget.tableName!,
-                resturantKey: widget.resturantKey,
-                customer: widget.email!,
-                resturantName: widget.resturantName,
-              )
-          ],
-        ),
-        CustomSearch(
-          controller: controller,
-          searchText: "Search Items",
-          function: () {
-            setState(() {});
-          },
-        ),
-        Column(
-          children: categoriesListItems.map((e) {
-            Map foodItem = allResturantsMenuItems[e] as Map;
-            foodItem["key"] = e;
+      children: categoriesListItems.map((e) {
+        Map foodItem = allResturantsMenuItems[e] as Map;
+        foodItem["key"] = e;
 
-            return Slidable(
-                endActionPane: _actionPane(foodItem),
-                child: CustomFoodCard(
-                  data: foodItem,
-                  email: widget.email,
-                ));
-          }).toList(),
-        )
-      ],
+        return Slidable(
+            endActionPane: _actionPane(foodItem),
+            child: CustomFoodCard(
+              data: foodItem,
+              email: widget.email,
+            ));
+      }).toList(),
     );
   }
 

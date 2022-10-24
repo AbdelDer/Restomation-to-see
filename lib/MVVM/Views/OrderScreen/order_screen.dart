@@ -1,8 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
+import '../../Repo/Database Service/database_service.dart';
 import '../../Repo/Storage Service/storage_service.dart';
 
 class OrderScreen extends StatefulWidget {
@@ -16,31 +18,6 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  Map allOrders = {};
-  @override
-  void initState() {
-    getAllResturantsOrders();
-    super.initState();
-  }
-
-  getAllResturantsOrders() {
-    DatabaseReference ordersCountRef = FirebaseDatabase.instance
-        .ref()
-        .child("resturants")
-        .child(widget.resturantKey)
-        .child("orders");
-    ordersCountRef.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
-      data as Map?;
-      setState(() {
-        if (data != null) {
-          print(data);
-          allOrders = data;
-        }
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,56 +28,100 @@ class _OrderScreenState extends State<OrderScreen> {
           appBarHeight: 50,
           automaticallyImplyLeading: true,
         ),
-        body: Center(child: orderList()));
+        body: Center(
+            child: StreamBuilder(
+          stream: DatabaseService.db
+              .ref()
+              .child("resturants")
+              .child(widget.resturantKey)
+              .child("orders")
+              .onValue,
+          builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+            return orderDisplayView(snapshot);
+          },
+        )));
   }
 
-  Widget orderList() {
-    if (allOrders.keys.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.network(
-            "https://static.vecteezy.com/system/resources/previews/005/051/242/original/a-man-unpacking-the-paper-box-illustration-concept-flat-illustration-isolated-on-white-background-vector.jpg",
-            width: 300,
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          const Text("No Orders Yet")
-        ],
+  Widget orderDisplayView(AsyncSnapshot<DatabaseEvent> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CustomLoader();
+    }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return const Center(
+        child: CustomText(text: "No Orders Yet !!"),
       );
     }
-    return ListView.separated(
-        itemBuilder: (context, index) => Container(),
-        separatorBuilder: (context, index) => const Divider(),
-        itemCount: allOrders.keys.length);
-  }
-
-  Widget orderCard(int index) {
-    Map foodOrder = allOrders.keys.toList()[index];
-    return Container(
-      margin: const EdgeInsets.all(10),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: const [
-            BoxShadow(
-                color: Colors.grey,
-                offset: Offset(0, 1),
-                spreadRadius: 5,
-                blurRadius: 5)
-          ]),
+    Map? order = (snapshot.data as DatabaseEvent).snapshot.value as Map;
+    List orderList = order.values.toList();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomText(text: foodOrder["table"]),
-          Column(
-            children: foodOrder.keys.map((e) {
-              if (e != "customer" || e != "table") {
-                return orderItemDisplay(context, foodOrder[e]);
-              }
-              return Container();
-            }).toList(),
-          )
+          const CustomText(
+            text: "All Orders :",
+            fontWeight: FontWeight.bold,
+            fontsize: 25,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          const Divider(
+            thickness: 1,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            child: ListView.separated(
+              itemCount:
+                  (snapshot.data as DatabaseEvent).snapshot.children.length,
+              itemBuilder: (context, index) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomText(
+                        text: orderList[index]["table"],
+                        fontsize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      CustomText(text: orderList[index]["customer"]),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      SizedBox(
+                        height: 150,
+                        width: double.infinity,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: (orderList[index]["items"] as Map).length,
+                          itemBuilder: (context, index) {
+                            List foodItem = (orderList[index]["items"] as Map)
+                                .values
+                                .toList();
+                            return orderItemDisplay(context, foodItem[index]);
+                          },
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                    ],
+                  ),
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return const Divider(
+                  thickness: 1,
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -108,12 +129,12 @@ class _OrderScreenState extends State<OrderScreen> {
 
   Widget orderItemDisplay(BuildContext context, Map data) {
     final ref = StorageService.storage.ref().child(data["image"]);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        SizedBox(
-          width: MediaQuery.of(context).size.width / 2,
-          child: Column(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(
@@ -131,48 +152,25 @@ class _OrderScreenState extends State<OrderScreen> {
                 height: 10,
               ),
               Text(
-                "₹${data["price"]} x ${data["quantity"]}",
+                "Quantity : ${data["quantity"]}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
                 height: 10,
               ),
-              CustomText(
-                  text:
-                      "total  ${double.parse(data["price"]) * data["quantity"]}")
             ],
           ),
-        ),
-        SizedBox(
-          height: 180,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              FutureBuilder(
-                  future: ref.getDownloadURL(),
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Container(
-                        width: 170,
-                        height: 150,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: const [
-                              BoxShadow(
-                                  offset: Offset(0, 0),
-                                  spreadRadius: 2,
-                                  blurRadius: 2,
-                                  color: Colors.black12)
-                            ],
-                            image: DecorationImage(
-                                image: NetworkImage(snapshot.data!),
-                                fit: BoxFit.cover)),
-                      );
-                    }
-                    return Container(
-                      width: 170,
-                      height: 150,
-                      decoration: BoxDecoration(
+          const SizedBox(
+            width: 20,
+          ),
+          FutureBuilder(
+              future: ref.getDownloadURL(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Container(
+                    width: 170,
+                    height: 150,
+                    decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: const [
                           BoxShadow(
@@ -181,13 +179,28 @@ class _OrderScreenState extends State<OrderScreen> {
                               blurRadius: 2,
                               color: Colors.black12)
                         ],
-                      ),
-                    );
-                  }),
-            ],
-          ),
-        )
-      ],
+                        image: DecorationImage(
+                            image: NetworkImage(snapshot.data!),
+                            fit: BoxFit.cover)),
+                  );
+                }
+                return Container(
+                  width: 170,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: const [
+                      BoxShadow(
+                          offset: Offset(0, 0),
+                          spreadRadius: 2,
+                          blurRadius: 2,
+                          color: Colors.black12)
+                    ],
+                  ),
+                );
+              })
+        ],
+      ),
     );
   }
 }

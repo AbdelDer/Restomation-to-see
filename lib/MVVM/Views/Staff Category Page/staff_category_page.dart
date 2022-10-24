@@ -6,6 +6,7 @@ import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 
 import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_search.dart';
@@ -25,29 +26,6 @@ class StaffCategoryPage extends StatefulWidget {
 class _StaffCategoryPageState extends State<StaffCategoryPage> {
   final TextEditingController satffCategoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
-  Map allStaffCategories = {};
-  @override
-  void initState() {
-    getAllResturantsOrders();
-    super.initState();
-  }
-
-  getAllResturantsOrders() {
-    DatabaseReference staffCategoriesCountRef = FirebaseDatabase.instance
-        .ref()
-        .child("resturants")
-        .child(widget.resturantKey)
-        .child("staff");
-    staffCategoriesCountRef.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
-      data as Map?;
-      setState(() {
-        if (data != null) {
-          allStaffCategories = data;
-        }
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,17 +47,47 @@ class _StaffCategoryPageState extends State<StaffCategoryPage> {
           )),
       body: Center(
           child: Padding(
-              padding: const EdgeInsets.all(20), child: categoriesView())),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CustomText(
+                    text: "Select a staff category :",
+                    fontsize: 35,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  CustomSearch(
+                    controller: controller,
+                    searchText: "Search Category",
+                    function: () {
+                      setState(() {});
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: FirebaseDatabase.instance
+                          .ref()
+                          .child("resturants")
+                          .child(widget.resturantKey)
+                          .child("staff")
+                          .onValue,
+                      builder:
+                          (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+                        return categoriesView(snapshot);
+                      }),
+                ],
+              ))),
     );
   }
 
-  Widget categoriesView() {
-    if (allStaffCategories.keys.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [Text("No Staff categories yet !!")],
-      );
+  Widget categoriesView(AsyncSnapshot<DatabaseEvent> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Expanded(child: CustomLoader());
     }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return const Expanded(
+          child: Center(child: Text("No Staff categories yet !!")));
+    }
+    Map allStaffCategories = snapshot.data!.snapshot.value as Map;
     List categoriesStaffList = allStaffCategories.keys.toList();
     final suggestions = allStaffCategories.keys.toList().where((element) {
       final categoryTitle = allStaffCategories[element]["staffCategoryName"]
@@ -90,38 +98,21 @@ class _StaffCategoryPageState extends State<StaffCategoryPage> {
     }).toList();
     categoriesStaffList = suggestions;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CustomText(
-          text: "Select a staff category :",
-          fontsize: 35,
-          fontWeight: FontWeight.bold,
-        ),
-        CustomSearch(
-          controller: controller,
-          searchText: "Search Category",
-          function: () {
-            setState(() {});
-          },
-        ),
-        Column(
-          children: categoriesStaffList.map((e) {
-            Map staffCategory = allStaffCategories[e] as Map;
-            staffCategory["key"] = e;
+      children: categoriesStaffList.map((e) {
+        Map staffCategory = allStaffCategories[e] as Map;
+        staffCategory["key"] = e;
 
-            return ListTile(
-              title: CustomText(
-                text: staffCategory["staffCategoryName"].toString(),
-                fontsize: 20,
-              ),
-              onTap: () {
-                Beamer.of(context).beamToNamed(
-                    "/resturant-staff-category/staff/${widget.resturantName},${widget.resturantKey},${staffCategory["staffCategoryName"]},${staffCategory["key"]}");
-              },
-            );
-          }).toList(),
-        ),
-      ],
+        return ListTile(
+          title: CustomText(
+            text: staffCategory["staffCategoryName"].toString(),
+            fontsize: 20,
+          ),
+          onTap: () {
+            Beamer.of(context).beamToNamed(
+                "/resturant-staff-category/staff/${widget.resturantName},${widget.resturantKey},${staffCategory["staffCategoryName"]},${staffCategory["key"]}");
+          },
+        );
+      }).toList(),
     );
   }
 

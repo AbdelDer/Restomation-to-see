@@ -7,6 +7,7 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
@@ -28,29 +29,6 @@ class _TablesPageState extends State<TablesPage> {
   final TextEditingController tableController = TextEditingController();
 
   final TextEditingController controller = TextEditingController();
-  Map allResturantsTables = {};
-  @override
-  void initState() {
-    getAllResturantsTables();
-    super.initState();
-  }
-
-  getAllResturantsTables() {
-    DatabaseReference ordersCountRef = FirebaseDatabase.instance
-        .ref()
-        .child("resturants")
-        .child(widget.resturantKey)
-        .child("tables");
-    ordersCountRef.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
-      data as Map?;
-      setState(() {
-        if (data != null) {
-          allResturantsTables = data;
-        }
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,18 +49,49 @@ class _TablesPageState extends State<TablesPage> {
             color: Colors.white,
           )),
       body: Center(
-          child:
-              Padding(padding: const EdgeInsets.all(20), child: tableView())),
+          child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CustomText(
+                    text: "All Tables :",
+                    fontsize: 35,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  CustomSearch(
+                    controller: controller,
+                    searchText: "Search Tables",
+                    function: () {
+                      setState(() {});
+                    },
+                  ),
+                  StreamBuilder(
+                      stream: FirebaseDatabase.instance
+                          .ref()
+                          .child("resturants")
+                          .child(widget.resturantKey)
+                          .child("tables")
+                          .onValue,
+                      builder:
+                          (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+                        return tableView(snapshot);
+                      }),
+                ],
+              ))),
     );
   }
 
-  Widget tableView() {
-    if (allResturantsTables.keys.isEmpty) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [Text("No Tables Added Yet !!")],
+  Widget tableView(AsyncSnapshot<DatabaseEvent> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Expanded(child: CustomLoader());
+    }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return const Expanded(
+        child: Center(child: CustomText(text: "No Tables Added Yet !!")),
       );
     }
+    Map allResturantsTables = snapshot.data!.snapshot.value as Map;
     List resturantsTables = allResturantsTables.keys.toList();
     final suggestions = allResturantsTables.keys.toList().where((element) {
       final categoryTitle =
@@ -91,65 +100,40 @@ class _TablesPageState extends State<TablesPage> {
       return categoryTitle.contains(input);
     }).toList();
     resturantsTables = suggestions;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CustomText(
-          text: "All Tables :",
-          fontsize: 35,
-          fontWeight: FontWeight.bold,
-        ),
-        CustomSearch(
-          controller: controller,
-          searchText: "Search Tables",
-          function: () {
-            setState(() {});
-          },
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: resturantsTables.map((e) {
-                Map table = allResturantsTables[e] as Map;
-                table["key"] = e;
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Column(
+          children: resturantsTables.map((e) {
+            Map table = allResturantsTables[e] as Map;
+            table["key"] = e;
 
-                return Slidable(
-                  endActionPane: _actionPane(table),
-                  child: InkWell(
-                    onTap: () {
-                      // KRoutes.push(
-                      //     context,
-                      //     CustomerPage(
-                      //       resturantKey: widget.resturantKey,
-                      //       resturantName: widget.resturantName,
-                      //       tableKey: table["key"],
-                      //       tableName: table["tableName"],
-                      //     ));
-                      Beamer.of(context).beamToNamed(
-                          "/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}");
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CustomText(
-                          text: table["tableName"],
-                          fontsize: 20,
-                        ),
-                        QrImage(
-                          data:
-                              'https://naqeeb9a.github.io/#/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}',
-                          version: QrVersions.auto,
-                          size: 150,
-                        ),
-                      ],
+            return Slidable(
+              endActionPane: _actionPane(table),
+              child: InkWell(
+                onTap: () {
+                  Beamer.of(context).beamToNamed(
+                      "/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}");
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CustomText(
+                      text: table["tableName"],
+                      fontsize: 20,
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        )
-      ],
+                    QrImage(
+                      data:
+                          'https://naqeeb9a.github.io/#/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}',
+                      version: QrVersions.auto,
+                      size: 150,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 

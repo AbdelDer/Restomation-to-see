@@ -9,6 +9,7 @@ import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturan
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
@@ -22,30 +23,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isMounted = true;
   final TextEditingController resturantController = TextEditingController();
-  Map resturantsData = {};
-  @override
-  void initState() {
-    getAllResturants();
-    super.initState();
-  }
-
-  getAllResturants() {
-    DatabaseReference starCountRef =
-        FirebaseDatabase.instance.ref().child("resturants");
-    starCountRef.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
-      data as Map?;
-      if (isMounted) {
-        setState(() {
-          if (data != null) {
-            resturantsData = data;
-          }
-        });
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,21 +41,33 @@ class _HomePageState extends State<HomePage> {
               text: "Create resturant",
               color: kWhite,
             )),
-        body: Center(child: resturantsView()));
+        body: Center(
+            child: StreamBuilder(
+                stream:
+                    FirebaseDatabase.instance.ref().child("resturants").onValue,
+                builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                  // return Container();
+                  return resturantsView(snapshot);
+                })));
   }
 
-  Widget resturantsView() {
-    if (resturantsData.keys.isEmpty) {
+  Widget resturantsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CustomLoader();
+    }
+    if (snapshot.data!.snapshot.children.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [CustomText(text: "No Resturants added Yet !!")],
       );
     }
+    Map resturantObject = snapshot.data!.snapshot.value as Map;
+    List resturantkeysList = resturantObject.keys.toList();
     return Center(
       child: SingleChildScrollView(
         child: Wrap(
-          children: resturantsData.keys.map((e) {
-            Map resturant = resturantsData[e];
+          children: resturantkeysList.map((e) {
+            Map resturant = resturantObject[e];
             resturant["key"] = e;
             final ref =
                 StorageService.storage.ref().child(resturant["imagePath"]);
@@ -224,7 +214,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    isMounted = false;
     resturantController.dispose();
     super.dispose();
   }
