@@ -100,8 +100,7 @@ class _StaffPageState extends State<StaffPage> {
         allsingleResturantsStaffCategories.keys.toList();
     final suggestions =
         allsingleResturantsStaffCategories.keys.toList().where((element) {
-      final categoryTitle = allsingleResturantsStaffCategories[element]
-              ["staffCategoryName"]
+      final categoryTitle = allsingleResturantsStaffCategories[element]["name"]
           .toString()
           .toLowerCase();
       final input = controller.text.toLowerCase();

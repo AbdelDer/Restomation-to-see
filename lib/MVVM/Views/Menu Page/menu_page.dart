@@ -21,7 +21,7 @@ class MenuPage extends StatefulWidget {
   final String resturantName;
   final String categoryKey;
   final String categoryName;
-  final String? tableKey;
+  final String? tableName;
   final String? email;
   const MenuPage(
       {super.key,
@@ -29,7 +29,7 @@ class MenuPage extends StatefulWidget {
       required this.categoryKey,
       required this.categoryName,
       required this.resturantName,
-      this.tableKey,
+      this.tableName,
       this.email});
 
   @override
@@ -116,7 +116,13 @@ class _MenuPageState extends State<MenuPage> {
               fontsize: 35,
               fontWeight: FontWeight.bold,
             ),
-            if (widget.email != null) const CustomCartBadgeIcon()
+            if (widget.email != null)
+              CustomCartBadgeIcon(
+                tableName: widget.tableName!,
+                resturantKey: widget.resturantKey,
+                customer: widget.email!,
+                resturantName: widget.resturantName,
+              )
           ],
         ),
         CustomSearch(
@@ -133,7 +139,10 @@ class _MenuPageState extends State<MenuPage> {
 
             return Slidable(
                 endActionPane: _actionPane(foodItem),
-                child: CustomFoodCard(data: foodItem));
+                child: CustomFoodCard(
+                  data: foodItem,
+                  email: widget.email,
+                ));
           }).toList(),
         )
       ],

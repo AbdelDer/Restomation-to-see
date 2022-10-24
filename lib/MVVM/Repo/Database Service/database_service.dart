@@ -222,4 +222,14 @@ class DatabaseService extends StorageService {
         .child(itemKey)
         .set(item);
   }
+
+  Future createOrder(String resturantKey, Map data) async {
+    await db
+        .ref()
+        .child("resturants")
+        .child(resturantKey)
+        .child("orders")
+        .push()
+        .set(data);
+  }
 }

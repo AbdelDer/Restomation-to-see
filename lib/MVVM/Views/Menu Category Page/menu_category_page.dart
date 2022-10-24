@@ -1,7 +1,7 @@
+import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -14,13 +14,13 @@ import '../../../Widgets/custom_button.dart';
 class MenuCategoryPage extends StatefulWidget {
   final String resturantKey;
   final String resturantName;
-  final String? tableKey;
+  final String? tableName;
   final String? email;
   const MenuCategoryPage({
     super.key,
     required this.resturantKey,
     required this.resturantName,
-    this.tableKey,
+    this.tableName,
     this.email,
   });
 
@@ -123,16 +123,13 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
                 text: category["categoryName"],
               ),
               onTap: () {
-                KRoutes.push(
-                    context,
-                    MenuPage(
-                      resturantKey: widget.resturantKey,
-                      categoryKey: category["key"],
-                      categoryName: category["categoryName"],
-                      resturantName: widget.resturantName,
-                      tableKey: widget.tableKey,
-                      email: widget.email,
-                    ));
+                if (widget.email != null) {
+                  Beamer.of(context).beamToNamed(
+                      "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]},${widget.tableName},${widget.email}");
+                } else {
+                  Beamer.of(context).beamToNamed(
+                      "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]}");
+                }
               },
             );
           }).toList(),

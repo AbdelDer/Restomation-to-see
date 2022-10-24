@@ -1,6 +1,5 @@
+import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
-import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
-import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
@@ -10,13 +9,11 @@ import 'package:restomation/Widgets/custom_text_field.dart';
 class CustomerPage extends StatefulWidget {
   final String resturantKey;
   final String resturantName;
-  final String tableKey;
   final String tableName;
   const CustomerPage(
       {super.key,
       required this.resturantKey,
       required this.resturantName,
-      required this.tableKey,
       required this.tableName});
 
   @override
@@ -69,14 +66,8 @@ class _CustomerPageState extends State<CustomerPage> {
                   buttonColor: primaryColor,
                   text: "Enter",
                   function: () {
-                    KRoutes.push(
-                        context,
-                        MenuCategoryPage(
-                          resturantKey: widget.resturantKey,
-                          resturantName: widget.resturantName,
-                          tableKey: widget.tableKey,
-                          email: controller.text,
-                        ));
+                    Beamer.of(context).beamToNamed(
+                        "/resturant-menu-category/${widget.resturantName},${widget.resturantKey},${widget.tableName},${controller.text}");
                   }),
             ),
             const Spacer(),

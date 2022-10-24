@@ -1,9 +1,9 @@
+import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -106,43 +106,47 @@ class _TablesPageState extends State<TablesPage> {
             setState(() {});
           },
         ),
-        SingleChildScrollView(
-          child: Column(
-            children: resturantsTables.map((e) {
-              Map table = allResturantsTables[e] as Map;
-              table["key"] = e;
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: resturantsTables.map((e) {
+                Map table = allResturantsTables[e] as Map;
+                table["key"] = e;
 
-              return Slidable(
-                endActionPane: _actionPane(table),
-                child: InkWell(
-                  onTap: () {
-                    KRoutes.push(
-                        context,
-                        CustomerPage(
-                          resturantKey: widget.resturantKey,
-                          resturantName: widget.resturantName,
-                          tableKey: table["key"],
-                          tableName: table["tableName"],
-                        ));
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomText(
-                        text: table["tableName"],
-                        fontsize: 20,
-                      ),
-                      QrImage(
-                        data:
-                            'https://naqeeb9a.github.io/#/tables/${widget.resturantKey},${widget.resturantName},${table["key"]},${table["tableName"]}',
-                        version: QrVersions.auto,
-                        size: 150,
-                      ),
-                    ],
+                return Slidable(
+                  endActionPane: _actionPane(table),
+                  child: InkWell(
+                    onTap: () {
+                      // KRoutes.push(
+                      //     context,
+                      //     CustomerPage(
+                      //       resturantKey: widget.resturantKey,
+                      //       resturantName: widget.resturantName,
+                      //       tableKey: table["key"],
+                      //       tableName: table["tableName"],
+                      //     ));
+                      Beamer.of(context).beamToNamed(
+                          "/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}");
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CustomText(
+                          text: table["tableName"],
+                          fontsize: 20,
+                        ),
+                        QrImage(
+                          data:
+                              'https://naqeeb9a.github.io/#/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}',
+                          version: QrVersions.auto,
+                          size: 150,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
         )
       ],

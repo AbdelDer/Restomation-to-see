@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../Utils/app_routes.dart';
-
 class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
   final String title;
@@ -36,16 +34,6 @@ class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
         ),
         automaticallyImplyLeading: automaticallyImplyLeading,
         centerTitle: true,
-        leading: automaticallyImplyLeading == false
-            ? null
-            : InkWell(
-                onTap: () => KRoutes.pop(context),
-                child: const Icon(
-                  Icons.arrow_back_ios,
-                  size: 15,
-                  color: Colors.black,
-                ),
-              ),
         actions: widgets,
       ),
     );

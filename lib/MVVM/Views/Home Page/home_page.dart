@@ -1,3 +1,4 @@
+import 'package:beamer/beamer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
 import '../../../Utils/app_routes.dart';
-import '../Resturant Details/resturant_details.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -22,6 +22,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool isMounted = true;
   final TextEditingController resturantController = TextEditingController();
   Map resturantsData = {};
   @override
@@ -36,11 +37,13 @@ class _HomePageState extends State<HomePage> {
     starCountRef.onValue.listen((DatabaseEvent event) {
       final data = event.snapshot.value;
       data as Map?;
-      setState(() {
-        if (data != null) {
-          resturantsData = data;
-        }
-      });
+      if (isMounted) {
+        setState(() {
+          if (data != null) {
+            resturantsData = data;
+          }
+        });
+      }
     });
   }
 
@@ -80,12 +83,8 @@ class _HomePageState extends State<HomePage> {
                 StorageService.storage.ref().child(resturant["imagePath"]);
             return GestureDetector(
               onTap: () {
-                KRoutes.push(
-                    context,
-                    ResturantDetailPage(
-                      resturantName: resturant["resturantName"],
-                      resturantKey: resturant["key"],
-                    ));
+                Beamer.of(context).beamToNamed(
+                    "/resturant-details/${resturant["resturantName"]},${resturant["key"]}");
               },
               child: Padding(
                 padding: const EdgeInsets.all(10),
@@ -225,6 +224,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    isMounted = false;
     resturantController.dispose();
     super.dispose();
   }

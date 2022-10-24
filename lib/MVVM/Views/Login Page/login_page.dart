@@ -1,9 +1,8 @@
+import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
-import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
-import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
@@ -137,6 +136,6 @@ class _LoginState extends State<Login> {
   }
 
   pushScreen() {
-    KRoutes.push(context, const HomePage());
+    Beamer.of(context).beamToNamed("/home");
   }
 }

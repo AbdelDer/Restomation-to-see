@@ -1,7 +1,7 @@
+import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -115,14 +115,8 @@ class _StaffCategoryPageState extends State<StaffCategoryPage> {
                 fontsize: 20,
               ),
               onTap: () {
-                KRoutes.push(
-                    context,
-                    StaffPage(
-                      resturantKey: widget.resturantKey,
-                      staffCategoryKey: staffCategory["key"],
-                      staffCategoryName: staffCategory["staffCategoryName"],
-                      resturantName: widget.resturantName,
-                    ));
+                Beamer.of(context).beamToNamed(
+                    "/resturant-staff-category/staff/${widget.resturantName},${widget.resturantKey},${staffCategory["staffCategoryName"]},${staffCategory["key"]}");
               },
             );
           }).toList(),

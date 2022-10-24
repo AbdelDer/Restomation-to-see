@@ -1,23 +1,32 @@
+import 'package:beamer/beamer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:restomation/MVVM/Views/Cart/cart.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 import '../Provider/cart_provider.dart';
-import '../Utils/app_routes.dart';
 
 class CustomCartBadgeIcon extends StatelessWidget {
-  const CustomCartBadgeIcon({super.key});
+  final String resturantKey;
+  final String resturantName;
+  final String tableName;
+  final String customer;
+  const CustomCartBadgeIcon(
+      {super.key,
+      required this.resturantKey,
+      required this.tableName,
+      required this.customer,
+      required this.resturantName});
 
   @override
   Widget build(BuildContext context) {
     Cart cart = context.watch<Cart>();
     return GestureDetector(
         onTap: () {
-          KRoutes.push(context, const CartPage());
+          Beamer.of(context).beamToNamed(
+              "/customer-cart/$resturantName,$resturantKey,$tableName,$customer");
         },
         child: Row(
           children: [

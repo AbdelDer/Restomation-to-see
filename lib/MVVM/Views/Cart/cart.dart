@@ -1,6 +1,10 @@
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
+import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
@@ -9,7 +13,14 @@ import 'package:restomation/Widgets/custom_text.dart';
 import '../../../Provider/cart_provider.dart';
 
 class CartPage extends StatelessWidget {
-  const CartPage({super.key});
+  final String resturantKey;
+  final String tableName;
+  final String customer;
+  const CartPage(
+      {super.key,
+      required this.resturantKey,
+      required this.tableName,
+      required this.customer});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +68,26 @@ class CartPage extends StatelessWidget {
             height: 20,
           ),
           CustomButton(
-              buttonColor: primaryColor, text: "Order", function: () {}),
+              buttonColor: primaryColor,
+              text: "Order",
+              function: () async {
+                CoolAlert.show(context: context, type: CoolAlertType.loading);
+                Map data = {
+                  "table": tableName,
+                  "customer": customer,
+                  "items": {}
+                };
+                for (var i = 0; i < cart.cartItems.length; i++) {
+                  (data["Items"] as Map)
+                      .addAll({"item${i + 1}": cart.cartItems[i]});
+                }
+                await DatabaseService()
+                    .createOrder(resturantKey, data)
+                    .then((value) {
+                  KRoutes.pop(context);
+                  Fluttertoast.showToast(msg: "Ordered Successfully");
+                });
+              }),
           const SizedBox(
             height: 20,
           ),

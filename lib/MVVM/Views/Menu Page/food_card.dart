@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:restomation/Widgets/add_to_cart.dart';
+import 'package:restomation/Widgets/custom_text.dart';
 
 import '../../Repo/Storage Service/storage_service.dart';
 
 class CustomFoodCard extends StatelessWidget {
   final Map data;
-  const CustomFoodCard({super.key, required this.data});
+  final String? email;
+  const CustomFoodCard({super.key, required this.data, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +41,10 @@ class CustomFoodCard extends StatelessWidget {
               const SizedBox(
                 height: 10,
               ),
-              RichText(
-                  text: TextSpan(children: [
-                TextSpan(
-                  text: data["description"],
-                  style: TextStyle(color: Colors.grey.shade600),
-                ),
-                const TextSpan(
-                    text: " ... more",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.black))
-              ]))
+              CustomText(
+                text: data["description"],
+                color: Colors.grey.shade600,
+              ),
             ],
           ),
         ),
@@ -94,11 +89,12 @@ class CustomFoodCard extends StatelessWidget {
                       ),
                     );
                   }),
-              Positioned(
-                  bottom: 5,
-                  child: AddToCart(
-                    foodData: data,
-                  ))
+              if (email != null)
+                Positioned(
+                    bottom: 5,
+                    child: AddToCart(
+                      foodData: data,
+                    ))
             ],
           ),
         )
