@@ -112,15 +112,15 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
 
         return ListTile(
           title: CustomText(
-            text: category["categoryName"],
+            text: category["key"],
           ),
           onTap: () {
             if (widget.email != null) {
               Beamer.of(context).beamToNamed(
-                  "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]},${widget.tableName},${widget.email}");
+                  "/resturant-menu-category/menu/${widget.resturantKey},${category["key"]},${widget.tableName},${widget.email}");
             } else {
               Beamer.of(context).beamToNamed(
-                  "/resturant-menu-category/menu/${widget.resturantName},${widget.resturantKey},${category["categoryName"]},${category["key"]}");
+                  "/resturant-menu-category/menu/${widget.resturantKey},${category["key"]},");
             }
           },
         );

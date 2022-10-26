@@ -19,17 +19,13 @@ import '../../../Widgets/custom_text_field.dart';
 
 class MenuPage extends StatefulWidget {
   final String resturantKey;
-  final String resturantName;
   final String categoryKey;
-  final String categoryName;
   final String? tableName;
   final String? email;
   const MenuPage(
       {super.key,
       required this.resturantKey,
       required this.categoryKey,
-      required this.categoryName,
-      required this.resturantName,
       this.tableName,
       this.email});
 
@@ -74,7 +70,7 @@ class _MenuPageState extends State<MenuPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       CustomText(
-                        text: widget.categoryName,
+                        text: widget.categoryKey,
                         fontsize: 35,
                         fontWeight: FontWeight.bold,
                       ),
@@ -83,7 +79,7 @@ class _MenuPageState extends State<MenuPage> {
                           tableName: widget.tableName!,
                           resturantKey: widget.resturantKey,
                           customer: widget.email!,
-                          resturantName: widget.resturantName,
+                          resturantName: widget.resturantKey,
                         )
                     ],
                   ),
@@ -101,7 +97,6 @@ class _MenuPageState extends State<MenuPage> {
                           .child(widget.resturantKey)
                           .child("menu")
                           .child(widget.categoryKey)
-                          .child(widget.categoryName)
                           .onValue,
                       builder:
                           (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
@@ -120,7 +115,7 @@ class _MenuPageState extends State<MenuPage> {
       return Expanded(
           child: Center(
               child: CustomText(
-                  text: "No ${widget.categoryName} items added yet !!")));
+                  text: "No ${widget.categoryKey} items added yet !!")));
     }
     Map allResturantsMenuItems = snapshot.data!.snapshot.value as Map;
     List categoriesListItems = allResturantsMenuItems.keys.toList();
@@ -249,7 +244,7 @@ class _MenuPageState extends State<MenuPage> {
                                 "name": menuItemNameController.text,
                                 "price": menuItemPriceController.text,
                                 "image":
-                                    "resturants/${widget.resturantName}/menu/${widget.categoryName}/$fileName",
+                                    "resturants/${widget.resturantKey}/menu/${widget.categoryKey}/$fileName",
                                 "description":
                                     menuItemDescriptionController.text,
                                 "reviews": itemData!["reviews"],
@@ -260,8 +255,8 @@ class _MenuPageState extends State<MenuPage> {
                                       widget.resturantKey,
                                       widget.categoryKey,
                                       itemData["key"],
-                                      widget.resturantName,
-                                      widget.categoryName,
+                                      widget.resturantKey,
+                                      widget.categoryKey,
                                       itemData["image"],
                                       fileName,
                                       item,
@@ -278,7 +273,7 @@ class _MenuPageState extends State<MenuPage> {
                                 "name": menuItemNameController.text,
                                 "price": menuItemPriceController.text,
                                 "image":
-                                    "resturants/${widget.resturantName}/menu/${widget.categoryName}/$fileName",
+                                    "resturants/${widget.resturantKey}/menu/${widget.categoryKey}/$fileName",
                                 "description":
                                     menuItemDescriptionController.text,
                                 "reviews": "0",
@@ -288,8 +283,8 @@ class _MenuPageState extends State<MenuPage> {
                               await DatabaseService.createCategoryItems(
                                       widget.resturantKey,
                                       widget.categoryKey,
-                                      widget.resturantName,
-                                      widget.categoryName,
+                                      widget.resturantKey,
+                                      widget.categoryKey,
                                       fileName,
                                       item,
                                       fileBytes!)
@@ -337,7 +332,7 @@ class _MenuPageState extends State<MenuPage> {
                 .child(widget.resturantKey)
                 .child("menu")
                 .child(widget.categoryKey)
-                .child(widget.categoryName)
+                .child(widget.categoryKey)
                 .child(foodItem["key"])
                 .remove();
             KRoutes.pop(context);

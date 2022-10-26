@@ -14,7 +14,7 @@ class DatabaseService extends StorageService {
       await storage
           .ref("resturants/$name/logo/logo.$fileExtension")
           .putData(bytes);
-      db.ref().child("resturants").push().set(
+      db.ref().child("resturants").child(name).set(
         {
           "resturantName": name,
           "imagePath": "resturants/$name/logo/logo.$fileExtension"
@@ -91,7 +91,7 @@ class DatabaseService extends StorageService {
         .child("resturants")
         .child(resturantKey)
         .child("menu")
-        .push()
+        .child(categoryName)
         .set({"categoryName": categoryName});
   }
 
@@ -106,14 +106,15 @@ class DatabaseService extends StorageService {
         .set({"staffCategoryName": staffCategoryName});
   }
 
-  static Future createTable(String resturantKey, String tableName) async {
+  static Future createTable(
+      String resturantKey, String tableName, String qrLink) async {
     await db
         .ref()
         .child("resturants")
         .child(resturantKey)
         .child("tables")
-        .push()
-        .set({"tableName": tableName});
+        .child(tableName)
+        .set({"qrLink": qrLink});
   }
 
   static Future updateTable(
@@ -144,8 +145,7 @@ class DatabaseService extends StorageService {
         .child(resturantKey)
         .child("menu")
         .child(categoryKey)
-        .child(categoryName)
-        .push()
+        .child(item["name"])
         .set(item);
   }
 

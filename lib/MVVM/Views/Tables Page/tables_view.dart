@@ -112,18 +112,17 @@ class _TablesPageState extends State<TablesPage> {
               child: InkWell(
                 onTap: () {
                   Beamer.of(context).beamToNamed(
-                      "/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}");
+                      "/customer-table/${widget.resturantKey},${table["key"]}");
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CustomText(
-                      text: table["tableName"],
+                      text: table["key"],
                       fontsize: 20,
                     ),
                     QrImage(
-                      data:
-                          'https://naqeeb9a.github.io/#/customer-table/${widget.resturantKey},${widget.resturantName},${table["tableName"]}',
+                      data: '${table["qrLink"]}',
                       version: QrVersions.auto,
                       size: 150,
                     ),
@@ -174,7 +173,9 @@ class _TablesPageState extends State<TablesPage> {
                           });
                         } else {
                           await DatabaseService.createTable(
-                                  widget.resturantKey, tableController.text)
+                                  widget.resturantKey,
+                                  tableController.text,
+                                  "https://naqeeb9a.github.io/#/customer-table/${widget.resturantKey},${tableController.text}")
                               .then((value) {
                             KRoutes.pop(context);
                             return KRoutes.pop(context);

@@ -89,20 +89,16 @@ class _MyAppState extends State<MyApp> {
             key: const ValueKey("menu"),
             title: parameters[0],
             type: BeamPageType.fadeTransition,
-            child: parameters.length == 4
+            child: parameters.length == 2
                 ? MenuPage(
-                    resturantName: parameters[0],
-                    resturantKey: parameters[1],
-                    categoryName: parameters[2],
-                    categoryKey: parameters[3],
+                    resturantKey: parameters[0],
+                    categoryKey: parameters[1],
                   )
                 : MenuPage(
-                    resturantName: parameters[0],
-                    resturantKey: parameters[1],
-                    categoryName: parameters[2],
-                    categoryKey: parameters[3],
-                    tableName: parameters[4],
-                    email: parameters[5],
+                    resturantKey: parameters[0],
+                    categoryKey: parameters[1],
+                    tableName: parameters[2],
+                    email: parameters[3],
                   ),
           );
         },
@@ -163,12 +159,11 @@ class _MyAppState extends State<MyApp> {
           List<String> parameters = resturantParams.split(",");
           return BeamPage(
             key: const ValueKey("customer-table"),
-            title: parameters[1],
+            title: parameters[0],
             type: BeamPageType.fadeTransition,
             child: CustomerPage(
               resturantKey: parameters[0],
-              resturantName: parameters[1],
-              tableName: parameters[2],
+              tableKey: parameters[1],
             ),
           );
         },

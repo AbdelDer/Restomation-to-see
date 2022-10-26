@@ -8,13 +8,9 @@ import 'package:restomation/Widgets/custom_text_field.dart';
 
 class CustomerPage extends StatefulWidget {
   final String resturantKey;
-  final String resturantName;
-  final String tableName;
+  final String tableKey;
   const CustomerPage(
-      {super.key,
-      required this.resturantKey,
-      required this.resturantName,
-      required this.tableName});
+      {super.key, required this.resturantKey, required this.tableKey});
 
   @override
   State<CustomerPage> createState() => _CustomerPageState();
@@ -39,7 +35,7 @@ class _CustomerPageState extends State<CustomerPage> {
           children: [
             const Spacer(),
             CustomText(
-              text: "Welcome to ${widget.resturantName}",
+              text: "Welcome to ${widget.resturantKey}",
               fontsize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -67,7 +63,7 @@ class _CustomerPageState extends State<CustomerPage> {
                   text: "Enter",
                   function: () {
                     Beamer.of(context).beamToNamed(
-                        "/resturant-menu-category/${widget.resturantName},${widget.resturantKey},${widget.tableName},${controller.text}");
+                        "/resturant-menu-category/${widget.resturantKey},${widget.key},${controller.text}");
                   }),
             ),
             const Spacer(),
