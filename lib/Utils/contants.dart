@@ -5,6 +5,8 @@ const kblack = Colors.black;
 const kWhite = Colors.white;
 const kGrey = Colors.grey;
 const ktransparent = Colors.transparent;
+List staffOptions = ["Waiter", "Cook"];
+String selectedRole = "Select a Role";
 List dataList = [
   {
     "name": "Sambar Rice",

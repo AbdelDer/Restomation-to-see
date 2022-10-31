@@ -8,10 +8,8 @@ import '../../Repo/Database Service/database_service.dart';
 import '../../Repo/Storage Service/storage_service.dart';
 
 class OrderScreen extends StatefulWidget {
-  final String resturantKey;
-  final String resturantName;
-  const OrderScreen(
-      {super.key, required this.resturantKey, required this.resturantName});
+  final String restaurantsKey;
+  const OrderScreen({super.key, required this.restaurantsKey});
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -22,7 +20,7 @@ class _OrderScreenState extends State<OrderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: BaseAppBar(
-          title: widget.resturantName,
+          title: widget.restaurantsKey,
           appBar: AppBar(),
           widgets: const [],
           appBarHeight: 50,
@@ -32,8 +30,8 @@ class _OrderScreenState extends State<OrderScreen> {
             child: StreamBuilder(
           stream: DatabaseService.db
               .ref()
-              .child("resturants")
-              .child(widget.resturantKey)
+              .child("restaurants")
+              .child(widget.restaurantsKey)
               .child("orders")
               .onValue,
           builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
@@ -52,7 +50,9 @@ class _OrderScreenState extends State<OrderScreen> {
       );
     }
     Map? order = (snapshot.data as DatabaseEvent).snapshot.value as Map;
+    List tables = order.keys.toList();
     List orderList = order.values.toList();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -83,7 +83,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       CustomText(
-                        text: orderList[index]["table"],
+                        text: tables[index],
                         fontsize: 25,
                         fontWeight: FontWeight.bold,
                       ),
@@ -100,11 +100,12 @@ class _OrderScreenState extends State<OrderScreen> {
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: (orderList[index]["items"] as Map).length,
-                          itemBuilder: (context, index) {
+                          itemBuilder: (context, itemIndex) {
                             List foodItem = (orderList[index]["items"] as Map)
                                 .values
                                 .toList();
-                            return orderItemDisplay(context, foodItem[index]);
+                            return orderItemDisplay(
+                                context, foodItem[itemIndex]);
                           },
                         ),
                       ),

@@ -7,19 +7,19 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/Repo/api_status.dart';
 
-class ResturantViewModel extends ChangeNotifier {
+class RestaurantsViewModel extends ChangeNotifier {
   bool _loading = false;
   ListResult? _listResult;
   ModelError? _modelError;
-  String? _resturant;
+  String? _restaurants;
 
   bool get loading => _loading;
   ListResult? get listResult => _listResult;
   ModelError? get modelError => _modelError;
-  String? get resturant => _resturant;
+  String? get restaurants => _restaurants;
 
-  ResturantViewModel() {
-    getAllResturants();
+  RestaurantsViewModel() {
+    getAllrestaurantss();
   }
 
   setLoading(bool loading) {
@@ -27,23 +27,23 @@ class ResturantViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  setAllResturants(ListResult listResult) {
+  setAllrestaurantss(ListResult listResult) {
     _listResult = listResult;
   }
 
-  setResturantsResponse(String resturant) {
-    _resturant = resturant;
+  setrestaurantssResponse(String restaurants) {
+    _restaurants = restaurants;
   }
 
   setModelError(ModelError? modelError) {
     _modelError = modelError;
   }
 
-  getAllResturants() async {
+  getAllrestaurantss() async {
     setLoading(true);
     var response = await StorageService.getAllResturants();
     if (response is Success) {
-      setAllResturants(response.response as ListResult);
+      setAllrestaurantss(response.response as ListResult);
     }
     if (response is Failure) {
       ModelError modelError = ModelError(response.code, response.errorResponse);
@@ -52,13 +52,13 @@ class ResturantViewModel extends ChangeNotifier {
     setLoading(false);
   }
 
-  Future createResturant(
+  Future createrestaurants(
       String name, String fileExtension, Uint8List bytes) async {
     setLoading(true);
     var response =
-        await DatabaseService.createResturant(name, fileExtension, bytes);
+        await DatabaseService.createrestaurants(name, fileExtension, bytes);
     if (response is Success) {
-      setResturantsResponse(response.response as String);
+      setrestaurantssResponse(response.response as String);
     }
     if (response is Failure) {
       ModelError modelError = ModelError(response.code, response.errorResponse);

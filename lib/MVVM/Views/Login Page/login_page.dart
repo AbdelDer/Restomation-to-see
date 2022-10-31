@@ -2,10 +2,12 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
+import 'package:restomation/Utils/app_routes.dart';
+import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
-import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
@@ -103,30 +105,21 @@ class _LoginState extends State<Login> {
           ),
           Align(
               alignment: Alignment.center,
-              child: loginViewModel.loading
-                  ? Column(
-                      children: const [
-                        CustomLoader(),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        Text("Please wait while we log you in ..")
-                      ],
-                    )
-                  : CustomButton(
-                      buttonColor: Colors.amber,
-                      text: "login",
-                      function: () async {
-                        await loginViewModel.loginUser(email, password);
-                        if (loginViewModel.modelError == null) {
-                          pushScreen();
-                        } else {
-                          Fluttertoast.showToast(
-                              msg: loginViewModel.modelError!.errorResponse
-                                  .toString());
-                          loginViewModel.setModelError(null);
-                        }
-                      })),
+              child: CustomButton(
+                  buttonColor: Colors.amber,
+                  text: "login",
+                  function: () async {
+                    Alerts.customLoadingAlert(context);
+                    var response = await DatabaseService.loginUser(
+                      email.text,
+                      password.text,
+                    );
+                    if (response != null) {
+                      pushScreen(response["path"]);
+                    } else {
+                      showError();
+                    }
+                  })),
           const SizedBox(
             height: 10,
           ),
@@ -135,7 +128,13 @@ class _LoginState extends State<Login> {
     );
   }
 
-  pushScreen() {
-    Beamer.of(context).beamToNamed("/home");
+  pushScreen(String? path) {
+    KRoutes.pop(context);
+    Beamer.of(context).beamToNamed(path ?? "/home");
+  }
+
+  showError() {
+    KRoutes.pop(context);
+    Fluttertoast.showToast(msg: "Invalid credientials");
   }
 }

@@ -5,8 +5,8 @@ import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 class CustomerOrderPage extends StatelessWidget {
-  final String resturantKey;
-  const CustomerOrderPage({super.key, required this.resturantKey});
+  final String restaurantsKey;
+  const CustomerOrderPage({super.key, required this.restaurantsKey});
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +24,8 @@ class CustomerOrderPage extends StatelessWidget {
               child: StreamBuilder(
             stream: DatabaseService.db
                 .ref()
-                .child("resturants")
-                .child(resturantKey)
+                .child("restaurants")
+                .child(restaurantsKey)
                 .child("orders")
                 .onValue,
             builder: (context, snapshot) {

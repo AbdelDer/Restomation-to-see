@@ -18,16 +18,18 @@ import '../../../Widgets/custom_text.dart';
 import '../../../Widgets/custom_text_field.dart';
 
 class MenuPage extends StatefulWidget {
-  final String resturantKey;
+  final String restaurantsKey;
   final String categoryKey;
-  final String? tableName;
-  final String? email;
+  final String? tableKey;
+  final String? name;
+  final String? phone;
   const MenuPage(
       {super.key,
-      required this.resturantKey,
+      required this.restaurantsKey,
       required this.categoryKey,
-      this.tableName,
-      this.email});
+      this.tableKey,
+      this.name,
+      this.phone});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -50,7 +52,7 @@ class _MenuPageState extends State<MenuPage> {
         appBarHeight: 50,
         automaticallyImplyLeading: true,
       ),
-      floatingActionButton: widget.email != null
+      floatingActionButton: widget.name != null
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
@@ -74,12 +76,12 @@ class _MenuPageState extends State<MenuPage> {
                         fontsize: 35,
                         fontWeight: FontWeight.bold,
                       ),
-                      if (widget.email != null)
+                      if (widget.name != null)
                         CustomCartBadgeIcon(
-                          tableName: widget.tableName!,
-                          resturantKey: widget.resturantKey,
-                          customer: widget.email!,
-                          resturantName: widget.resturantKey,
+                          tableKey: widget.tableKey!,
+                          restaurantsKey: widget.restaurantsKey,
+                          customer: widget.name!,
+                          restaurantsName: widget.restaurantsKey,
                         )
                     ],
                   ),
@@ -93,10 +95,11 @@ class _MenuPageState extends State<MenuPage> {
                   StreamBuilder(
                       stream: FirebaseDatabase.instance
                           .ref()
-                          .child("resturants")
-                          .child(widget.resturantKey)
+                          .child("restaurants")
+                          .child(widget.restaurantsKey)
                           .child("menu")
                           .child(widget.categoryKey)
+                          .child("items")
                           .onValue,
                       builder:
                           (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
@@ -117,25 +120,26 @@ class _MenuPageState extends State<MenuPage> {
               child: CustomText(
                   text: "No ${widget.categoryKey} items added yet !!")));
     }
-    Map allResturantsMenuItems = snapshot.data!.snapshot.value as Map;
-    List categoriesListItems = allResturantsMenuItems.keys.toList();
-    final suggestions = allResturantsMenuItems.keys.toList().where((element) {
+    Map allrestaurantsMenuItems = snapshot.data!.snapshot.value as Map;
+    List categoriesListItems = allrestaurantsMenuItems.keys.toList();
+    final suggestions = allrestaurantsMenuItems.keys.toList().where((element) {
       final categoryTitle =
-          allResturantsMenuItems[element]["name"].toString().toLowerCase();
+          allrestaurantsMenuItems[element]["name"].toString().toLowerCase();
       final input = controller.text.toLowerCase();
       return categoryTitle.contains(input);
     }).toList();
     categoriesListItems = suggestions;
     return Column(
       children: categoriesListItems.map((e) {
-        Map foodItem = allResturantsMenuItems[e] as Map;
+        Map foodItem = allrestaurantsMenuItems[e] as Map;
         foodItem["key"] = e;
 
         return Slidable(
             endActionPane: _actionPane(foodItem),
             child: CustomFoodCard(
               data: foodItem,
-              email: widget.email,
+              name: widget.name,
+              phone: widget.phone,
             ));
       }).toList(),
     );
@@ -244,7 +248,7 @@ class _MenuPageState extends State<MenuPage> {
                                 "name": menuItemNameController.text,
                                 "price": menuItemPriceController.text,
                                 "image":
-                                    "resturants/${widget.resturantKey}/menu/${widget.categoryKey}/$fileName",
+                                    "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
                                 "description":
                                     menuItemDescriptionController.text,
                                 "reviews": itemData!["reviews"],
@@ -252,10 +256,10 @@ class _MenuPageState extends State<MenuPage> {
                               };
                               Alerts.customLoadingAlert(context);
                               await DatabaseService.updateCategoryItems(
-                                      widget.resturantKey,
+                                      widget.restaurantsKey,
                                       widget.categoryKey,
                                       itemData["key"],
-                                      widget.resturantKey,
+                                      widget.restaurantsKey,
                                       widget.categoryKey,
                                       itemData["image"],
                                       fileName,
@@ -273,7 +277,7 @@ class _MenuPageState extends State<MenuPage> {
                                 "name": menuItemNameController.text,
                                 "price": menuItemPriceController.text,
                                 "image":
-                                    "resturants/${widget.resturantKey}/menu/${widget.categoryKey}/$fileName",
+                                    "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
                                 "description":
                                     menuItemDescriptionController.text,
                                 "reviews": "0",
@@ -281,9 +285,9 @@ class _MenuPageState extends State<MenuPage> {
                               };
                               Alerts.customLoadingAlert(context);
                               await DatabaseService.createCategoryItems(
-                                      widget.resturantKey,
+                                      widget.restaurantsKey,
                                       widget.categoryKey,
-                                      widget.resturantKey,
+                                      widget.restaurantsKey,
                                       widget.categoryKey,
                                       fileName,
                                       item,
@@ -328,8 +332,8 @@ class _MenuPageState extends State<MenuPage> {
             DatabaseService.storage.ref().child(foodItem["image"]).delete();
             DatabaseService.db
                 .ref()
-                .child("resturants")
-                .child(widget.resturantKey)
+                .child("restaurants")
+                .child(widget.restaurantsKey)
                 .child("menu")
                 .child(widget.categoryKey)
                 .child(widget.categoryKey)

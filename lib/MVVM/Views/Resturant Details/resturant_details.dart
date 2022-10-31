@@ -2,17 +2,15 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 
-class ResturantDetailPage extends StatelessWidget {
-  final String resturantName;
-  final String resturantKey;
-  const ResturantDetailPage(
-      {super.key, required this.resturantName, required this.resturantKey});
+class RestaurantsDetailPage extends StatelessWidget {
+  final String restaurantsKey;
+  const RestaurantsDetailPage({super.key, required this.restaurantsKey});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BaseAppBar(
-          title: resturantName,
+          title: restaurantsKey,
           appBar: AppBar(),
           widgets: const [],
           automaticallyImplyLeading: true,
@@ -27,7 +25,7 @@ class ResturantDetailPage extends StatelessWidget {
                     "https://thumbs.dreamstime.com/b/vintage-frames-gold-restaurant-bar-food-drinks-cafe-menu-black-background-vector-illustrtor-badge-border-branding-bundle-186691349.jpg",
                 "page": () {
                   Beamer.of(context).beamToNamed(
-                      "/resturant-menu-category/$resturantName,$resturantKey");
+                      "/restaurants-menu-category/$restaurantsKey");
                 }
               },
               {
@@ -35,8 +33,8 @@ class ResturantDetailPage extends StatelessWidget {
                 "image":
                     "https://s.alicdn.com/@sc04/kf/H436ab8e73d1244f1a216e047dc16421cd.jpg",
                 "page": () {
-                  Beamer.of(context).beamToNamed(
-                      "/resturant-tables/$resturantName,$resturantKey");
+                  Beamer.of(context)
+                      .beamToNamed("/restaurants-tables/$restaurantsKey");
                 }
               },
               {
@@ -44,8 +42,8 @@ class ResturantDetailPage extends StatelessWidget {
                 "image":
                     "https://static.vecteezy.com/system/resources/thumbnails/006/903/981/small_2x/restaurant-waiter-serve-dish-to-customer-free-vector.jpg",
                 "page": () {
-                  Beamer.of(context).beamToNamed(
-                      "/resturant-staff-category/$resturantName,$resturantKey");
+                  Beamer.of(context)
+                      .beamToNamed("/restaurants-staff/$restaurantsKey");
                 }
               },
               {
@@ -53,8 +51,8 @@ class ResturantDetailPage extends StatelessWidget {
                 "image":
                     "https://static.vecteezy.com/system/resources/previews/009/322/978/non_2x/illustration-of-food-service-via-mobile-application-free-vector.jpg",
                 "page": () {
-                  Beamer.of(context).beamToNamed(
-                      "/resturant-orders/$resturantName,$resturantKey");
+                  Beamer.of(context)
+                      .beamToNamed("/restaurants-orders/$restaurantsKey");
                 }
               },
             ]

@@ -6,8 +6,9 @@ import '../../Repo/Storage Service/storage_service.dart';
 
 class CustomFoodCard extends StatelessWidget {
   final Map data;
-  final String? email;
-  const CustomFoodCard({super.key, required this.data, required this.email});
+  final String? name;
+  final String? phone;
+  const CustomFoodCard({super.key, required this.data, required this.name,required this.phone});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +90,7 @@ class CustomFoodCard extends StatelessWidget {
                       ),
                     );
                   }),
-              if (email != null)
+              if (name != null)
                 Positioned(
                     bottom: 5,
                     child: AddToCart(

@@ -14,13 +14,13 @@ import 'package:restomation/Widgets/custom_text.dart';
 import '../../../Provider/cart_provider.dart';
 
 class CartPage extends StatelessWidget {
-  final String resturantKey;
-  final String tableName;
+  final String restaurantsKey;
+  final String tableKey;
   final String customer;
   const CartPage(
       {super.key,
-      required this.resturantKey,
-      required this.tableName,
+      required this.restaurantsKey,
+      required this.tableKey,
       required this.customer});
 
   @override
@@ -74,16 +74,15 @@ class CartPage extends StatelessWidget {
               function: () async {
                 CoolAlert.show(context: context, type: CoolAlertType.loading);
                 Map data = {
-                  "table": tableName,
                   "customer": customer,
                 };
 
                 await DatabaseService()
-                    .createOrder(resturantKey, data, cart.cartItems)
+                    .createOrder(restaurantsKey, tableKey, data, cart.cartItems)
                     .then((value) {
                   KRoutes.pop(context);
                   Fluttertoast.showToast(msg: "Ordered Successfully");
-                  
+
                   Beamer.of(context).beamToNamed("");
                 });
               }),

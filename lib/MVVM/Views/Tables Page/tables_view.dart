@@ -16,10 +16,9 @@ import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_button.dart';
 
 class TablesPage extends StatefulWidget {
-  final String resturantKey;
-  final String resturantName;
+  final String restaurantsKey;
   const TablesPage(
-      {super.key, required this.resturantKey, required this.resturantName});
+      {super.key, required this.restaurantsKey, });
 
   @override
   State<TablesPage> createState() => _TablesPageState();
@@ -69,8 +68,8 @@ class _TablesPageState extends State<TablesPage> {
                   StreamBuilder(
                       stream: FirebaseDatabase.instance
                           .ref()
-                          .child("resturants")
-                          .child(widget.resturantKey)
+                          .child("restaurants")
+                          .child(widget.restaurantsKey)
                           .child("tables")
                           .onValue,
                       builder:
@@ -91,20 +90,20 @@ class _TablesPageState extends State<TablesPage> {
         child: Center(child: CustomText(text: "No Tables Added Yet !!")),
       );
     }
-    Map allResturantsTables = snapshot.data!.snapshot.value as Map;
-    List resturantsTables = allResturantsTables.keys.toList();
-    final suggestions = allResturantsTables.keys.toList().where((element) {
+    Map allrestaurantsTables = snapshot.data!.snapshot.value as Map;
+    List restaurantsTables = allrestaurantsTables.keys.toList();
+    final suggestions = allrestaurantsTables.keys.toList().where((element) {
       final categoryTitle =
-          allResturantsTables[element]["tableName"].toString().toLowerCase();
+          allrestaurantsTables[element]["tableName"].toString().toLowerCase();
       final input = controller.text.toLowerCase();
       return categoryTitle.contains(input);
     }).toList();
-    resturantsTables = suggestions;
+    restaurantsTables = suggestions;
     return Expanded(
       child: SingleChildScrollView(
         child: Column(
-          children: resturantsTables.map((e) {
-            Map table = allResturantsTables[e] as Map;
+          children: restaurantsTables.map((e) {
+            Map table = allrestaurantsTables[e] as Map;
             table["key"] = e;
 
             return Slidable(
@@ -112,7 +111,7 @@ class _TablesPageState extends State<TablesPage> {
               child: InkWell(
                 onTap: () {
                   Beamer.of(context).beamToNamed(
-                      "/customer-table/${widget.resturantKey},${table["key"]}");
+                      "/customer-table/${widget.restaurantsKey},${table["key"]}");
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -165,17 +164,19 @@ class _TablesPageState extends State<TablesPage> {
                       function: () async {
                         Alerts.customLoadingAlert(context);
                         if (update) {
-                          await DatabaseService.updateTable(widget.resturantKey,
-                                  table!["key"], tableController.text)
+                          await DatabaseService.updateTable(
+                                  widget.restaurantsKey,
+                                  table!["key"],
+                                  tableController.text)
                               .then((value) {
                             KRoutes.pop(context);
                             return KRoutes.pop(context);
                           });
                         } else {
                           await DatabaseService.createTable(
-                                  widget.resturantKey,
+                                  widget.restaurantsKey,
                                   tableController.text,
-                                  "https://naqeeb9a.github.io/#/customer-table/${widget.resturantKey},${tableController.text}")
+                                  "https://naqeeb9a.github.io/#/customer-table/${widget.restaurantsKey},${tableController.text}")
                               .then((value) {
                             KRoutes.pop(context);
                             return KRoutes.pop(context);
@@ -210,8 +211,8 @@ class _TablesPageState extends State<TablesPage> {
           onPressed: (context) {
             DatabaseService.db
                 .ref()
-                .child("resturants")
-                .child(widget.resturantKey)
+                .child("restaurants")
+                .child(widget.restaurantsKey)
                 .child("tables")
                 .child(table["key"])
                 .remove();

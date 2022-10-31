@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
-import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
@@ -14,6 +13,7 @@ import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
 import '../../../Utils/app_routes.dart';
+import '../../View Model/Resturants View Model/resturants_view_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -23,13 +23,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController resturantController = TextEditingController();
+  final TextEditingController restaurantsController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: BaseAppBar(
-            title: "Select Resturant",
+            title: "Select restaurants",
             appBar: AppBar(),
             widgets: const [],
             appBarHeight: 50),
@@ -38,43 +38,45 @@ class _HomePageState extends State<HomePage> {
               showCustomDialog(context);
             },
             label: const CustomText(
-              text: "Create resturant",
+              text: "Create restaurants",
               color: kWhite,
             )),
         body: Center(
             child: StreamBuilder(
-                stream:
-                    FirebaseDatabase.instance.ref().child("resturants").onValue,
+                stream: FirebaseDatabase.instance
+                    .ref()
+                    .child("restaurants")
+                    .onValue,
                 builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
                   // return Container();
-                  return resturantsView(snapshot);
+                  return restaurantsView(snapshot);
                 })));
   }
 
-  Widget resturantsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
+  Widget restaurantsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
     if (snapshot.data!.snapshot.children.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [CustomText(text: "No Resturants added Yet !!")],
+        children: const [CustomText(text: "No restaurants added Yet !!")],
       );
     }
-    Map resturantObject = snapshot.data!.snapshot.value as Map;
-    List resturantkeysList = resturantObject.keys.toList();
+    Map restaurantsObject = snapshot.data!.snapshot.value as Map;
+    List restaurantskeysList = restaurantsObject.keys.toList();
     return Center(
       child: SingleChildScrollView(
         child: Wrap(
-          children: resturantkeysList.map((e) {
-            Map resturant = resturantObject[e];
-            resturant["key"] = e;
+          children: restaurantskeysList.map((e) {
+            Map restaurants = restaurantsObject[e];
+            restaurants["key"] = e;
             final ref =
-                StorageService.storage.ref().child(resturant["imagePath"]);
+                StorageService.storage.ref().child(restaurants["imagePath"]);
             return GestureDetector(
               onTap: () {
-                Beamer.of(context).beamToNamed(
-                    "/resturant-details/${resturant["resturantName"]},${resturant["key"]}");
+                Beamer.of(context)
+                    .beamToNamed("/restaurants-details/${restaurants["key"]}");
               },
               child: Padding(
                 padding: const EdgeInsets.all(10),
@@ -98,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(
                       height: 10,
                     ),
-                    Text(resturant["resturantName"])
+                    Text(restaurants["restaurantsName"])
                   ],
                 ),
               ),
@@ -114,8 +116,8 @@ class _HomePageState extends State<HomePage> {
     showDialog(
         context: context,
         builder: (context) {
-          ResturantViewModel resturantViewModel =
-              context.watch<ResturantViewModel>();
+          RestaurantsViewModel restaurantsViewModel =
+              context.watch<RestaurantsViewModel>();
           return StatefulBuilder(builder: (context, refreshState) {
             return AlertDialog(
               content: SizedBox(
@@ -154,52 +156,54 @@ class _HomePageState extends State<HomePage> {
                                 radius: 100,
                                 backgroundColor: kWhite,
                                 foregroundImage: AssetImage(
-                                    "assets/defaultResturantImage.png"),
+                                    "assets/defaultresturantImage.png"),
                               )),
                     const SizedBox(
                       height: 10,
                     ),
-                    const CustomText(text: "Resturant name"),
+                    const CustomText(text: "restaurants name"),
                     const SizedBox(
                       height: 10,
                     ),
                     FormTextField(
-                      controller: resturantController,
+                      controller: restaurantsController,
                       suffixIcon: const Icon(Icons.shower_sharp),
                     ),
                     const SizedBox(
                       height: 20,
                     ),
-                    resturantViewModel.loading
+                    restaurantsViewModel.loading
                         ? const CircularProgressIndicator.adaptive()
                         : CustomButton(
                             buttonColor: primaryColor,
                             text: "create",
                             textColor: kWhite,
                             function: () async {
-                              if (resturantController.text.isEmpty ||
+                              if (restaurantsController.text.isEmpty ||
                                   image == null) {
                                 Fluttertoast.showToast(
                                     msg:
-                                        "Make sure to upload a Resturant Logo and a Valid name");
+                                        "Make sure to upload a restaurants Logo and a Valid name");
                               } else {
                                 final fileBytes = image!.files.single.bytes;
                                 final fileExtension =
                                     image!.files.single.extension;
-                                await resturantViewModel
-                                    .createResturant(resturantController.text,
-                                        fileExtension!, fileBytes!)
+                                await restaurantsViewModel
+                                    .createrestaurants(
+                                        restaurantsController.text,
+                                        fileExtension!,
+                                        fileBytes!)
                                     .then((value) {
-                                  resturantController.clear();
-                                  if (resturantViewModel.modelError == null) {
+                                  restaurantsController.clear();
+                                  if (restaurantsViewModel.modelError == null) {
                                     KRoutes.pop(context);
                                     Fluttertoast.showToast(
-                                        msg: "resturant created");
-                                    resturantViewModel.setModelError(null);
+                                        msg: "restaurants created");
+                                    restaurantsViewModel.setModelError(null);
                                   } else {
                                     Fluttertoast.showToast(
-                                        msg: "Unable to create resturant");
-                                    resturantViewModel.setModelError(null);
+                                        msg: "Unable to create restaurants");
+                                    restaurantsViewModel.setModelError(null);
                                   }
                                 });
                               }
@@ -214,7 +218,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    resturantController.dispose();
+    restaurantsController.dispose();
     super.dispose();
   }
 }

@@ -13,16 +13,16 @@ import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_button.dart';
 
 class MenuCategoryPage extends StatefulWidget {
-  final String resturantKey;
-  final String resturantName;
-  final String? tableName;
-  final String? email;
+  final String restaurantsKey;
+  final String? tableKey;
+  final String? name;
+  final String? phone;
   const MenuCategoryPage({
     super.key,
-    required this.resturantKey,
-    required this.resturantName,
-    this.tableName,
-    this.email,
+    required this.restaurantsKey,
+    this.tableKey,
+    this.name,
+    this.phone,
   });
 
   @override
@@ -43,7 +43,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
         appBarHeight: 50,
         automaticallyImplyLeading: true,
       ),
-      floatingActionButton: widget.email != null
+      floatingActionButton: widget.name != null
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
@@ -74,8 +74,8 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
                   StreamBuilder(
                       stream: FirebaseDatabase.instance
                           .ref()
-                          .child("resturants")
-                          .child(widget.resturantKey)
+                          .child("restaurants")
+                          .child(widget.restaurantsKey)
                           .child("menu")
                           .onValue,
                       builder:
@@ -94,11 +94,12 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
     if (snapshot.data!.snapshot.children.isEmpty) {
       return const Expanded(child: Center(child: Text("No categories Yet !!")));
     }
-    Map allResturantsMenuCategories = snapshot.data!.snapshot.value as Map;
-    List categoriesList = allResturantsMenuCategories.keys.toList();
+    Map allrestaurantsMenuCategories = snapshot.data!.snapshot.value as Map;
+    List categoriesList = allrestaurantsMenuCategories.keys.toList();
     final suggestions =
-        allResturantsMenuCategories.keys.toList().where((element) {
-      final categoryTitle = allResturantsMenuCategories[element]["categoryName"]
+        allrestaurantsMenuCategories.keys.toList().where((element) {
+      final categoryTitle = allrestaurantsMenuCategories[element]
+              ["categoryName"]
           .toString()
           .toLowerCase();
       final input = controller.text.toLowerCase();
@@ -107,7 +108,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
     categoriesList = suggestions;
     return Column(
       children: categoriesList.map((e) {
-        Map category = allResturantsMenuCategories[e] as Map;
+        Map category = allrestaurantsMenuCategories[e] as Map;
         category["key"] = e;
 
         return ListTile(
@@ -115,12 +116,12 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
             text: category["key"],
           ),
           onTap: () {
-            if (widget.email != null) {
+            if (widget.name != null) {
               Beamer.of(context).beamToNamed(
-                  "/resturant-menu-category/menu/${widget.resturantKey},${category["key"]},${widget.tableName},${widget.email}");
+                  "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]},${widget.tableKey},${widget.name},${widget.phone}");
             } else {
               Beamer.of(context).beamToNamed(
-                  "/resturant-menu-category/menu/${widget.resturantKey},${category["key"]},");
+                  "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]}");
             }
           },
         );
@@ -156,7 +157,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
                       function: () async {
                         Alerts.customLoadingAlert(context);
                         await DatabaseService.createCategory(
-                                widget.resturantKey, categoryController.text)
+                                widget.restaurantsKey, categoryController.text)
                             .then((value) {
                           KRoutes.pop(context);
                           return KRoutes.pop(context);
