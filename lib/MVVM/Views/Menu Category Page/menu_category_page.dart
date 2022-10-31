@@ -133,7 +133,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
+          return AlertDialog(scrollable: true,
             content: SizedBox(
               width: 300,
               child: Column(

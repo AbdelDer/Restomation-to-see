@@ -153,6 +153,7 @@ class _MenuPageState extends State<MenuPage> {
         builder: (context) {
           return StatefulBuilder(builder: (context, refreshState) {
             return AlertDialog(
+              scrollable: true,
               content: SizedBox(
                 width: 300,
                 child: Column(

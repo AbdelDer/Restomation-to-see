@@ -159,6 +159,7 @@ class _StaffPageState extends State<StaffPage> {
         builder: (context) {
           return StatefulBuilder(builder: (context, refreshState) {
             return AlertDialog(
+              scrollable: true,
               content: SizedBox(
                 width: 300,
                 child: Column(

@@ -17,8 +17,10 @@ import '../../../Widgets/custom_button.dart';
 
 class TablesPage extends StatefulWidget {
   final String restaurantsKey;
-  const TablesPage(
-      {super.key, required this.restaurantsKey, });
+  const TablesPage({
+    super.key,
+    required this.restaurantsKey,
+  });
 
   @override
   State<TablesPage> createState() => _TablesPageState();
@@ -141,6 +143,7 @@ class _TablesPageState extends State<TablesPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
+            scrollable: true,
             content: SizedBox(
               width: 300,
               child: Column(

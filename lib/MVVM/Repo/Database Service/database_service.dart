@@ -29,20 +29,14 @@ class DatabaseService extends StorageService {
 
   static Future<Map?> loginUser(String email, String password) async {
     Map? authUser;
-    Stream<DatabaseEvent> superAdmin = db.ref().child("admins").onValue;
-    StreamSubscription<DatabaseEvent> adminListener =
-        superAdmin.listen((event) {
-      Map users = event.snapshot.value as Map;
-      List userKeys = users.keys.toList();
-      for (var e in userKeys) {
-        if (users[e]["email"] == email && users[e]["password"] == password) {
-          authUser = users[e];
-        }
+    DatabaseEvent superAdmin = await db.ref().child("admins").once();
+    Map users = superAdmin.snapshot.value as Map;
+    List userKeys = users.keys.toList();
+    for (var e in userKeys) {
+      if (users[e]["email"] == email && users[e]["password"] == password) {
+        authUser = users[e];
       }
-    });
-    await Future.delayed(const Duration(seconds: 2), () {
-      adminListener.cancel();
-    });
+    }
     return authUser;
   }
 

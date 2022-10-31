@@ -120,6 +120,7 @@ class _HomePageState extends State<HomePage> {
               context.watch<RestaurantsViewModel>();
           return StatefulBuilder(builder: (context, refreshState) {
             return AlertDialog(
+              scrollable: true,
               content: SizedBox(
                 width: 300,
                 child: Column(
