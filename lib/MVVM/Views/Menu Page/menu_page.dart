@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_cart_badge_icon.dart';
+import 'package:restomation/Widgets/custom_drop_down.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 
@@ -80,8 +83,8 @@ class _MenuPageState extends State<MenuPage> {
                         CustomCartBadgeIcon(
                           tableKey: widget.tableKey!,
                           restaurantsKey: widget.restaurantsKey,
-                          customer: widget.name!,
-                          restaurantsName: widget.restaurantsKey,
+                          name: widget.name!,
+                          phone: widget.phone!,
                         )
                     ],
                   ),
@@ -92,19 +95,21 @@ class _MenuPageState extends State<MenuPage> {
                       setState(() {});
                     },
                   ),
-                  StreamBuilder(
-                      stream: FirebaseDatabase.instance
-                          .ref()
-                          .child("restaurants")
-                          .child(widget.restaurantsKey)
-                          .child("menu")
-                          .child(widget.categoryKey)
-                          .child("items")
-                          .onValue,
-                      builder:
-                          (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-                        return menuItemsView(snapshot);
-                      }),
+                  Expanded(
+                    child: StreamBuilder(
+                        stream: FirebaseDatabase.instance
+                            .ref()
+                            .child("restaurants")
+                            .child(widget.restaurantsKey)
+                            .child("menu")
+                            .child(widget.categoryKey)
+                            .child("items")
+                            .onValue,
+                        builder:
+                            (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                          return menuItemsView(snapshot);
+                        }),
+                  ),
                 ],
               ))),
     );
@@ -122,17 +127,29 @@ class _MenuPageState extends State<MenuPage> {
     }
     Map allrestaurantsMenuItems = snapshot.data!.snapshot.value as Map;
     List categoriesListItems = allrestaurantsMenuItems.keys.toList();
-    final suggestions = allrestaurantsMenuItems.keys.toList().where((element) {
+
+    List suggestions = allrestaurantsMenuItems.keys.toList().where((element) {
       final categoryTitle =
           allrestaurantsMenuItems[element]["name"].toString().toLowerCase();
       final input = controller.text.toLowerCase();
       return categoryTitle.contains(input);
     }).toList();
+    if (widget.name != null) {
+      suggestions = allrestaurantsMenuItems.keys.toList().where((element) {
+        final categoryTitle =
+            allrestaurantsMenuItems[element]["status"].toString().toLowerCase();
+        const status = "available";
+        return categoryTitle == status;
+      }).toList();
+    }
     categoriesListItems = suggestions;
-    return Column(
-      children: categoriesListItems.map((e) {
-        Map foodItem = allrestaurantsMenuItems[e] as Map;
-        foodItem["key"] = e;
+
+    return ListView.builder(
+      itemCount: categoriesListItems.length,
+      itemBuilder: (context, index) {
+        String key = categoriesListItems[index];
+        Map foodItem = allrestaurantsMenuItems[key] as Map;
+        foodItem["key"] = key;
 
         return Slidable(
             endActionPane: _actionPane(foodItem),
@@ -140,8 +157,10 @@ class _MenuPageState extends State<MenuPage> {
               data: foodItem,
               name: widget.name,
               phone: widget.phone,
+              categoryKey: widget.categoryKey,
+              restaurantsKey: widget.restaurantsKey,
             ));
-      }).toList(),
+      },
     );
   }
 
@@ -195,17 +214,20 @@ class _MenuPageState extends State<MenuPage> {
                     const SizedBox(
                       height: 10,
                     ),
-                    const CustomText(text: "Item name"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: menuItemNameController,
-                      suffixIcon: const Icon(Icons.shower_sharp),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    if (update == false) const CustomText(text: "Item name"),
+                    if (update == false)
+                      const SizedBox(
+                        height: 10,
+                      ),
+                    if (update == false)
+                      FormTextField(
+                        controller: menuItemNameController,
+                        suffixIcon: const Icon(Icons.shower_sharp),
+                      ),
+                    if (update == false)
+                      const SizedBox(
+                        height: 10,
+                      ),
                     const CustomText(text: "Item price"),
                     const SizedBox(
                       height: 10,
@@ -227,6 +249,10 @@ class _MenuPageState extends State<MenuPage> {
                       suffixIcon: const Icon(Icons.shower_sharp),
                     ),
                     const SizedBox(
+                      height: 10,
+                    ),
+                    const ListDropDown(),
+                    const SizedBox(
                       height: 20,
                     ),
                     CustomButton(
@@ -234,25 +260,31 @@ class _MenuPageState extends State<MenuPage> {
                         text: update ? "Update" : "create",
                         textColor: kWhite,
                         function: () async {
-                          if (image == null ||
-                              menuItemNameController.text.isEmpty ||
-                              menuItemPriceController.text.isEmpty ||
-                              menuItemDescriptionController.text.isEmpty) {
-                            Fluttertoast.showToast(
-                                msg:
-                                    "Make sure to fill all fields and upload an image of the item");
-                          } else {
-                            final fileBytes = image!.files.single.bytes;
-                            final fileName = image!.files.single.name;
-                            if (update) {
-                              Map item = {
+                          if (update == true) {
+                            if (menuItemNameController.text.isEmpty ||
+                                menuItemPriceController.text.isEmpty ||
+                                menuItemDescriptionController.text.isEmpty) {
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Make sure to fill all fields and upload an image of the item");
+                            } else {
+                              String? fileName;
+                              Uint8List? fileBytes;
+                              if (image != null) {
+                                fileBytes = image!.files.single.bytes;
+                                fileName = image!.files.single.name;
+                              }
+                              Map<String, Object?> item = {
                                 "name": menuItemNameController.text,
                                 "price": menuItemPriceController.text,
-                                "image":
-                                    "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
+                                "image": image == null
+                                    ? itemData!["image"]
+                                    : "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
                                 "description":
                                     menuItemDescriptionController.text,
-                                "reviews": itemData!["reviews"],
+                                "type": selectedMenuOption,
+                                "status": itemData!["status"],
+                                "reviews": itemData["reviews"],
                                 "rating": itemData["rating"]
                               };
                               Alerts.customLoadingAlert(context);
@@ -260,12 +292,10 @@ class _MenuPageState extends State<MenuPage> {
                                       widget.restaurantsKey,
                                       widget.categoryKey,
                                       itemData["key"],
-                                      widget.restaurantsKey,
-                                      widget.categoryKey,
                                       itemData["image"],
-                                      fileName,
-                                      item,
-                                      fileBytes!)
+                                      fileName: fileName,
+                                      item: item,
+                                      bytes: fileBytes)
                                   .then((value) {
                                 menuItemNameController.clear();
                                 menuItemDescriptionController.clear();
@@ -273,7 +303,22 @@ class _MenuPageState extends State<MenuPage> {
                                 KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
+                            }
+                          } else {
+                            if (image == null ||
+                                menuItemNameController.text.isEmpty ||
+                                menuItemPriceController.text.isEmpty ||
+                                menuItemDescriptionController.text.isEmpty) {
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "Make sure to fill all fields and upload an image of the item");
                             } else {
+                              String? fileName;
+                              Uint8List? fileBytes;
+                              if (image != null) {
+                                fileBytes = image!.files.single.bytes;
+                                fileName = image!.files.single.name;
+                              }
                               Map item = {
                                 "name": menuItemNameController.text,
                                 "price": menuItemPriceController.text,
@@ -281,6 +326,8 @@ class _MenuPageState extends State<MenuPage> {
                                     "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
                                 "description":
                                     menuItemDescriptionController.text,
+                                "type": selectedMenuOption,
+                                "status": "available",
                                 "reviews": "0",
                                 "rating": "0"
                               };
@@ -289,8 +336,7 @@ class _MenuPageState extends State<MenuPage> {
                                       widget.restaurantsKey,
                                       widget.categoryKey,
                                       widget.restaurantsKey,
-                                      widget.categoryKey,
-                                      fileName,
+                                      fileName!,
                                       item,
                                       fileBytes!)
                                   .then((value) {
@@ -324,7 +370,7 @@ class _MenuPageState extends State<MenuPage> {
           },
           backgroundColor: const Color(0xFF21B7CA),
           foregroundColor: Colors.white,
-          icon: Icons.share,
+          icon: Icons.edit,
           label: 'Edit',
         ),
         SlidableAction(
@@ -337,7 +383,7 @@ class _MenuPageState extends State<MenuPage> {
                 .child(widget.restaurantsKey)
                 .child("menu")
                 .child(widget.categoryKey)
-                .child(widget.categoryKey)
+                .child("items")
                 .child(foodItem["key"])
                 .remove();
             KRoutes.pop(context);

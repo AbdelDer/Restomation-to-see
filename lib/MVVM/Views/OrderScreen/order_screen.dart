@@ -73,53 +73,47 @@ class _OrderScreenState extends State<OrderScreen> {
             height: 10,
           ),
           Expanded(
-            child: ListView.separated(
+            child: ListView.builder(
               itemCount:
                   (snapshot.data as DatabaseEvent).snapshot.children.length,
               itemBuilder: (context, index) {
                 return SizedBox(
-                  width: double.infinity,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustomText(
+                    width: double.infinity,
+                    child: ExpansionTile(
+                      title: CustomText(
                         text: tables[index],
-                        fontsize: 25,
+                        fontsize: 20,
                         fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(
-                        height: 20,
+                      subtitle: CustomText(
+                        text: "${orderList[index]["name"]}",
+                        fontsize: 18,
                       ),
-                      CustomText(text: orderList[index]["customer"]),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      SizedBox(
-                        height: 150,
-                        width: double.infinity,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: (orderList[index]["items"] as Map).length,
-                          itemBuilder: (context, itemIndex) {
-                            List foodItem = (orderList[index]["items"] as Map)
-                                .values
-                                .toList();
-                            return orderItemDisplay(
-                                context, foodItem[itemIndex]);
-                          },
+                      children: [
+                        const SizedBox(
+                          height: 20,
                         ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                    ],
-                  ),
-                );
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                return const Divider(
-                  thickness: 1,
-                );
+                        SizedBox(
+                          height: 150,
+                          width: double.infinity,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount:
+                                (orderList[index]["items"] as Map).length,
+                            itemBuilder: (context, itemIndex) {
+                              List foodItem = (orderList[index]["items"] as Map)
+                                  .values
+                                  .toList();
+                              return orderItemDisplay(
+                                  context, foodItem[itemIndex]);
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                      ],
+                    ));
               },
             ),
           ),

@@ -10,15 +10,14 @@ import '../Provider/cart_provider.dart';
 
 class CustomCartBadgeIcon extends StatelessWidget {
   final String restaurantsKey;
-  final String restaurantsName;
   final String tableKey;
-  final String customer;
+   final String name;
+  final String phone;
   const CustomCartBadgeIcon(
       {super.key,
       required this.restaurantsKey,
-      required this.tableKey,
-      required this.customer,
-      required this.restaurantsName});
+      required this.tableKey, required this.name, required this.phone,
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class CustomCartBadgeIcon extends StatelessWidget {
     return GestureDetector(
         onTap: () {
           Beamer.of(context).beamToNamed(
-              "/customer-cart/$restaurantsName,$restaurantsKey,$tableKey,$customer");
+              "/customer-cart/$restaurantsKey,$tableKey,$name,$phone");
         },
         child: Row(
           children: [

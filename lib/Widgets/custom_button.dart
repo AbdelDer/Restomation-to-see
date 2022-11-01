@@ -6,6 +6,8 @@ class CustomButton extends StatelessWidget {
   final Color buttonColor;
   final String text;
   final Color textColor;
+  final double? width;
+  final double? height;
   final TextAlign? textAlign;
   final VoidCallback function;
   final int? maxLines;
@@ -18,7 +20,9 @@ class CustomButton extends StatelessWidget {
       this.maxLines,
       this.textColor = Colors.black,
       required this.function,
-      this.invert = false})
+      this.invert = false,
+      this.width,
+      this.height})
       : super(key: key);
 
   @override
@@ -28,8 +32,8 @@ class CustomButton extends StatelessWidget {
       child: Container(
         alignment: Alignment.center,
         padding: const EdgeInsets.all(10),
-        width: MediaQuery.of(context).size.width * 0.4,
-        height: 50,
+        width: width ?? MediaQuery.of(context).size.width * 0.4,
+        height: height ?? 50,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             border: invert == true

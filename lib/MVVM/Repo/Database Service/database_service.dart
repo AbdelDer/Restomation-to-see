@@ -40,65 +40,6 @@ class DatabaseService extends StorageService {
     return authUser;
   }
 
-  static getAllrestaurants() {
-    Query dbref = db.ref().child("restaurants");
-    return dbref;
-  }
-
-  static getrestaurantsCategories(
-    String restaurantsKey,
-  ) {
-    Query dbref =
-        db.ref().child("restaurants").child(restaurantsKey).child("menu");
-    return dbref;
-  }
-
-  static getStaffCategories(
-    String restaurantsKey,
-  ) {
-    Query dbref =
-        db.ref().child("restaurants").child(restaurantsKey).child("staff");
-    return dbref;
-  }
-
-  static getrestaurantsTables(
-    String restaurantsKey,
-  ) {
-    Query dbref =
-        db.ref().child("restaurants").child(restaurantsKey).child("tables");
-    return dbref;
-  }
-
-  static getsinglerestaurantsCategories(
-    String restaurantsKey,
-    String categoryKey,
-    String categoryName,
-  ) {
-    Query dbref = db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("menu")
-        .child(categoryKey)
-        .child(categoryName);
-    return dbref;
-  }
-
-  static getsinglerestaurantsStaffCategories(
-    String restaurantsKey,
-    String staffCategoryKey,
-    String staffCategoryName,
-  ) {
-    Query dbref = db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("staff")
-        .child(staffCategoryKey)
-        .child(staffCategoryName);
-    return dbref;
-  }
-
   static createSubAdminRestaurant(
     String restaurantsKey,
     String name,
@@ -126,17 +67,6 @@ class DatabaseService extends StorageService {
         .set({"categoryName": categoryName});
   }
 
-  static Future createStaffCategory(
-      String restaurantsKey, String staffCategoryName) async {
-    await db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("staff")
-        .push()
-        .set({"staffCategoryName": staffCategoryName});
-  }
-
   static Future createTable(
       String restaurantsKey, String tableName, String qrLink) async {
     await db
@@ -145,7 +75,10 @@ class DatabaseService extends StorageService {
         .child(restaurantsKey)
         .child("tables")
         .child(tableName)
-        .set({"qrLink": qrLink});
+        .set({
+      "qrLink": qrLink,
+      "status": "available",
+    });
   }
 
   static Future updateTable(
@@ -156,19 +89,18 @@ class DatabaseService extends StorageService {
         .child(restaurantsKey)
         .child("tables")
         .child(tableKey)
-        .set({"tableName": tableName});
+        .update({"tableName": tableName});
   }
 
   static Future createCategoryItems(
       String restaurantsKey,
       String categoryKey,
       String restaurantsName,
-      String categoryName,
       String fileName,
       Map item,
       Uint8List bytes) async {
     await storage
-        .ref("restaurants/$restaurantsName/menu/$categoryName/$fileName")
+        .ref("restaurants/$restaurantsName/menu/$categoryKey/$fileName")
         .putData(bytes);
     await db
         .ref()
@@ -177,7 +109,7 @@ class DatabaseService extends StorageService {
         .child("menu")
         .child(categoryKey)
         .child("items")
-        .child(item["name"])
+        .child(item["name"] as String)
         .set(item);
   }
 
@@ -195,30 +127,27 @@ class DatabaseService extends StorageService {
         .set(item);
   }
 
-  static Future updateCategoryItems(
-      String restaurantsKey,
-      String categoryKey,
-      String itemKey,
-      String restaurantsName,
-      String categoryName,
-      String oldImagePath,
-      String fileName,
-      Map item,
-      Uint8List bytes) async {
-    await storage.ref().child(oldImagePath).delete();
-    await storage
-        .ref()
-        .child("restaurants/$restaurantsName/menu/$categoryName/$fileName")
-        .putData(bytes);
+  static Future updateCategoryItems(String restaurantsKey, String categoryKey,
+      String itemKey, String oldImagePath,
+      {String? fileName,
+      required Map<String, Object?> item,
+      Uint8List? bytes}) async {
+    if (!(bytes == null)) {
+      await storage.ref().child(oldImagePath).delete();
+      await storage
+          .ref()
+          .child("restaurants/$restaurantsKey/menu/$categoryKey/$fileName")
+          .putData(bytes);
+    }
     await db
         .ref()
         .child("restaurants")
         .child(restaurantsKey)
         .child("menu")
         .child(categoryKey)
-        .child(categoryName)
+        .child("items")
         .child(itemKey)
-        .set(item);
+        .update(item);
   }
 
   static Future updateStaffCategoryPerson(String restaurantsKey, String itemKey,
@@ -239,6 +168,13 @@ class DatabaseService extends StorageService {
 
   Future createOrder(
       String restaurantsKey, String tableKey, Map data, List cartItems) async {
+    db
+        .ref()
+        .child("restaurants")
+        .child(restaurantsKey)
+        .child("tables")
+        .child(tableKey)
+        .update({"status": "occupied"});
     DatabaseReference reference = db
         .ref()
         .child("restaurants")

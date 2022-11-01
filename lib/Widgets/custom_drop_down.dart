@@ -15,7 +15,7 @@ class _ListDropDownState extends State<ListDropDown> {
   @override
   void initState() {
     setState(() {
-      selectedRole = staffOptions[0];
+      selectedMenuOption = menuOptions[0];
     });
     super.initState();
   }
@@ -23,9 +23,9 @@ class _ListDropDownState extends State<ListDropDown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButton(
-      value: selectedRole,
+      value: selectedMenuOption,
       underline: const CustomText(text: ""),
-      items: staffOptions
+      items: menuOptions
           .map((value) => DropdownMenuItem(
                 value: value,
                 child: SizedBox(
@@ -39,7 +39,7 @@ class _ListDropDownState extends State<ListDropDown> {
           .toList(),
       onChanged: (dynamic value) {
         setState(() {
-          selectedRole = value;
+          selectedMenuOption = value;
         });
       },
       // ...

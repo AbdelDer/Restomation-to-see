@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restomation/Widgets/custom_button.dart';
-import 'package:restomation/Widgets/custom_drop_down.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
 import '../../../Utils/app_routes.dart';
@@ -154,6 +153,7 @@ class _StaffPageState extends State<StaffPage> {
   void showCustomDialog(BuildContext context,
       {bool update = false, Map? person}) {
     FilePickerResult? image;
+    String selectedValue = "waiter";
     showDialog(
         context: context,
         builder: (context) {
@@ -244,9 +244,39 @@ class _StaffPageState extends State<StaffPage> {
                       suffixIcon: const Icon(Icons.shower_sharp),
                     ),
                     const SizedBox(
-                      height: 10,
+                      height: 20,
                     ),
-                    const ListDropDown(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        CustomButton(
+                          buttonColor:
+                              selectedValue == "waiter" ? primaryColor : kGrey,
+                          text: "Waiter",
+                          textColor: kWhite,
+                          function: () {
+                            refreshState(() {
+                              selectedValue = "waiter";
+                            });
+                          },
+                          width: 130,
+                          height: 40,
+                        ),
+                        CustomButton(
+                          buttonColor:
+                              selectedValue == "cook" ? primaryColor : kGrey,
+                          text: "Cook",
+                          textColor: kWhite,
+                          function: () {
+                            refreshState(() {
+                              selectedValue = "cook";
+                            });
+                          },
+                          width: 130,
+                          height: 40,
+                        ),
+                      ],
+                    ),
                     const SizedBox(
                       height: 20,
                     ),
@@ -272,7 +302,7 @@ class _StaffPageState extends State<StaffPage> {
                                     "restaurants/${widget.restaurantsKey}/staff/$fileName",
                                 "email": personEmailController.text,
                                 "address": personAddressController.text,
-                                "role": selectedRole,
+                                "role": selectedValue.toLowerCase(),
                               };
                               Alerts.customLoadingAlert(context);
                               await DatabaseService.updateStaffCategoryPerson(
@@ -298,7 +328,7 @@ class _StaffPageState extends State<StaffPage> {
                                     "restaurants/${widget.restaurantsKey}/staff/$fileName",
                                 "email": personEmailController.text,
                                 "address": personAddressController.text,
-                                "role": selectedRole,
+                                "role": selectedValue.toLowerCase(),
                               };
                               Alerts.customLoadingAlert(context);
                               await DatabaseService.createStaffCategoryPerson(

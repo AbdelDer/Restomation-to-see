@@ -16,12 +16,14 @@ import '../../../Provider/cart_provider.dart';
 class CartPage extends StatelessWidget {
   final String restaurantsKey;
   final String tableKey;
-  final String customer;
+  final String name;
+  final String phone;
   const CartPage(
       {super.key,
       required this.restaurantsKey,
       required this.tableKey,
-      required this.customer});
+      required this.name,
+      required this.phone});
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +76,8 @@ class CartPage extends StatelessWidget {
               function: () async {
                 CoolAlert.show(context: context, type: CoolAlertType.loading);
                 Map data = {
-                  "customer": customer,
+                  "name": name,
+                  "phone": phone,
                 };
 
                 await DatabaseService()
@@ -83,7 +86,8 @@ class CartPage extends StatelessWidget {
                   KRoutes.pop(context);
                   Fluttertoast.showToast(msg: "Ordered Successfully");
 
-                  Beamer.of(context).beamToNamed("");
+                  Beamer.of(context).beamToNamed(
+                      "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
                 });
               }),
           const SizedBox(

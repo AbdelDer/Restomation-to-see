@@ -166,7 +166,8 @@ class _MyAppState extends State<MyApp> {
               child: CartPage(
                   restaurantsKey: parameters[0],
                   tableKey: parameters[1],
-                  customer: parameters[2]));
+                  name: parameters[2],
+                  phone: parameters[3]));
         },
         "/customer-order/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
@@ -179,7 +180,8 @@ class _MyAppState extends State<MyApp> {
               child: CartPage(
                   restaurantsKey: parameters[0],
                   tableKey: parameters[1],
-                  customer: parameters[2]));
+                  name: parameters[2],
+                  phone: parameters[3]));
         }
       }));
   @override
