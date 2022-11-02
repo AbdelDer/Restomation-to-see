@@ -17,13 +17,15 @@ class CartPage extends StatelessWidget {
   final String restaurantsKey;
   final String tableKey;
   final String name;
+  final String isTableClean;
   final String phone;
   const CartPage(
       {super.key,
       required this.restaurantsKey,
       required this.tableKey,
       required this.name,
-      required this.phone});
+      required this.phone,
+      required this.isTableClean});
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,7 @@ class CartPage extends StatelessWidget {
                 Map data = {
                   "name": name,
                   "phone": phone,
+                  "isTableClean": isTableClean
                 };
 
                 await DatabaseService()

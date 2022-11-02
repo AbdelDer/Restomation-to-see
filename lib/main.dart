@@ -14,6 +14,7 @@ import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
 import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
 import 'package:restomation/Provider/cart_provider.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
+import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
 import 'MVVM/Views/Resturant Details/resturant_details.dart';
 import 'firebase_options.dart';
 
@@ -78,6 +79,7 @@ class _MyAppState extends State<MyApp> {
                     tableKey: parameters[1],
                     name: parameters[2],
                     phone: parameters[3],
+                    isTableClean: parameters[4],
                   ),
           );
         },
@@ -100,6 +102,7 @@ class _MyAppState extends State<MyApp> {
                     tableKey: parameters[2],
                     name: parameters[3],
                     phone: parameters[4],
+                    isTableClean: parameters[5],
                   ),
           );
         },
@@ -164,24 +167,27 @@ class _MyAppState extends State<MyApp> {
               title: parameters[0],
               type: BeamPageType.fadeTransition,
               child: CartPage(
-                  restaurantsKey: parameters[0],
-                  tableKey: parameters[1],
-                  name: parameters[2],
-                  phone: parameters[3]));
+                restaurantsKey: parameters[0],
+                tableKey: parameters[1],
+                name: parameters[2],
+                phone: parameters[3],
+                isTableClean: parameters[4],
+              ));
         },
         "/customer-order/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
               p1.pathParameters["parameters"] ?? "";
           List<String> parameters = restaurantsParams.split(",");
           return BeamPage(
-              key: const ValueKey("customer-cart"),
+              key: const ValueKey("customer-order"),
               title: parameters[0],
               type: BeamPageType.fadeTransition,
-              child: CartPage(
-                  restaurantsKey: parameters[0],
-                  tableKey: parameters[1],
-                  name: parameters[2],
-                  phone: parameters[3]));
+              child: CustomerOrderPage(
+                restaurantsKey: parameters[0],
+                tableKey: parameters[1],
+                name: parameters[2],
+                phone: parameters[3],
+              ));
         }
       }));
   @override
@@ -199,6 +205,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ],
       child: MaterialApp.router(
+        theme: ThemeData(dividerColor: Colors.transparent),
         routeInformationParser: BeamerParser(),
         routerDelegate: routerDelegate,
       ),

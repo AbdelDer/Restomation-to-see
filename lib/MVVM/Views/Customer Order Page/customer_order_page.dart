@@ -6,7 +6,15 @@ import 'package:restomation/Widgets/custom_text.dart';
 
 class CustomerOrderPage extends StatelessWidget {
   final String restaurantsKey;
-  const CustomerOrderPage({super.key, required this.restaurantsKey});
+  final String tableKey;
+  final String name;
+  final String phone;
+  const CustomerOrderPage(
+      {super.key,
+      required this.restaurantsKey,
+      required this.tableKey,
+      required this.name,
+      required this.phone});
 
   @override
   Widget build(BuildContext context) {

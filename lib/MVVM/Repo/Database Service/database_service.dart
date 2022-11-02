@@ -93,15 +93,16 @@ class DatabaseService extends StorageService {
   }
 
   static Future createCategoryItems(
-      String restaurantsKey,
-      String categoryKey,
-      String restaurantsName,
-      String fileName,
-      Map item,
-      Uint8List bytes) async {
-    await storage
-        .ref("restaurants/$restaurantsName/menu/$categoryKey/$fileName")
-        .putData(bytes);
+      String restaurantsKey, String categoryKey, String restaurantsName,
+      {String? fileName,
+      required Map<String, Object?> item,
+      Uint8List? bytes,
+      required bool isExsiting}) async {
+    if (!isExsiting) {
+      await storage
+          .ref("restaurants/$restaurantsName/menu/$categoryKey/$fileName")
+          .putData(bytes!);
+    }
     await db
         .ref()
         .child("restaurants")
@@ -131,14 +132,18 @@ class DatabaseService extends StorageService {
       String itemKey, String oldImagePath,
       {String? fileName,
       required Map<String, Object?> item,
-      Uint8List? bytes}) async {
-    if (!(bytes == null)) {
-      await storage.ref().child(oldImagePath).delete();
-      await storage
-          .ref()
-          .child("restaurants/$restaurantsKey/menu/$categoryKey/$fileName")
-          .putData(bytes);
+      Uint8List? bytes,
+      required bool isExsiting}) async {
+    if (!isExsiting) {
+      if (!(bytes == null)) {
+        // await storage.ref().child(oldImagePath).delete();
+        await storage
+            .ref()
+            .child("restaurants/$restaurantsKey/menu/$categoryKey/$fileName")
+            .putData(bytes);
+      }
     }
+
     await db
         .ref()
         .child("restaurants")

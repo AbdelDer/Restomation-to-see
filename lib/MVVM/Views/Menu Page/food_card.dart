@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/add_to_cart.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
@@ -11,13 +12,17 @@ class CustomFoodCard extends StatelessWidget {
   final String? phone;
   final String restaurantsKey;
   final String categoryKey;
+  final VoidCallback edit;
+  final VoidCallback delete;
   const CustomFoodCard(
       {super.key,
       required this.data,
       required this.name,
       required this.phone,
       required this.restaurantsKey,
-      required this.categoryKey});
+      required this.categoryKey,
+      required this.edit,
+      required this.delete});
 
   @override
   Widget build(BuildContext context) {
@@ -129,32 +134,56 @@ class CustomFoodCard extends StatelessWidget {
         ),
         if (name == null)
           StatefulBuilder(builder: (context, refreshState) {
-            return SwitchListTile(
-              value: isActive,
-              onChanged: (value) {
-                if (value == true) {
-                  DatabaseService.db
-                      .ref()
-                      .child("restaurants")
-                      .child(restaurantsKey)
-                      .child("menu")
-                      .child(categoryKey)
-                      .child("items")
-                      .child(data["key"])
-                      .update({"status": "available"});
-                } else {
-                  DatabaseService.db
-                      .ref()
-                      .child("restaurants")
-                      .child(restaurantsKey)
-                      .child("menu")
-                      .child(categoryKey)
-                      .child("items")
-                      .child(data["key"])
-                      .update({"status": "unavailable"});
-                }
-              },
-              title: const CustomText(text: "Active"),
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  color: primaryColor,
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                  ),
+                  onPressed: edit,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                IconButton(
+                  color: Colors.red,
+                  icon: const Icon(
+                    Icons.delete_outline,
+                  ),
+                  onPressed: delete,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Switch(
+                  value: isActive,
+                  onChanged: (value) {
+                    if (value == true) {
+                      DatabaseService.db
+                          .ref()
+                          .child("restaurants")
+                          .child(restaurantsKey)
+                          .child("menu")
+                          .child(categoryKey)
+                          .child("items")
+                          .child(data["key"])
+                          .update({"status": "available"});
+                    } else {
+                      DatabaseService.db
+                          .ref()
+                          .child("restaurants")
+                          .child(restaurantsKey)
+                          .child("menu")
+                          .child(categoryKey)
+                          .child("items")
+                          .child(data["key"])
+                          .update({"status": "unavailable"});
+                    }
+                  },
+                ),
+              ],
             );
           })
       ],

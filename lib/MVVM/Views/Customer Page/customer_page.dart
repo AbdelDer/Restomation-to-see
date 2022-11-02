@@ -21,6 +21,7 @@ class _CustomerPageState extends State<CustomerPage> {
   TextEditingController phoneController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    String selectedValue = "yes";
     return Scaffold(
       backgroundColor: kWhite,
       appBar: BaseAppBar(
@@ -28,58 +29,118 @@ class _CustomerPageState extends State<CustomerPage> {
           appBar: AppBar(),
           widgets: const [],
           appBarHeight: 50),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Spacer(),
-            CustomText(
-              text: "Welcome to ${widget.restaurantsKey}",
-              fontsize: 20,
-              fontWeight: FontWeight.bold,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 20,
+                ),
+                CustomText(
+                  text: "Welcome to ${widget.restaurantsKey}",
+                  fontsize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    "assets/splash.png",
+                    width: 200,
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                const CustomText(text: "Name :"),
+                const SizedBox(
+                  height: 20,
+                ),
+                FormTextField(
+                    controller: nameController,
+                    suffixIcon: const Icon(Icons.email_outlined)),
+                const SizedBox(
+                  height: 20,
+                ),
+                const CustomText(text: "Phone no :"),
+                const SizedBox(
+                  height: 20,
+                ),
+                FormTextField(
+                    controller: phoneController,
+                    keyboardtype: TextInputType.number,
+                    suffixIcon: const Icon(Icons.numbers)),
+                const SizedBox(
+                  height: 20,
+                ),
+                const Align(
+                    alignment: Alignment.center,
+                    child: CustomText(text: "Is your Table clean ?")),
+                const SizedBox(
+                  height: 20,
+                ),
+                StatefulBuilder(builder: (context, refreshState) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CustomButton(
+                        buttonColor:
+                            selectedValue == "yes" ? primaryColor : kGrey,
+                        text: "Yes",
+                        textColor: kWhite,
+                        function: () {
+                          refreshState(() {
+                            selectedValue = "yes";
+                          });
+                        },
+                        width: 130,
+                        height: 40,
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      CustomButton(
+                        buttonColor:
+                            selectedValue == "no" ? primaryColor : kGrey,
+                        text: "No",
+                        textColor: kWhite,
+                        function: () {
+                          refreshState(() {
+                            selectedValue = "no";
+                          });
+                        },
+                        width: 130,
+                        height: 40,
+                      ),
+                    ],
+                  );
+                }),
+                const SizedBox(
+                  height: 40,
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: CustomButton(
+                      buttonColor: primaryColor,
+                      text: "Enter",
+                      textColor: kWhite,
+                      function: () {
+                        Beamer.of(context).beamToNamed(
+                            "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue");
+                      }),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+              ],
             ),
-            const Spacer(),
-            Align(
-              alignment: Alignment.center,
-              child: Image.asset(
-                "assets/splash.png",
-                width: 200,
-              ),
-            ),
-            const Spacer(),
-            const CustomText(text: "Name :"),
-            const SizedBox(
-              height: 20,
-            ),
-            FormTextField(
-                controller: nameController,
-                suffixIcon: const Icon(Icons.email_outlined)),
-            const SizedBox(
-              height: 20,
-            ),
-            const CustomText(text: "Phone no :"),
-            const SizedBox(
-              height: 20,
-            ),
-            FormTextField(
-                controller: phoneController,
-                keyboardtype: TextInputType.number,
-                suffixIcon: const Icon(Icons.numbers)),
-            const Spacer(),
-            Align(
-              alignment: Alignment.center,
-              child: CustomButton(
-                  buttonColor: primaryColor,
-                  text: "Enter",
-                  function: () {
-                    Beamer.of(context).beamToNamed(
-                        "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text}");
-                  }),
-            ),
-            const Spacer(),
-          ],
+          ),
         ),
       ),
     );

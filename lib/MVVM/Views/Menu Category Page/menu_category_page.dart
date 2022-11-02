@@ -17,12 +17,14 @@ class MenuCategoryPage extends StatefulWidget {
   final String? tableKey;
   final String? name;
   final String? phone;
+  final String? isTableClean;
   const MenuCategoryPage({
     super.key,
     required this.restaurantsKey,
     this.tableKey,
     this.name,
     this.phone,
+    this.isTableClean,
   });
 
   @override
@@ -118,7 +120,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
           onTap: () {
             if (widget.name != null) {
               Beamer.of(context).beamToNamed(
-                  "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]},${widget.tableKey},${widget.name},${widget.phone}");
+                  "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean}");
             } else {
               Beamer.of(context).beamToNamed(
                   "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]}");
@@ -133,7 +135,8 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(scrollable: true,
+          return AlertDialog(
+            scrollable: true,
             content: SizedBox(
               width: 300,
               child: Column(

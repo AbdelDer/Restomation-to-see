@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
@@ -26,13 +26,15 @@ class MenuPage extends StatefulWidget {
   final String? tableKey;
   final String? name;
   final String? phone;
+  final String? isTableClean;
   const MenuPage(
       {super.key,
       required this.restaurantsKey,
       required this.categoryKey,
       this.tableKey,
       this.name,
-      this.phone});
+      this.phone,
+      this.isTableClean});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -85,6 +87,7 @@ class _MenuPageState extends State<MenuPage> {
                           restaurantsKey: widget.restaurantsKey,
                           name: widget.name!,
                           phone: widget.phone!,
+                          isTableClean: widget.isTableClean!,
                         )
                     ],
                   ),
@@ -117,13 +120,12 @@ class _MenuPageState extends State<MenuPage> {
 
   Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Expanded(child: CustomLoader());
+      return const Center(child: CustomLoader());
     }
     if (snapshot.data!.snapshot.children.isEmpty) {
-      return Expanded(
-          child: Center(
-              child: CustomText(
-                  text: "No ${widget.categoryKey} items added yet !!")));
+      return Center(
+          child:
+              CustomText(text: "No ${widget.categoryKey} items added yet !!"));
     }
     Map allrestaurantsMenuItems = snapshot.data!.snapshot.value as Map;
     List categoriesListItems = allrestaurantsMenuItems.keys.toList();
@@ -151,15 +153,15 @@ class _MenuPageState extends State<MenuPage> {
         Map foodItem = allrestaurantsMenuItems[key] as Map;
         foodItem["key"] = key;
 
-        return Slidable(
-            endActionPane: _actionPane(foodItem),
-            child: CustomFoodCard(
-              data: foodItem,
-              name: widget.name,
-              phone: widget.phone,
-              categoryKey: widget.categoryKey,
-              restaurantsKey: widget.restaurantsKey,
-            ));
+        return CustomFoodCard(
+          data: foodItem,
+          name: widget.name,
+          phone: widget.phone,
+          categoryKey: widget.categoryKey,
+          restaurantsKey: widget.restaurantsKey,
+          delete: deleteItem(foodItem),
+          edit: editItem(foodItem),
+        );
       },
     );
   }
@@ -167,6 +169,7 @@ class _MenuPageState extends State<MenuPage> {
   void showCustomDialog(BuildContext context,
       {bool update = false, Map? itemData}) {
     FilePickerResult? image;
+    Reference? isExisting;
     showDialog(
         context: context,
         builder: (context) {
@@ -184,33 +187,201 @@ class _MenuPageState extends State<MenuPage> {
                     ),
                     InkWell(
                         onTap: () async {
-                          image = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: [
-                              "png",
-                              "jpg",
-                            ],
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CustomButton(
+                                      buttonColor: primaryColor,
+                                      text: "Select existing images",
+                                      textColor: kWhite,
+                                      function: () {
+                                        KRoutes.pop(context);
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                                title: const CustomText(
+                                                    text: "Existing Images :"),
+                                                content: SizedBox(
+                                                  height: 500,
+                                                  width: 500,
+                                                  child: StreamBuilder(
+                                                    stream: DatabaseService
+                                                        .storage
+                                                        .ref()
+                                                        .child("restaurants")
+                                                        .child(widget
+                                                            .restaurantsKey)
+                                                        .child("menu")
+                                                        .child(
+                                                            widget.categoryKey)
+                                                        .listAll()
+                                                        .asStream(),
+                                                    builder: (context,
+                                                        AsyncSnapshot<
+                                                                ListResult>
+                                                            snapshot) {
+                                                      if (snapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return const Center(
+                                                            child:
+                                                                CircularProgressIndicator());
+                                                      }
+                                                      if (snapshot.hasError) {
+                                                        return const Text(
+                                                            "error");
+                                                      }
+                                                      List<Reference>
+                                                          allImages = snapshot
+                                                              .data!.items
+                                                              .toList();
+                                                      return GridView.builder(
+                                                        itemCount:
+                                                            allImages.length,
+                                                        gridDelegate:
+                                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                                                crossAxisCount:
+                                                                    2,
+                                                                mainAxisSpacing:
+                                                                    10,
+                                                                crossAxisSpacing:
+                                                                    10),
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          return FutureBuilder(
+                                                              future: allImages[
+                                                                      index]
+                                                                  .getDownloadURL(),
+                                                              builder: (BuildContext
+                                                                      context,
+                                                                  AsyncSnapshot
+                                                                      snapshot) {
+                                                                if (snapshot
+                                                                        .connectionState ==
+                                                                    ConnectionState
+                                                                        .done) {
+                                                                  return InkWell(
+                                                                    onTap: () {
+                                                                      KRoutes.pop(
+                                                                          context);
+                                                                      refreshState(
+                                                                          () {
+                                                                        isExisting =
+                                                                            allImages[index];
+                                                                      });
+                                                                    },
+                                                                    child:
+                                                                        Container(
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius: BorderRadius.circular(15),
+                                                                          boxShadow: const [
+                                                                            BoxShadow(
+                                                                                offset: Offset(0, 0),
+                                                                                spreadRadius: 2,
+                                                                                blurRadius: 2,
+                                                                                color: Colors.black12)
+                                                                          ],
+                                                                          image: DecorationImage(image: NetworkImage(snapshot.data!), fit: BoxFit.cover)),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                                return Container(
+                                                                  decoration:
+                                                                      BoxDecoration(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            15),
+                                                                    boxShadow: const [
+                                                                      BoxShadow(
+                                                                          offset: Offset(0,
+                                                                              0),
+                                                                          spreadRadius:
+                                                                              2,
+                                                                          blurRadius:
+                                                                              2,
+                                                                          color:
+                                                                              Colors.black12)
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              });
+                                                        },
+                                                      );
+                                                    },
+                                                  ),
+                                                ));
+                                          },
+                                        );
+                                      }),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  CustomButton(
+                                      buttonColor: primaryColor,
+                                      text: "Upload",
+                                      textColor: kWhite,
+                                      function: () async {
+                                        image =
+                                            await FilePicker.platform.pickFiles(
+                                          allowMultiple: false,
+                                          type: FileType.custom,
+                                          allowedExtensions: [
+                                            "png",
+                                            "jpg",
+                                          ],
+                                        ).then((value) {
+                                          if (value == null) {
+                                            Fluttertoast.showToast(
+                                                msg: "No file selected");
+                                          } else {
+                                            KRoutes.pop(context);
+                                            refreshState(() {});
+                                          }
+                                          return value;
+                                        });
+                                      }),
+                                ],
+                              ),
+                            ),
                           );
-                          if (image == null) {
-                            Fluttertoast.showToast(msg: "No file selected");
-                          } else {
-                            refreshState(() {});
-                          }
                         },
-                        child: image != null
-                            ? CircleAvatar(
-                                radius: 100,
-                                backgroundColor: kWhite,
-                                foregroundImage:
-                                    MemoryImage(image!.files.single.bytes!),
-                              )
-                            : const CircleAvatar(
-                                radius: 100,
-                                backgroundColor: kWhite,
-                                foregroundImage: NetworkImage(
-                                    "https://cdn.dribbble.com/users/1965140/screenshots/9776931/dribbble_75_4x.png"),
-                              )),
+                        child: isExisting != null
+                            ? FutureBuilder(
+                                future: isExisting!.getDownloadURL(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.done) {
+                                    return CircleAvatar(
+                                      radius: 100,
+                                      backgroundColor: kWhite,
+                                      foregroundImage:
+                                          NetworkImage(snapshot.data),
+                                    );
+                                  }
+                                  return const CircleAvatar(
+                                    radius: 100,
+                                    backgroundColor: kGrey,
+                                  );
+                                })
+                            : image != null
+                                ? CircleAvatar(
+                                    radius: 100,
+                                    backgroundColor: kWhite,
+                                    foregroundImage:
+                                        MemoryImage(image!.files.single.bytes!),
+                                  )
+                                : const CircleAvatar(
+                                    radius: 100,
+                                    backgroundColor: kWhite,
+                                    foregroundImage: NetworkImage(
+                                        "https://cdn.dribbble.com/users/1965140/screenshots/9776931/dribbble_75_4x.png"),
+                                  )),
                     const SizedBox(
                       height: 10,
                     ),
@@ -260,94 +431,7 @@ class _MenuPageState extends State<MenuPage> {
                         text: update ? "Update" : "create",
                         textColor: kWhite,
                         function: () async {
-                          if (update == true) {
-                            if (menuItemNameController.text.isEmpty ||
-                                menuItemPriceController.text.isEmpty ||
-                                menuItemDescriptionController.text.isEmpty) {
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "Make sure to fill all fields and upload an image of the item");
-                            } else {
-                              String? fileName;
-                              Uint8List? fileBytes;
-                              if (image != null) {
-                                fileBytes = image!.files.single.bytes;
-                                fileName = image!.files.single.name;
-                              }
-                              Map<String, Object?> item = {
-                                "name": menuItemNameController.text,
-                                "price": menuItemPriceController.text,
-                                "image": image == null
-                                    ? itemData!["image"]
-                                    : "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
-                                "description":
-                                    menuItemDescriptionController.text,
-                                "type": selectedMenuOption,
-                                "status": itemData!["status"],
-                                "reviews": itemData["reviews"],
-                                "rating": itemData["rating"]
-                              };
-                              Alerts.customLoadingAlert(context);
-                              await DatabaseService.updateCategoryItems(
-                                      widget.restaurantsKey,
-                                      widget.categoryKey,
-                                      itemData["key"],
-                                      itemData["image"],
-                                      fileName: fileName,
-                                      item: item,
-                                      bytes: fileBytes)
-                                  .then((value) {
-                                menuItemNameController.clear();
-                                menuItemDescriptionController.clear();
-                                menuItemPriceController.clear();
-                                KRoutes.pop(context);
-                                return KRoutes.pop(context);
-                              });
-                            }
-                          } else {
-                            if (image == null ||
-                                menuItemNameController.text.isEmpty ||
-                                menuItemPriceController.text.isEmpty ||
-                                menuItemDescriptionController.text.isEmpty) {
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "Make sure to fill all fields and upload an image of the item");
-                            } else {
-                              String? fileName;
-                              Uint8List? fileBytes;
-                              if (image != null) {
-                                fileBytes = image!.files.single.bytes;
-                                fileName = image!.files.single.name;
-                              }
-                              Map item = {
-                                "name": menuItemNameController.text,
-                                "price": menuItemPriceController.text,
-                                "image":
-                                    "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
-                                "description":
-                                    menuItemDescriptionController.text,
-                                "type": selectedMenuOption,
-                                "status": "available",
-                                "reviews": "0",
-                                "rating": "0"
-                              };
-                              Alerts.customLoadingAlert(context);
-                              await DatabaseService.createCategoryItems(
-                                      widget.restaurantsKey,
-                                      widget.categoryKey,
-                                      widget.restaurantsKey,
-                                      fileName!,
-                                      item,
-                                      fileBytes!)
-                                  .then((value) {
-                                menuItemNameController.clear();
-                                menuItemDescriptionController.clear();
-                                menuItemPriceController.clear();
-                                KRoutes.pop(context);
-                                return KRoutes.pop(context);
-                              });
-                            }
-                          }
+                          createItem(update, image, itemData, isExisting);
                         }),
                   ],
                 ),
@@ -357,44 +441,120 @@ class _MenuPageState extends State<MenuPage> {
         });
   }
 
-  ActionPane _actionPane(Map foodItem) {
-    return ActionPane(
-      motion: const ScrollMotion(),
-      children: [
-        SlidableAction(
-          onPressed: (context) {
-            menuItemNameController.text = foodItem["name"];
-            menuItemPriceController.text = foodItem["price"];
-            menuItemDescriptionController.text = foodItem["description"];
-            showCustomDialog(context, update: true, itemData: foodItem);
-          },
-          backgroundColor: const Color(0xFF21B7CA),
-          foregroundColor: Colors.white,
-          icon: Icons.edit,
-          label: 'Edit',
-        ),
-        SlidableAction(
-          onPressed: (context) {
-            Alerts.customLoadingAlert(context);
-            DatabaseService.storage.ref().child(foodItem["image"]).delete();
-            DatabaseService.db
-                .ref()
-                .child("restaurants")
-                .child(widget.restaurantsKey)
-                .child("menu")
-                .child(widget.categoryKey)
-                .child("items")
-                .child(foodItem["key"])
-                .remove();
-            KRoutes.pop(context);
-          },
-          backgroundColor: const Color(0xFFFE4A49),
-          foregroundColor: Colors.white,
-          icon: Icons.delete,
-          label: 'Delete',
-        ),
-      ],
-    );
+  Future<void> createItem(bool update, FilePickerResult? image, Map? itemData,
+      Reference? isExisting) async {
+    if (update == true) {
+      if (menuItemNameController.text.isEmpty ||
+          menuItemPriceController.text.isEmpty ||
+          menuItemDescriptionController.text.isEmpty) {
+        Fluttertoast.showToast(
+            msg:
+                "Make sure to fill all fields and upload an image of the item");
+      } else {
+        String? fileName;
+        Uint8List? fileBytes;
+        if (image != null) {
+          fileBytes = image.files.single.bytes;
+          fileName = image.files.single.name;
+        }
+        Map<String, Object?> item = {
+          "name": menuItemNameController.text,
+          "price": menuItemPriceController.text,
+          "image": isExisting != null
+              ? isExisting.fullPath
+              : image == null
+                  ? itemData!["image"]
+                  : "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
+          "description": menuItemDescriptionController.text,
+          "type": selectedMenuOption,
+          "status": itemData!["status"],
+          "reviews": itemData["reviews"],
+          "rating": itemData["rating"]
+        };
+        Alerts.customLoadingAlert(context);
+        await DatabaseService.updateCategoryItems(widget.restaurantsKey,
+                widget.categoryKey, itemData["key"], itemData["image"],
+                fileName: fileName,
+                item: item,
+                bytes: fileBytes,
+                isExsiting: isExisting != null ? true : false)
+            .then((value) {
+          menuItemNameController.clear();
+          menuItemDescriptionController.clear();
+          menuItemPriceController.clear();
+          KRoutes.pop(context);
+          return KRoutes.pop(context);
+        });
+      }
+    } else {
+      if ((image == null && isExisting == null) ||
+          menuItemNameController.text.isEmpty ||
+          menuItemPriceController.text.isEmpty ||
+          menuItemDescriptionController.text.isEmpty) {
+        Fluttertoast.showToast(
+            msg:
+                "Make sure to fill all fields and upload an image of the item");
+      } else {
+        String? fileName;
+        Uint8List? fileBytes;
+        if (image != null) {
+          fileBytes = image.files.single.bytes;
+          fileName = image.files.single.name;
+        }
+        Map<String, Object?> item = {
+          "name": menuItemNameController.text,
+          "price": menuItemPriceController.text,
+          "image": isExisting != null
+              ? isExisting.fullPath
+              : "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
+          "description": menuItemDescriptionController.text,
+          "type": selectedMenuOption,
+          "status": "available",
+          "reviews": "0",
+          "rating": "0"
+        };
+        Alerts.customLoadingAlert(context);
+        await DatabaseService.createCategoryItems(widget.restaurantsKey,
+                widget.categoryKey, widget.restaurantsKey,
+                fileName: fileName,
+                item: item,
+                bytes: fileBytes,
+                isExsiting: isExisting != null ? true : false)
+            .then((value) {
+          menuItemNameController.clear();
+          menuItemDescriptionController.clear();
+          menuItemPriceController.clear();
+          KRoutes.pop(context);
+          return KRoutes.pop(context);
+        });
+      }
+    }
+  }
+
+  VoidCallback deleteItem(Map foodItem) {
+    return () {
+      Alerts.customLoadingAlert(context);
+      DatabaseService.storage.ref().child(foodItem["image"]).delete();
+      DatabaseService.db
+          .ref()
+          .child("restaurants")
+          .child(widget.restaurantsKey)
+          .child("menu")
+          .child(widget.categoryKey)
+          .child("items")
+          .child(foodItem["key"])
+          .remove();
+      KRoutes.pop(context);
+    };
+  }
+
+  VoidCallback editItem(Map foodItem) {
+    return () {
+      menuItemNameController.text = foodItem["name"];
+      menuItemPriceController.text = foodItem["price"];
+      menuItemDescriptionController.text = foodItem["description"];
+      showCustomDialog(context, update: true, itemData: foodItem);
+    };
   }
 
   @override
