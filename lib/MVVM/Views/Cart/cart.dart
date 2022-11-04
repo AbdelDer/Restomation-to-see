@@ -80,7 +80,8 @@ class CartPage extends StatelessWidget {
                 Map data = {
                   "name": name,
                   "phone": phone,
-                  "isTableClean": isTableClean
+                  "isTableClean": isTableClean,
+                  "waiter": "none"
                 };
 
                 await DatabaseService()

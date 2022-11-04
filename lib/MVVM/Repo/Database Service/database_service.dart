@@ -77,7 +77,6 @@ class DatabaseService extends StorageService {
         .child(tableName)
         .set({
       "qrLink": qrLink,
-      "status": "available",
     });
   }
 
@@ -136,7 +135,6 @@ class DatabaseService extends StorageService {
       required bool isExsiting}) async {
     if (!isExsiting) {
       if (!(bytes == null)) {
-        // await storage.ref().child(oldImagePath).delete();
         await storage
             .ref()
             .child("restaurants/$restaurantsKey/menu/$categoryKey/$fileName")
