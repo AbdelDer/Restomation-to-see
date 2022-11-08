@@ -74,6 +74,7 @@ class _CustomerPageState extends State<CustomerPage> {
                 ),
                 FormTextField(
                     controller: phoneController,
+                    maxLength: 10,
                     keyboardtype: TextInputType.number,
                     suffixIcon: const Icon(Icons.numbers)),
                 const SizedBox(

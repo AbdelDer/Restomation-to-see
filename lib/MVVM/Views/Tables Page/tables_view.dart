@@ -101,6 +101,7 @@ class _TablesPageState extends State<TablesPage> {
       return const Expanded(child: CustomLoader());
     }
     if (snapshot.data!.snapshot.children.isEmpty) {
+      tableNumber = snapshot.data!.snapshot.children.length;
       return const Expanded(
         child: Center(child: CustomText(text: "No Tables Added Yet !!")),
       );

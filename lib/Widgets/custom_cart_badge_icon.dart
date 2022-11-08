@@ -33,7 +33,10 @@ class CustomCartBadgeIcon extends StatelessWidget {
         },
         child: Row(
           children: [
-            const Icon(CupertinoIcons.shopping_cart),
+            const Icon(
+              CupertinoIcons.shopping_cart,
+              color: kblack,
+            ),
             AnimatedOpacity(
               duration: const Duration(milliseconds: 600),
               opacity: cart.cartItems.isNotEmpty ? 1 : 0,

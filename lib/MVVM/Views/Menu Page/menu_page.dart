@@ -9,9 +9,7 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
-import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
-import 'package:restomation/Widgets/custom_cart_badge_icon.dart';
 import 'package:restomation/Widgets/custom_drop_down.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
@@ -21,6 +19,7 @@ import '../../../Widgets/custom_text.dart';
 import '../../../Widgets/custom_text_field.dart';
 
 class MenuPage extends StatefulWidget {
+  final BuildContext previousScreenContext;
   final String restaurantsKey;
   final String categoryKey;
   final String? tableKey;
@@ -34,7 +33,8 @@ class MenuPage extends StatefulWidget {
       this.tableKey,
       this.name,
       this.phone,
-      this.isTableClean});
+      this.isTableClean,
+      required this.previousScreenContext});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -50,18 +50,11 @@ class _MenuPageState extends State<MenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BaseAppBar(
-        title: "",
-        appBar: AppBar(),
-        widgets: const [],
-        appBarHeight: 50,
-        automaticallyImplyLeading: true,
-      ),
       floatingActionButton: widget.name != null
           ? null
           : FloatingActionButton.extended(
               onPressed: () {
-                showCustomDialog(context);
+                showCustomDialog(widget.previousScreenContext);
               },
               label: const CustomText(
                 text: "Add Menu Item",
@@ -73,24 +66,6 @@ class _MenuPageState extends State<MenuPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CustomText(
-                        text: widget.categoryKey,
-                        fontsize: 35,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      if (widget.name != null)
-                        CustomCartBadgeIcon(
-                          tableKey: widget.tableKey!,
-                          restaurantsKey: widget.restaurantsKey,
-                          name: widget.name!,
-                          phone: widget.phone!,
-                          isTableClean: widget.isTableClean!,
-                        )
-                    ],
-                  ),
                   CustomSearch(
                     controller: controller,
                     searchText: "Search Items",
@@ -171,7 +146,7 @@ class _MenuPageState extends State<MenuPage> {
     FilePickerResult? image;
     Reference? isExisting;
     showDialog(
-        context: context,
+        context: widget.previousScreenContext,
         builder: (context) {
           return StatefulBuilder(builder: (context, refreshState) {
             return AlertDialog(
@@ -471,7 +446,7 @@ class _MenuPageState extends State<MenuPage> {
           "reviews": itemData["reviews"],
           "rating": itemData["rating"]
         };
-        Alerts.customLoadingAlert(context);
+        Alerts.customLoadingAlert(widget.previousScreenContext);
         await DatabaseService.updateCategoryItems(widget.restaurantsKey,
                 widget.categoryKey, itemData["key"], itemData["image"],
                 fileName: fileName,
@@ -479,11 +454,8 @@ class _MenuPageState extends State<MenuPage> {
                 bytes: fileBytes,
                 isExsiting: isExisting != null ? true : false)
             .then((value) {
-          menuItemNameController.clear();
-          menuItemDescriptionController.clear();
-          menuItemPriceController.clear();
-          KRoutes.pop(context);
-          return KRoutes.pop(context);
+          KRoutes.pop(widget.previousScreenContext);
+          return KRoutes.pop(widget.previousScreenContext);
         });
       }
     } else {
@@ -521,11 +493,8 @@ class _MenuPageState extends State<MenuPage> {
                 bytes: fileBytes,
                 isExsiting: isExisting != null ? true : false)
             .then((value) {
-          menuItemNameController.clear();
-          menuItemDescriptionController.clear();
-          menuItemPriceController.clear();
-          KRoutes.pop(context);
-          return KRoutes.pop(context);
+          KRoutes.pop(widget.previousScreenContext);
+          return KRoutes.pop(widget.previousScreenContext);
         });
       }
     }
@@ -534,7 +503,6 @@ class _MenuPageState extends State<MenuPage> {
   VoidCallback deleteItem(Map foodItem) {
     return () {
       Alerts.customLoadingAlert(context);
-      DatabaseService.storage.ref().child(foodItem["image"]).delete();
       DatabaseService.db
           .ref()
           .child("restaurants")

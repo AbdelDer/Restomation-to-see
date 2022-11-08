@@ -1,16 +1,16 @@
-import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
-import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_button.dart';
+import '../../../Widgets/custom_cart_badge_icon.dart';
 
 class MenuCategoryPage extends StatefulWidget {
   final String restaurantsKey;
@@ -31,7 +31,9 @@ class MenuCategoryPage extends StatefulWidget {
   State<MenuCategoryPage> createState() => _MenuCategoryPageState();
 }
 
-class _MenuCategoryPageState extends State<MenuCategoryPage> {
+class _MenuCategoryPageState extends State<MenuCategoryPage>
+    with TickerProviderStateMixin {
+  int indexCheck = 0;
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
 
@@ -39,62 +41,56 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BaseAppBar(
-        title: "",
-        appBar: AppBar(),
-        widgets: const [],
-        appBarHeight: 50,
-        automaticallyImplyLeading: true,
-      ),
-      floatingActionButton: widget.name != null
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () {
-                showCustomDialog(context);
-              },
-              label: const CustomText(
-                text: "Create Category",
-                color: kWhite,
-              )),
-      body: Center(
-          child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CustomText(
-                    text: "Select a category :",
-                    fontsize: 35,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  CustomSearch(
-                    controller: controller,
-                    searchText: "Search Categories",
-                    function: () {
-                      setState(() {});
-                    },
-                  ),
-                  StreamBuilder(
-                      stream: FirebaseDatabase.instance
-                          .ref()
-                          .child("restaurants")
-                          .child(widget.restaurantsKey)
-                          .child("menu")
-                          .onValue,
-                      builder:
-                          (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                        return menuCategoryView(snapshot);
-                      }),
-                ],
-              ))),
+          title: "Menu",
+          appBar: AppBar(),
+          widgets: [
+            if (widget.name != null)
+              CustomCartBadgeIcon(
+                tableKey: widget.tableKey!,
+                restaurantsKey: widget.restaurantsKey,
+                name: widget.name!,
+                phone: widget.phone!,
+                isTableClean: widget.isTableClean!,
+              ),
+            if (widget.name == null)
+              const SizedBox(
+                width: 10,
+              ),
+            if (widget.name == null)
+              InkWell(
+                onTap: () {
+                  showCustomDialog(context);
+                },
+                child: const Icon(
+                  Icons.add,
+                  size: 30,
+                  color: kblack,
+                ),
+              ),
+            const SizedBox(
+              width: 20,
+            ),
+          ],
+          appBarHeight: 50),
+      body: StreamBuilder(
+          stream: FirebaseDatabase.instance
+              .ref()
+              .child("restaurants")
+              .child(widget.restaurantsKey)
+              .child("menu")
+              .onValue,
+          builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+            return menuCategoryView(snapshot);
+          }),
     );
   }
 
   Widget menuCategoryView(AsyncSnapshot<DatabaseEvent> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Expanded(child: CustomLoader());
+      return const CustomLoader();
     }
     if (snapshot.data!.snapshot.children.isEmpty) {
-      return const Expanded(child: Center(child: Text("No categories Yet !!")));
+      return const Center(child: Text("No categories Yet !!"));
     }
     Map allrestaurantsMenuCategories = snapshot.data!.snapshot.value as Map;
     List categoriesList = allrestaurantsMenuCategories.keys.toList();
@@ -108,27 +104,53 @@ class _MenuCategoryPageState extends State<MenuCategoryPage> {
       return categoryTitle.contains(input);
     }).toList();
     categoriesList = suggestions;
-    return Column(
-      children: categoriesList.map((e) {
-        Map category = allrestaurantsMenuCategories[e] as Map;
-        category["key"] = e;
-
-        return ListTile(
-          title: CustomText(
-            text: category["key"],
-          ),
-          onTap: () {
-            if (widget.name != null) {
-              Beamer.of(context).beamToNamed(
-                  "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean}");
-            } else {
-              Beamer.of(context).beamToNamed(
-                  "/restaurants-menu-category-menu/${widget.restaurantsKey},${category["key"]}");
-            }
-          },
-        );
-      }).toList(),
-    );
+    TabController tabController = TabController(
+        length: categoriesList.length, vsync: this, initialIndex: indexCheck);
+    return DefaultTabController(
+        length: categoriesList.length,
+        child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(40),
+                child: TabBar(
+                  isScrollable: true,
+                  controller: tabController,
+                  onTap: (index) {
+                    indexCheck = index;
+                  },
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: categoriesList
+                      .map(
+                        (e) => Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomText(
+                            text: e,
+                            fontsize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: kblack,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+            body: TabBarView(
+              controller: tabController,
+              children: categoriesList
+                  .map((e) => MenuPage(
+                        restaurantsKey: widget.restaurantsKey,
+                        categoryKey: e,
+                        tableKey: widget.tableKey,
+                        name: widget.name,
+                        phone: widget.phone,
+                        isTableClean: widget.isTableClean,
+                        previousScreenContext: context,
+                      ))
+                  .toList(),
+            )));
   }
 
   void showCustomDialog(BuildContext context) {

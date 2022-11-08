@@ -3,10 +3,11 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/add_to_cart.dart';
 import 'package:restomation/Widgets/custom_text.dart';
+import 'package:restomation/Widgets/custom_text_field.dart';
 
 import '../../Repo/Storage Service/storage_service.dart';
 
-class CustomFoodCard extends StatelessWidget {
+class CustomFoodCard extends StatefulWidget {
   final Map data;
   final String? name;
   final String? phone;
@@ -25,10 +26,17 @@ class CustomFoodCard extends StatelessWidget {
       required this.delete});
 
   @override
+  State<CustomFoodCard> createState() => _CustomFoodCardState();
+}
+
+class _CustomFoodCardState extends State<CustomFoodCard> {
+  bool show = false;
+  final TextEditingController controller = TextEditingController();
+  @override
   Widget build(BuildContext context) {
-    final ref = StorageService.storage.ref().child(data["image"]);
+    final ref = StorageService.storage.ref().child(widget.data["image"]);
     bool isActive = false;
-    if (data["status"] == "available") {
+    if (widget.data["status"] == "available") {
       isActive = true;
     }
 
@@ -50,21 +58,21 @@ class CustomFoodCard extends StatelessWidget {
                     height: 10,
                   ),
                   Text(
-                    data["name"],
+                    widget.data["name"],
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
                   Text(
-                    "₹${data["price"]}",
+                    "₹${widget.data["price"]}",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
                   Text(
-                    "${data["type"]}",
+                    "${widget.data["type"]}",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.grey.shade600,
@@ -74,7 +82,7 @@ class CustomFoodCard extends StatelessWidget {
                     height: 10,
                   ),
                   CustomText(
-                    text: data["description"],
+                    text: widget.data["description"],
                     color: Colors.grey.shade600,
                   ),
                 ],
@@ -121,18 +129,18 @@ class CustomFoodCard extends StatelessWidget {
                           ),
                         );
                       }),
-                  if (name != null)
+                  if (widget.name != null)
                     Positioned(
                         bottom: 5,
                         child: AddToCart(
-                          foodData: data,
+                          foodData: widget.data,
                         ))
                 ],
               ),
             )
           ],
         ),
-        if (name == null)
+        if (widget.name == null)
           StatefulBuilder(builder: (context, refreshState) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -142,7 +150,7 @@ class CustomFoodCard extends StatelessWidget {
                   icon: const Icon(
                     Icons.edit_outlined,
                   ),
-                  onPressed: edit,
+                  onPressed: widget.edit,
                 ),
                 const SizedBox(
                   width: 10,
@@ -152,7 +160,7 @@ class CustomFoodCard extends StatelessWidget {
                   icon: const Icon(
                     Icons.delete_outline,
                   ),
-                  onPressed: delete,
+                  onPressed: widget.delete,
                 ),
                 const SizedBox(
                   width: 10,
@@ -164,29 +172,66 @@ class CustomFoodCard extends StatelessWidget {
                       DatabaseService.db
                           .ref()
                           .child("restaurants")
-                          .child(restaurantsKey)
+                          .child(widget.restaurantsKey)
                           .child("menu")
-                          .child(categoryKey)
+                          .child(widget.categoryKey)
                           .child("items")
-                          .child(data["key"])
+                          .child(widget.data["key"])
                           .update({"status": "available"});
                     } else {
                       DatabaseService.db
                           .ref()
                           .child("restaurants")
-                          .child(restaurantsKey)
+                          .child(widget.restaurantsKey)
                           .child("menu")
-                          .child(categoryKey)
+                          .child(widget.categoryKey)
                           .child("items")
-                          .child(data["key"])
+                          .child(widget.data["key"])
                           .update({"status": "unavailable"});
                     }
                   },
                 ),
               ],
             );
-          })
+          }),
+        StatefulBuilder(
+          builder: (BuildContext context, refreshState) {
+            if (show == false) {
+              return InkWell(
+                onTap: () {
+                  refreshState(() {
+                    show = true;
+                  });
+                },
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.add,
+                      color: primaryColor,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    CustomText(
+                      text: "Add Instructions",
+                      color: primaryColor,
+                    ),
+                  ],
+                ),
+              );
+            }
+            return FormTextField(
+                controller: controller,
+                suffixIcon: const Icon(Icons.text_fields));
+          },
+        ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }

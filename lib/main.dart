@@ -8,7 +8,6 @@ import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
 import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_screen.dart';
 import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
 import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
@@ -80,29 +79,6 @@ class _MyAppState extends State<MyApp> {
                     name: parameters[2],
                     phone: parameters[3],
                     isTableClean: parameters[4],
-                  ),
-          );
-        },
-        "/restaurants-menu-category-menu/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("menu"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: parameters.length == 2
-                ? MenuPage(
-                    restaurantsKey: parameters[0],
-                    categoryKey: parameters[1],
-                  )
-                : MenuPage(
-                    restaurantsKey: parameters[0],
-                    categoryKey: parameters[1],
-                    tableKey: parameters[2],
-                    name: parameters[3],
-                    phone: parameters[4],
-                    isTableClean: parameters[5],
                   ),
           );
         },
@@ -205,6 +181,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ],
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(dividerColor: Colors.transparent),
         routeInformationParser: BeamerParser(),
         routerDelegate: routerDelegate,
