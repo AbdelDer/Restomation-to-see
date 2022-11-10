@@ -29,18 +29,50 @@ class DatabaseService extends StorageService {
 
   static Future<Map?> loginUser(String email, String password) async {
     Map? authUser;
-    DatabaseEvent superAdmin = await db.ref().child("admins").once();
-    Map users = superAdmin.snapshot.value as Map;
-    List userKeys = users.keys.toList();
-    for (var e in userKeys) {
-      if (users[e]["email"] == email && users[e]["password"] == password) {
-        authUser = users[e];
+    DatabaseEvent superAdmin = await db
+        .ref()
+        .child("admins")
+        .orderByChild("email")
+        .equalTo(email)
+        .once();
+    Map? superUsers = superAdmin.snapshot.value as Map?;
+    if (superUsers != null) {
+      List superUserKeys = superUsers.keys.toList();
+      for (var e in superUserKeys) {
+        if (superUsers[e]["email"] == email &&
+            superUsers[e]["password"] == password) {
+          authUser = superUsers[e];
+        }
       }
     }
+    DatabaseEvent restaurants = await db.ref().child("restaurants").once();
+    Map restaurantsObject = restaurants.snapshot.value as Map;
+    List restaurantskeysList = restaurantsObject.keys.toList();
+    for (var key in restaurantskeysList) {
+      DatabaseEvent restaurantAdmin = await db
+          .ref()
+          .child("restaurants")
+          .child(key)
+          .child("admin")
+          .orderByChild("email")
+          .equalTo(email)
+          .once();
+
+      Map? users = restaurantAdmin.snapshot.value as Map?;
+      if (users != null) {
+        List userKeys = users.keys.toList();
+        for (var e in userKeys) {
+          if (users[e]["email"] == email && users[e]["password"] == password) {
+            authUser = users[e];
+          }
+        }
+      }
+    }
+
     return authUser;
   }
 
-  static createSubAdminRestaurant(
+  static Future createSubAdminRestaurant(
     String restaurantsKey,
     String name,
     String email,

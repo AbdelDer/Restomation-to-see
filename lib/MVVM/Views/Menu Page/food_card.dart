@@ -194,37 +194,38 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
               ],
             );
           }),
-        StatefulBuilder(
-          builder: (BuildContext context, refreshState) {
-            if (show == false) {
-              return InkWell(
-                onTap: () {
-                  refreshState(() {
-                    show = true;
-                  });
-                },
-                child: Row(
-                  children: const [
-                    Icon(
-                      Icons.add,
-                      color: primaryColor,
-                    ),
-                    SizedBox(
-                      width: 10,
-                    ),
-                    CustomText(
-                      text: "Add Instructions",
-                      color: primaryColor,
-                    ),
-                  ],
-                ),
-              );
-            }
-            return FormTextField(
-                controller: controller,
-                suffixIcon: const Icon(Icons.text_fields));
-          },
-        ),
+        if (widget.name != null)
+          StatefulBuilder(
+            builder: (BuildContext context, refreshState) {
+              if (show == false) {
+                return InkWell(
+                  onTap: () {
+                    refreshState(() {
+                      show = true;
+                    });
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.add,
+                        color: primaryColor,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      CustomText(
+                        text: "Add Instructions",
+                        color: primaryColor,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return FormTextField(
+                  controller: controller,
+                  suffixIcon: const Icon(Icons.text_fields));
+            },
+          ),
       ],
     );
   }
