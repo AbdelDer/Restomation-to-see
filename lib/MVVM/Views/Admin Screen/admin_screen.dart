@@ -49,7 +49,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const CustomText(
-                    text: "Admis :",
+                    text: "Admins :",
                     fontsize: 35,
                     fontWeight: FontWeight.bold,
                   ),

@@ -444,6 +444,7 @@ class _MenuPageState extends State<MenuPage> {
           "type": selectedMenuOption,
           "status": itemData!["status"],
           "reviews": itemData["reviews"],
+          "upselling": itemData["upselling"],
           "rating": itemData["rating"]
         };
         Alerts.customLoadingAlert(widget.previousScreenContext);
@@ -483,6 +484,7 @@ class _MenuPageState extends State<MenuPage> {
           "type": selectedMenuOption,
           "status": "available",
           "reviews": "0",
+          "upselling": false,
           "rating": "0"
         };
         Alerts.customLoadingAlert(context);

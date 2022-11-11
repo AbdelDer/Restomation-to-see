@@ -134,6 +134,55 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                         bottom: 5,
                         child: AddToCart(
                           foodData: widget.data,
+                        )),
+                  if (widget.name == null)
+                    Positioned(
+                        top: 20,
+                        right: 10,
+                        child: InkWell(
+                          onTap: () {
+                            widget.data["upselling"] == true
+                                ? DatabaseService.db
+                                    .ref()
+                                    .child("restaurants")
+                                    .child(widget.restaurantsKey)
+                                    .child("menu")
+                                    .child(widget.categoryKey)
+                                    .child("items")
+                                    .child(widget.data["key"])
+                                    .update({"upselling": false})
+                                : DatabaseService.db
+                                    .ref()
+                                    .child("restaurants")
+                                    .child(widget.restaurantsKey)
+                                    .child("menu")
+                                    .child(widget.categoryKey)
+                                    .child("items")
+                                    .child(widget.data["key"])
+                                    .update({"upselling": true});
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: const Offset(0, 1),
+                                    blurRadius: 2,
+                                    spreadRadius: 2,
+                                    color: Colors.grey.shade400),
+                              ],
+                            ),
+                            child: Icon(
+                              widget.data["upselling"] == true
+                                  ? Icons.upload_sharp
+                                  : Icons.upload_outlined,
+                              color: widget.data["upselling"] == true
+                                  ? Colors.green
+                                  : Colors.black,
+                            ),
+                          ),
                         ))
                 ],
               ),

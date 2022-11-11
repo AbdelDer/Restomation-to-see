@@ -53,7 +53,7 @@ class DatabaseService extends StorageService {
           .ref()
           .child("restaurants")
           .child(key)
-          .child("admin")
+          .child("admins")
           .orderByChild("email")
           .equalTo(email)
           .once();
