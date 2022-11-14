@@ -34,7 +34,6 @@ class DatabaseService extends StorageService {
         .child("admins")
         .orderByChild("email")
         .equalTo(email)
-        .equalTo(password)
         .once();
     Map? superUsers = superAdmin.snapshot.value as Map?;
     if (superUsers != null) {
@@ -51,7 +50,6 @@ class DatabaseService extends StorageService {
         .child("admins")
         .orderByChild("email")
         .equalTo(email)
-        .equalTo(password)
         .once();
 
     Map? users = restaurantAdmin.snapshot.value as Map?;

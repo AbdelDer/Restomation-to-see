@@ -115,7 +115,13 @@ class _LoginState extends State<Login> {
                       password.text,
                     );
                     if (response != null) {
-                      pushScreen(response["path"]);
+                      print(response);
+                      if (response["role"] == "super_admin") {
+                        pushScreen(null);
+                      } else {
+                        pushScreen(
+                            "/restaurants-details/${response["assigned_restaurant"]}");
+                      }
                     } else {
                       showError();
                     }
