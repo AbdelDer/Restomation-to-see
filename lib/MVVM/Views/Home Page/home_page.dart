@@ -48,7 +48,6 @@ class _HomePageState extends State<HomePage> {
                     .child("restaurants")
                     .onValue,
                 builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-                  // return Container();
                   return restaurantsView(snapshot);
                 })));
   }

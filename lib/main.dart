@@ -1,11 +1,11 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Repo/RestaurantService/restaurant_service.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Cart/cart.dart';
-import 'package:restomation/MVVM/Views/Combos/combos_screen.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
@@ -134,19 +134,6 @@ class _MyAppState extends State<MyApp> {
             ),
           );
         },
-        "/restaurants-combos/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("combos"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: CombosScreen(
-              restaurantsKey: parameters[0],
-            ),
-          );
-        },
         "/customer-table/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
               p1.pathParameters["parameters"] ?? "";
@@ -205,6 +192,9 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(
           create: (context) => Cart(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => RestaurantService(),
         ),
       ],
       child: MaterialApp.router(

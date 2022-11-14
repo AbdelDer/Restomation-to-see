@@ -34,6 +34,7 @@ class DatabaseService extends StorageService {
         .child("admins")
         .orderByChild("email")
         .equalTo(email)
+        .equalTo(password)
         .once();
     Map? superUsers = superAdmin.snapshot.value as Map?;
     if (superUsers != null) {
@@ -45,26 +46,20 @@ class DatabaseService extends StorageService {
         }
       }
     }
-    DatabaseEvent restaurants = await db.ref().child("restaurants").once();
-    Map restaurantsObject = restaurants.snapshot.value as Map;
-    List restaurantskeysList = restaurantsObject.keys.toList();
-    for (var key in restaurantskeysList) {
-      DatabaseEvent restaurantAdmin = await db
-          .ref()
-          .child("restaurants")
-          .child(key)
-          .child("admins")
-          .orderByChild("email")
-          .equalTo(email)
-          .once();
+    DatabaseEvent restaurantAdmin = await db
+        .ref()
+        .child("admins")
+        .orderByChild("email")
+        .equalTo(email)
+        .equalTo(password)
+        .once();
 
-      Map? users = restaurantAdmin.snapshot.value as Map?;
-      if (users != null) {
-        List userKeys = users.keys.toList();
-        for (var e in userKeys) {
-          if (users[e]["email"] == email && users[e]["password"] == password) {
-            authUser = users[e];
-          }
+    Map? users = restaurantAdmin.snapshot.value as Map?;
+    if (users != null) {
+      List userKeys = users.keys.toList();
+      for (var e in userKeys) {
+        if (users[e]["email"] == email && users[e]["password"] == password) {
+          authUser = users[e];
         }
       }
     }
@@ -79,13 +74,13 @@ class DatabaseService extends StorageService {
     String password,
     String path,
   ) async {
-    await db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("admins")
-        .child(name)
-        .set({"email": email, "password": password, "path": path});
+    await db.ref().child("admins").push().set({
+      "name": name,
+      "email": email,
+      "password": password,
+      "role": "sub_admin",
+      "assigned_restaurant": restaurantsKey
+    });
   }
 
   static Future createCategory(
@@ -101,13 +96,8 @@ class DatabaseService extends StorageService {
 
   static Future createTable(
       String restaurantsKey, String tableName, String qrLink) async {
-    await db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("tables")
-        .child(tableName)
-        .set({
+    await db.ref().child("tables").child(restaurantsKey).push().set({
+      "table_name": tableName,
       "qrLink": qrLink,
     });
   }
@@ -150,13 +140,7 @@ class DatabaseService extends StorageService {
     await storage
         .ref("restaurants/$restaurantsKey/staff/$fileName")
         .putData(bytes);
-    await db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("staff")
-        .child(item["name"])
-        .set(item);
+    await db.ref().child("staff").push().set(item);
   }
 
   static Future updateCategoryItems(String restaurantsKey, String categoryKey,
@@ -192,13 +176,7 @@ class DatabaseService extends StorageService {
         .ref()
         .child("restaurants/$restaurantsKey/staff/$fileName")
         .putData(bytes);
-    await db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("staff")
-        .child(itemKey)
-        .set(item);
+    await db.ref().child("staff").push().set(item);
   }
 
   Future createOrder(

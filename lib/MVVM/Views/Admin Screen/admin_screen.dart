@@ -64,9 +64,9 @@ class _AdminScreenState extends State<AdminScreen> {
                     child: StreamBuilder(
                         stream: FirebaseDatabase.instance
                             .ref()
-                            .child("restaurants")
-                            .child(widget.restaurantsKey)
                             .child("admins")
+                            .orderByChild("assigned_restaurant")
+                            .equalTo(widget.restaurantsKey)
                             .onValue,
                         builder:
                             (context, AsyncSnapshot<DatabaseEvent> snapshot) {

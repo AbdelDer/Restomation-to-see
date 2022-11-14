@@ -83,9 +83,8 @@ class _TablesPageState extends State<TablesPage> {
                   StreamBuilder(
                       stream: FirebaseDatabase.instance
                           .ref()
-                          .child("restaurants")
-                          .child(widget.restaurantsKey)
                           .child("tables")
+                          .child(widget.restaurantsKey)
                           .onValue,
                       builder:
                           (context, AsyncSnapshot<DatabaseEvent> snapshot) {
@@ -134,7 +133,7 @@ class _TablesPageState extends State<TablesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     CustomText(
-                      text: table["key"],
+                      text: table["table_name"],
                       fontsize: 20,
                     ),
                     QrImage(

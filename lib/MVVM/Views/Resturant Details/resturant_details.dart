@@ -64,15 +64,6 @@ class RestaurantsDetailPage extends StatelessWidget {
                       .beamToNamed("/restaurants-admins/$restaurantsKey");
                 }
               },
-              {
-                "name": "Combos",
-                "image":
-                    "https://st4.depositphotos.com/1031343/21988/v/450/depositphotos_219883658-stock-illustration-combo-offers-label-sticker-white.jpghttps://static.vecteezy.com/system/resources/previews/009/322/978/non_2x/illustration-of-food-service-via-mobile-application-free-vector.jpg",
-                "page": () {
-                  Beamer.of(context)
-                      .beamToNamed("/restaurants-combos/$restaurantsKey");
-                }
-              },
             ]
                 .map((e) => Padding(
                       padding: const EdgeInsets.symmetric(

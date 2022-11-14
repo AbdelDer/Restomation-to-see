@@ -75,9 +75,9 @@ class _StaffPageState extends State<StaffPage> {
                     child: StreamBuilder(
                         stream: FirebaseDatabase.instance
                             .ref()
-                            .child("restaurants")
-                            .child(widget.restaurantsKey)
                             .child("staff")
+                            .orderByChild("assigned_restaurant")
+                            .equalTo(widget.restaurantsKey)
                             .onValue,
                         builder:
                             (context, AsyncSnapshot<DatabaseEvent> snapshot) {
@@ -296,6 +296,7 @@ class _StaffPageState extends State<StaffPage> {
                             final fileName = image!.files.single.name;
                             if (update) {
                               Map item = {
+                                "assigned_restaurant": widget.restaurantsKey,
                                 "name": personNameController.text,
                                 "phoneNo": personPhoneController.text,
                                 "image":
@@ -322,6 +323,7 @@ class _StaffPageState extends State<StaffPage> {
                               });
                             } else {
                               Map item = {
+                                "assigned_restaurant": widget.restaurantsKey,
                                 "name": personNameController.text,
                                 "phoneNo": personPhoneController.text,
                                 "image":
