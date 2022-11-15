@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/all_waiters_display.dart';
+import 'package:restomation/MVVM/Views/OrderScreen/order_item_display.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -52,7 +53,6 @@ class _OrderScreenState extends State<OrderScreen> {
     }
     Map? order = (snapshot.data as DatabaseEvent).snapshot.value as Map;
     List tables = order.keys.toList();
-    List orderList = order.values.toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -79,7 +79,8 @@ class _OrderScreenState extends State<OrderScreen> {
                   (snapshot.data as DatabaseEvent).snapshot.children.length,
               itemBuilder: (context, index) {
                 bool isOpened = false;
-                return listExpansionView(isOpened, tables, index, orderList);
+                return listExpansionView(isOpened, tables, index,
+                    (order[tables[index]] as Map).values.toList());
               },
             ),
           ),
@@ -180,10 +181,12 @@ class _OrderScreenState extends State<OrderScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    // SizedBox(
-                    //   height: 150,
-                    //   child:
-                    // ),
+                    SizedBox(
+                        height: 150,
+                        child: OrderItemDisplay(
+                          name: orderList[index]["name"],
+                          restaurantName: widget.restaurantsKey,
+                        )),
                     const SizedBox(
                       height: 20,
                     ),

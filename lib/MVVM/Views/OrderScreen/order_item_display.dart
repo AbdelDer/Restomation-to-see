@@ -1,23 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/Widgets/custom_loader.dart';
+import 'package:restomation/Widgets/custom_text.dart';
 
 import '../../Repo/Storage Service/storage_service.dart';
 
 class OrderItemDisplay extends StatelessWidget {
-  final Map data;
-  const OrderItemDisplay({super.key, required this.data});
+  final String restaurantName;
+  final String name;
+  const OrderItemDisplay({
+    super.key,
+    required this.restaurantName,
+    required this.name,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(builder: (context, AsyncSnapshot snapshot) {
-      return ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: (orderList[index]["items"] as Map).length,
-        itemBuilder: (context, itemIndex) {
-          List foodItem = (orderList[index]["items"] as Map).values.toList();
-          return orderItemDisplay(context, foodItem[itemIndex]);
-        },
-      );
-    });
+    return StreamBuilder(
+        stream: DatabaseService.db
+            .ref()
+            .child("order_items")
+            .child(restaurantName)
+            .child(name)
+            .onValue,
+        builder: (context, AsyncSnapshot snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CustomLoader();
+          }
+          if (snapshot.data!.snapshot.children.isEmpty) {
+            return const Center(
+              child: CustomText(text: "No Orders Yet !!"),
+            );
+          }
+          Map? orderItems = snapshot.data!.snapshot.value as Map;
+          List orderItemsKeys = orderItems.keys.toList();
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: orderItemsKeys.length,
+            itemBuilder: (context, itemIndex) {
+              return orderItemDisplay(
+                  context, orderItems[orderItemsKeys[itemIndex]]);
+            },
+          );
+        });
   }
 
   Widget orderItemDisplay(BuildContext context, Map data) {
