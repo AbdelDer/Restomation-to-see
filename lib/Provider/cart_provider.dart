@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Cart extends ChangeNotifier {
   List<Map> cartItems = [];
@@ -14,6 +15,13 @@ class Cart extends ChangeNotifier {
     notifyListeners();
   }
 
+  updateCartItem(Map value, String instructions) {
+    int index =
+        cartItems.indexWhere((element) => element["name"] == value["name"]);
+    cartItems[index]["instructions"] = instructions;
+    Fluttertoast.showToast(msg: "Instructions added successfully !");
+  }
+
   deleteCartItem(value) {
     if (cartItems.contains(value) && value["quantity"] > 0) {
       int index =
@@ -22,7 +30,6 @@ class Cart extends ChangeNotifier {
     } else {
       cartItems.remove(value);
     }
-
     notifyListeners();
   }
 }

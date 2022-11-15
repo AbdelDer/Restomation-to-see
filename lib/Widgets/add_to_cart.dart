@@ -14,6 +14,13 @@ class _AddToCartState extends State<AddToCart> {
   int initialValue = 0;
   @override
   Widget build(BuildContext context) {
+    Cart cart = context.watch<Cart>();
+    int index = cart.cartItems.indexWhere((element) =>
+        element["name"].toString().toLowerCase() ==
+        widget.foodData["name"].toString().toLowerCase());
+    if (index != -1) {
+      initialValue = cart.cartItems[index]["quantity"];
+    }
     return InkWell(
       onTap: () {
         if (initialValue == 0) {
@@ -52,8 +59,7 @@ class _AddToCartState extends State<AddToCart> {
                       onTap: () {
                         setState(() {
                           initialValue--;
-                          widget.foodData["quantity"] = initialValue;
-                          context.read<Cart>().deleteCartItem(widget.foodData);
+                          cart.cartItems[index]["quantity"] = initialValue;
                         });
                       },
                       child: const Icon(
@@ -65,9 +71,8 @@ class _AddToCartState extends State<AddToCart> {
                       onTap: () {
                         setState(() {
                           initialValue++;
+                          cart.cartItems[index]["quantity"] = initialValue;
                         });
-                        widget.foodData["quantity"] = initialValue;
-                        context.read<Cart>().addCartItem(widget.foodData);
                       },
                       child: const Icon(
                         Icons.add,

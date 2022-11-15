@@ -29,9 +29,9 @@ class AllWaiterDisplay extends StatelessWidget {
         child: StreamBuilder(
             stream: DatabaseService.db
                 .ref()
-                .child("restaurants")
-                .child(restaurantKey)
                 .child("staff")
+                .orderByChild("assigned_restaurant")
+                .equalTo(restaurantKey)
                 .onValue,
             builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -77,9 +77,8 @@ class AllWaiterDisplay extends StatelessWidget {
                       Alerts.customLoadingAlert(context);
                       DatabaseService.db
                           .ref()
-                          .child("restaurants")
-                          .child(restaurantKey)
                           .child("orders")
+                          .child(restaurantKey)
                           .child(tableKey)
                           .update({"waiter": person["name"]});
                       KRoutes.pop(context);

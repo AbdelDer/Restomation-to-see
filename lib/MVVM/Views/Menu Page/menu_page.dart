@@ -77,11 +77,10 @@ class _MenuPageState extends State<MenuPage> {
                     child: StreamBuilder(
                         stream: FirebaseDatabase.instance
                             .ref()
-                            .child("restaurants")
+                            .child("menu_items")
                             .child(widget.restaurantsKey)
-                            .child("menu")
-                            .child(widget.categoryKey)
-                            .child("items")
+                            .orderByChild("category")
+                            .equalTo(widget.categoryKey)
                             .onValue,
                         builder:
                             (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
@@ -187,12 +186,7 @@ class _MenuPageState extends State<MenuPage> {
                                                     stream: DatabaseService
                                                         .storage
                                                         .ref()
-                                                        .child("restaurants")
-                                                        .child(widget
-                                                            .restaurantsKey)
-                                                        .child("menu")
-                                                        .child(
-                                                            widget.categoryKey)
+                                                        .child("food_images")
                                                         .listAll()
                                                         .asStream(),
                                                     builder: (context,
@@ -439,13 +433,14 @@ class _MenuPageState extends State<MenuPage> {
               ? isExisting.fullPath
               : image == null
                   ? itemData!["image"]
-                  : "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
+                  : "food_images/$fileName",
           "description": menuItemDescriptionController.text,
           "type": selectedMenuOption,
           "status": itemData!["status"],
           "reviews": itemData["reviews"],
           "upselling": itemData["upselling"],
-          "rating": itemData["rating"]
+          "rating": itemData["rating"],
+          "category": itemData["category"]
         };
         Alerts.customLoadingAlert(widget.previousScreenContext);
         await DatabaseService.updateCategoryItems(widget.restaurantsKey,
@@ -479,13 +474,14 @@ class _MenuPageState extends State<MenuPage> {
           "price": menuItemPriceController.text,
           "image": isExisting != null
               ? isExisting.fullPath
-              : "restaurants/${widget.restaurantsKey}/menu/${widget.categoryKey}/$fileName",
+              : "food_images/$fileName",
           "description": menuItemDescriptionController.text,
           "type": selectedMenuOption,
           "status": "available",
           "reviews": "0",
           "upselling": false,
-          "rating": "0"
+          "rating": "0",
+          "category": widget.categoryKey
         };
         Alerts.customLoadingAlert(context);
         await DatabaseService.createCategoryItems(widget.restaurantsKey,

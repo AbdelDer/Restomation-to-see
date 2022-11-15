@@ -8,7 +8,16 @@ class OrderItemDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return orderItemDisplay(context, data);
+    return StreamBuilder(builder: (context, AsyncSnapshot snapshot) {
+      return ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: (orderList[index]["items"] as Map).length,
+        itemBuilder: (context, itemIndex) {
+          List foodItem = (orderList[index]["items"] as Map).values.toList();
+          return orderItemDisplay(context, foodItem[itemIndex]);
+        },
+      );
+    });
   }
 
   Widget orderItemDisplay(BuildContext context, Map data) {

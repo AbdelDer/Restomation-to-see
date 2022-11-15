@@ -1,7 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/all_waiters_display.dart';
-import 'package:restomation/MVVM/Views/OrderScreen/order_item_display.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -33,9 +32,8 @@ class _OrderScreenState extends State<OrderScreen> {
             child: StreamBuilder(
           stream: DatabaseService.db
               .ref()
-              .child("restaurants")
-              .child(widget.restaurantsKey)
               .child("orders")
+              .child(widget.restaurantsKey)
               .onValue,
           builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
             return orderDisplayView(snapshot);
@@ -182,19 +180,10 @@ class _OrderScreenState extends State<OrderScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    SizedBox(
-                      height: 150,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: (orderList[index]["items"] as Map).length,
-                        itemBuilder: (context, itemIndex) {
-                          List foodItem = (orderList[index]["items"] as Map)
-                              .values
-                              .toList();
-                          return OrderItemDisplay(data: foodItem[itemIndex]);
-                        },
-                      ),
-                    ),
+                    // SizedBox(
+                    //   height: 150,
+                    //   child:
+                    // ),
                     const SizedBox(
                       height: 20,
                     ),

@@ -219,6 +219,7 @@ class _StaffPageState extends State<StaffPage> {
                     FormTextField(
                       controller: personPhoneController,
                       keyboardtype: TextInputType.number,
+                      maxLength: 10,
                       suffixIcon: const Icon(Icons.shower_sharp),
                     ),
                     const SizedBox(

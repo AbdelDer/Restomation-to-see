@@ -92,14 +92,15 @@ class _LoginState extends State<Login> {
             height: 10,
           ),
           Align(
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 15),
-                child: CustomText(
-                  text: "Forgot password?",
-                  color: Colors.black.withOpacity(0.6),
-                ),
-              )),
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 15),
+              child: CustomText(
+                text: "Forgot password?",
+                color: Colors.black.withOpacity(0.6),
+              ),
+            ),
+          ),
           const SizedBox(
             height: 40,
           ),
@@ -115,7 +116,6 @@ class _LoginState extends State<Login> {
                       password.text,
                     );
                     if (response != null) {
-                      print(response);
                       if (response["role"] == "super_admin") {
                         pushScreen(null);
                       } else {

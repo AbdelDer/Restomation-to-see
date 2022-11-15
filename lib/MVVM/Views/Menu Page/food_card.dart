@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/Provider/cart_provider.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/add_to_cart.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -144,20 +147,14 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                             widget.data["upselling"] == true
                                 ? DatabaseService.db
                                     .ref()
-                                    .child("restaurants")
+                                    .child("menu_items")
                                     .child(widget.restaurantsKey)
-                                    .child("menu")
-                                    .child(widget.categoryKey)
-                                    .child("items")
                                     .child(widget.data["key"])
                                     .update({"upselling": false})
                                 : DatabaseService.db
                                     .ref()
-                                    .child("restaurants")
+                                    .child("menu_items")
                                     .child(widget.restaurantsKey)
-                                    .child("menu")
-                                    .child(widget.categoryKey)
-                                    .child("items")
                                     .child(widget.data["key"])
                                     .update({"upselling": true});
                           },
@@ -246,33 +243,74 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
         if (widget.name != null)
           StatefulBuilder(
             builder: (BuildContext context, refreshState) {
+              Cart cart = context.watch<Cart>();
+              int index = cart.cartItems.indexWhere((element) =>
+                  element["name"].toString().toLowerCase() ==
+                  widget.data["name"].toString().toLowerCase());
               if (show == false) {
                 return InkWell(
                   onTap: () {
-                    refreshState(() {
-                      show = true;
-                    });
+                    if (index != -1) {
+                      refreshState(() {
+                        show = true;
+                      });
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "Please enter the item in Cart first");
+                    }
                   },
                   child: Row(
-                    children: const [
+                    children: [
                       Icon(
                         Icons.add,
-                        color: primaryColor,
+                        color: index != -1 ? primaryColor : kGrey,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 10,
                       ),
                       CustomText(
-                        text: "Add Instructions",
-                        color: primaryColor,
+                        text: "Instructions",
+                        color: index != -1 ? primaryColor : kGrey,
                       ),
                     ],
                   ),
                 );
               }
-              return FormTextField(
-                  controller: controller,
-                  suffixIcon: const Icon(Icons.text_fields));
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    InkWell(
+                        onTap: () {
+                          refreshState(() {
+                            controller.clear();
+                            show = false;
+                          });
+                        },
+                        child: const Icon(Icons.cancel)),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: FormTextField(
+                          controller: controller,
+                          suffixIcon: const Icon(Icons.text_fields)),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    InkWell(
+                        onTap: () {
+                          cart.updateCartItem(widget.data, controller.text);
+                          refreshState(() {
+                            show = false;
+                          });
+                        },
+                        child: const Icon(Icons.send))
+                  ],
+                ),
+              );
             },
           ),
       ],

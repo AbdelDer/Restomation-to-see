@@ -10,15 +10,13 @@ class DatabaseService extends StorageService {
   static FirebaseDatabase db = FirebaseDatabase.instance;
   static FirebaseStorage storage = FirebaseStorage.instance;
   static Future<Object> createrestaurants(
-      String name, String fileExtension, Uint8List bytes) async {
+      String name, String fileName, Uint8List bytes) async {
     try {
-      await storage
-          .ref("restaurants/$name/logo/logo.$fileExtension")
-          .putData(bytes);
-      db.ref().child("restaurants").child(name).set(
+      await storage.ref("restaurantLogos/$fileName").putData(bytes);
+      db.ref().child("restaurants").push().set(
         {
           "restaurantsName": name,
-          "imagePath": "restaurants/$name/logo/logo.$fileExtension"
+          "imagePath": "restaurantLogos/$fileName",
         },
       );
       return Success(200, "restaurants created successfully !!");
@@ -31,7 +29,7 @@ class DatabaseService extends StorageService {
     Map? authUser;
     DatabaseEvent superAdmin = await db
         .ref()
-        .child("admins")
+        .child("super_admins")
         .orderByChild("email")
         .equalTo(email)
         .once();
@@ -85,10 +83,9 @@ class DatabaseService extends StorageService {
       String restaurantsKey, String categoryName) async {
     await db
         .ref()
-        .child("restaurants")
+        .child("menu_categories")
         .child(restaurantsKey)
-        .child("menu")
-        .child(categoryName)
+        .push()
         .set({"categoryName": categoryName});
   }
 
@@ -118,26 +115,14 @@ class DatabaseService extends StorageService {
       Uint8List? bytes,
       required bool isExsiting}) async {
     if (!isExsiting) {
-      await storage
-          .ref("restaurants/$restaurantsName/menu/$categoryKey/$fileName")
-          .putData(bytes!);
+      await storage.ref("food_images/$fileName").putData(bytes!);
     }
-    await db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("menu")
-        .child(categoryKey)
-        .child("items")
-        .child(item["name"] as String)
-        .set(item);
+    await db.ref().child("menu_items").child(restaurantsName).push().set(item);
   }
 
   static Future createStaffCategoryPerson(
       String restaurantsKey, String fileName, Map item, Uint8List bytes) async {
-    await storage
-        .ref("restaurants/$restaurantsKey/staff/$fileName")
-        .putData(bytes);
+    await storage.ref("staff/$restaurantsKey/$fileName").putData(bytes);
     await db.ref().child("staff").push().set(item);
   }
 
@@ -170,38 +155,23 @@ class DatabaseService extends StorageService {
   static Future updateStaffCategoryPerson(String restaurantsKey, String itemKey,
       String oldImagePath, String fileName, Map item, Uint8List bytes) async {
     await storage.ref().child(oldImagePath).delete();
-    await storage
-        .ref()
-        .child("restaurants/$restaurantsKey/staff/$fileName")
-        .putData(bytes);
+    await storage.ref().child("staff/$restaurantsKey/$fileName").putData(bytes);
     await db.ref().child("staff").push().set(item);
   }
 
-  Future createOrder(
-      String restaurantsKey, String tableKey, Map data, List cartItems) async {
-    db
+  Future createOrder(String restaurantsKey, String tableKey, Map data,
+      List cartItems, String name) async {
+    await db
         .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
-        .child("tables")
-        .child(tableKey)
-        .update({"status": "occupied"});
-    DatabaseReference reference = db
-        .ref()
-        .child("restaurants")
-        .child(restaurantsKey)
         .child("orders")
-        .child(tableKey);
-    reference.set(data);
-    DatabaseReference itemsRef = db
-        .ref()
-        .child("restaurants")
         .child(restaurantsKey)
-        .child("orders")
-        .child(reference.key!)
-        .child("items");
+        .child(name)
+        .push()
+        .set(data);
+    DatabaseReference itemsRef =
+        db.ref().child("order_items").child(restaurantsKey).child(name);
     for (var element in cartItems) {
-      await itemsRef.child(element["name"]).set(element);
+      await itemsRef.push().set(element);
     }
   }
 }

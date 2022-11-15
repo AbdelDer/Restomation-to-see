@@ -75,17 +75,21 @@ class CartPage extends StatelessWidget {
           CustomButton(
               buttonColor: primaryColor,
               text: "Order",
+              textColor: kWhite,
               function: () async {
                 CoolAlert.show(context: context, type: CoolAlertType.loading);
                 Map data = {
                   "name": name,
                   "phone": phone,
+                  "table_name": tableKey,
+                  "order_status": "Waiting for approval",
                   "isTableClean": isTableClean,
                   "waiter": "none"
                 };
 
                 await DatabaseService()
-                    .createOrder(restaurantsKey, tableKey, data, cart.cartItems)
+                    .createOrder(
+                        restaurantsKey, tableKey, data, cart.cartItems, name)
                     .then((value) {
                   KRoutes.pop(context);
                   Fluttertoast.showToast(msg: "Ordered Successfully");
@@ -143,7 +147,23 @@ class CartPage extends StatelessWidget {
               ),
               CustomText(
                   text:
-                      "total  ${double.parse(data["price"]) * data["quantity"]}")
+                      "total  ${double.parse(data["price"]) * data["quantity"]}"),
+              const SizedBox(
+                height: 10,
+              ),
+              const Text(
+                "Instructions :",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              CustomText(
+                text: data["instructions"] ?? "No instructions",
+              ),
+              const SizedBox(
+                height: 10,
+              ),
             ],
           ),
         ),

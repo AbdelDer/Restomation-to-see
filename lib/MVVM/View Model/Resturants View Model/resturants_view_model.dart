@@ -53,10 +53,10 @@ class RestaurantsViewModel extends ChangeNotifier {
   }
 
   Future createrestaurants(
-      String name, String fileExtension, Uint8List bytes) async {
+      String name, String fileName, Uint8List bytes) async {
     setLoading(true);
     var response =
-        await DatabaseService.createrestaurants(name, fileExtension, bytes);
+        await DatabaseService.createrestaurants(name, fileName, bytes);
     if (response is Success) {
       setrestaurantssResponse(response.response as String);
     }

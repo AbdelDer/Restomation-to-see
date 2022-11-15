@@ -127,7 +127,7 @@ class _TablesPageState extends State<TablesPage> {
               child: InkWell(
                 onTap: () {
                   Beamer.of(context).beamToNamed(
-                      "/customer-table/${widget.restaurantsKey},${table["key"]}");
+                      "/customer-table/${widget.restaurantsKey},${table["table_name"]}");
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

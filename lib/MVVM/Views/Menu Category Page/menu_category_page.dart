@@ -75,9 +75,8 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
       body: StreamBuilder(
           stream: FirebaseDatabase.instance
               .ref()
-              .child("restaurants")
+              .child("menu_categories")
               .child(widget.restaurantsKey)
-              .child("menu")
               .onValue,
           builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
             return menuCategoryView(snapshot);
@@ -93,17 +92,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
       return const Center(child: Text("No categories Yet !!"));
     }
     Map allrestaurantsMenuCategories = snapshot.data!.snapshot.value as Map;
-    List categoriesList = allrestaurantsMenuCategories.keys.toList();
-    final suggestions =
-        allrestaurantsMenuCategories.keys.toList().where((element) {
-      final categoryTitle = allrestaurantsMenuCategories[element]
-              ["categoryName"]
-          .toString()
-          .toLowerCase();
-      final input = controller.text.toLowerCase();
-      return categoryTitle.contains(input);
-    }).toList();
-    categoriesList = suggestions;
+    List categoriesList = allrestaurantsMenuCategories.values.toList();
     TabController tabController = TabController(
         length: categoriesList.length, vsync: this, initialIndex: indexCheck);
     return DefaultTabController(
@@ -126,7 +115,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                         (e) => Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: CustomText(
-                            text: e,
+                            text: e["categoryName"],
                             fontsize: 25,
                             fontWeight: FontWeight.bold,
                             color: kblack,
@@ -142,7 +131,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
               children: categoriesList
                   .map((e) => MenuPage(
                         restaurantsKey: widget.restaurantsKey,
-                        categoryKey: e,
+                        categoryKey: e["categoryName"],
                         tableKey: widget.tableKey,
                         name: widget.name,
                         phone: widget.phone,

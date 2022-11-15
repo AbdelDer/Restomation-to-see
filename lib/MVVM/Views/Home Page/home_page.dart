@@ -75,8 +75,8 @@ class _HomePageState extends State<HomePage> {
                 StorageService.storage.ref().child(restaurants["imagePath"]);
             return GestureDetector(
               onTap: () {
-                Beamer.of(context)
-                    .beamToNamed("/restaurants-details/${restaurants["key"]}");
+                Beamer.of(context).beamToNamed(
+                    "/restaurants-details/${restaurants["restaurantsName"]}");
               },
               child: Padding(
                 padding: const EdgeInsets.all(10),
@@ -156,8 +156,7 @@ class _HomePageState extends State<HomePage> {
                             : const CircleAvatar(
                                 radius: 100,
                                 backgroundColor: kWhite,
-                                foregroundImage: AssetImage(
-                                    "assets/defaultresturantImage.png"),
+                                foregroundImage: AssetImage("/upload_logo.jpg"),
                               )),
                     const SizedBox(
                       height: 10,
@@ -187,12 +186,12 @@ class _HomePageState extends State<HomePage> {
                                         "Make sure to upload a restaurants Logo and a Valid name");
                               } else {
                                 final fileBytes = image!.files.single.bytes;
-                                final fileExtension =
-                                    image!.files.single.extension;
+
+                                final fileName = image!.files.single.name;
                                 await restaurantsViewModel
                                     .createrestaurants(
                                         restaurantsController.text,
-                                        fileExtension!,
+                                        fileName,
                                         fileBytes!)
                                     .then((value) {
                                   restaurantsController.clear();
