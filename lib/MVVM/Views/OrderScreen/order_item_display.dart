@@ -34,12 +34,12 @@ class OrderItemDisplay extends StatelessWidget {
           }
           Map? orderItems = snapshot.data!.snapshot.value as Map;
           List orderItemsKeys = orderItems.keys.toList();
+          List items = orderItems[orderItemsKeys[0]];
           return ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: orderItemsKeys.length,
+            itemCount: items.length,
             itemBuilder: (context, itemIndex) {
-              return orderItemDisplay(
-                  context, orderItems[orderItemsKeys[itemIndex]]);
+              return orderItemDisplay(context, items[itemIndex]);
             },
           );
         });

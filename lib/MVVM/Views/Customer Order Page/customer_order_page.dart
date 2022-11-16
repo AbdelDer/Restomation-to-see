@@ -154,12 +154,6 @@ class CustomerOrderPage extends StatelessWidget {
                 const SizedBox(
                   height: 10,
                 ),
-                const Divider(
-                  color: kblack,
-                  indent: 100,
-                  endIndent: 100,
-                  thickness: 1,
-                ),
                 Expanded(
                     child: CustomerOrderItemsView(
                   name: name,

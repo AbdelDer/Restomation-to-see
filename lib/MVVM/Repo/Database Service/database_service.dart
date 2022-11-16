@@ -168,10 +168,13 @@ class DatabaseService extends StorageService {
         .child(name)
         .push()
         .set(data);
-    DatabaseReference itemsRef =
-        db.ref().child("order_items").child(restaurantsKey).child(name);
-    for (var element in cartItems) {
-      await itemsRef.push().set(element);
-    }
+
+    db
+        .ref()
+        .child("order_items")
+        .child(restaurantsKey)
+        .child(name)
+        .push()
+        .set(cartItems);
   }
 }

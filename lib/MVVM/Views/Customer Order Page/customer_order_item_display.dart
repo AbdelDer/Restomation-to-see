@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
+import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 class CustomerOrderItemsView extends StatelessWidget {
@@ -18,6 +19,7 @@ class CustomerOrderItemsView extends StatelessWidget {
           .child("order_items")
           .child(restaurantName)
           .child(name)
+          .limitToFirst(1)
           .onValue,
       builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) =>
           orderItemView(snapshot),
@@ -40,8 +42,10 @@ class CustomerOrderItemsView extends StatelessWidget {
         child: CustomText(text: "No Orders Yet !!"),
       );
     }
-    Map? orderItems = snapshot.data!.snapshot.value as Map;
+    Map orderItems = snapshot.data!.snapshot.value as Map;
     List orderItemsKeys = orderItems.keys.toList();
+    List items = orderItems[orderItemsKeys[0]];
+
     return Column(
       children: [
         Row(
@@ -53,19 +57,30 @@ class CustomerOrderItemsView extends StatelessWidget {
               fontsize: 20,
             ),
             CustomText(
-              text: getTotalPrice(orderItems.values.toList()),
+              text: getTotalPrice(items),
               fontsize: 20,
             ),
           ],
         ),
+        const SizedBox(
+          height: 10,
+        ),
+        const Divider(
+          thickness: 1,
+          indent: 100,
+          endIndent: 100,
+          color: kblack,
+        ),
+        const SizedBox(
+          height: 10,
+        ),
         Expanded(
           child: ListView.builder(
-            itemCount: orderItemsKeys.length,
+            itemCount: items.length,
             itemBuilder: (context, itemIndex) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                child: myOrderedItems(
-                    context, orderItems[orderItemsKeys[itemIndex]]),
+                child: myOrderedItems(context, items[itemIndex]),
               );
             },
           ),
