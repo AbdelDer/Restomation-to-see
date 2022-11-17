@@ -34,8 +34,9 @@ class CustomerOrderPage extends StatelessWidget {
             .ref()
             .child("orders")
             .child(restaurantsKey)
-            .child(name)
-            .limitToFirst(1)
+            .orderByChild("name")
+            .equalTo(name)
+            .limitToLast(1)
             .onValue,
         builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

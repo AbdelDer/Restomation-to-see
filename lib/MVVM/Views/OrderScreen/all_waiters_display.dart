@@ -80,7 +80,10 @@ class AllWaiterDisplay extends StatelessWidget {
                           .child("orders")
                           .child(restaurantKey)
                           .child(tableKey)
-                          .update({"waiter": person["name"]});
+                          .update({
+                        "waiter": person["name"],
+                        "order_status": "preparing"
+                      });
                       KRoutes.pop(context);
                       KRoutes.pop(context);
                     },

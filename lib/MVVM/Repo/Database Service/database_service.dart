@@ -161,13 +161,7 @@ class DatabaseService extends StorageService {
 
   Future createOrder(String restaurantsKey, String tableKey, Map data,
       List cartItems, String name) async {
-    await db
-        .ref()
-        .child("orders")
-        .child(restaurantsKey)
-        .child(name)
-        .push()
-        .set(data);
+    await db.ref().child("orders").child(restaurantsKey).push().set(data);
 
     db
         .ref()

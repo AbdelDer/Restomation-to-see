@@ -82,11 +82,10 @@ class CartPage extends StatelessWidget {
                   "name": name,
                   "phone": phone,
                   "table_name": tableKey,
-                  "order_status": "Waiting for approval",
+                  "order_status": "pending",
                   "isTableClean": isTableClean,
                   "waiter": "none"
                 };
-
                 await DatabaseService()
                     .createOrder(
                         restaurantsKey, tableKey, data, cart.cartItems, name)

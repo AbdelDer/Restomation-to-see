@@ -19,7 +19,7 @@ class CustomerOrderItemsView extends StatelessWidget {
           .child("order_items")
           .child(restaurantName)
           .child(name)
-          .limitToFirst(1)
+          .limitToLast(1)
           .onValue,
       builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) =>
           orderItemView(snapshot),

@@ -52,7 +52,7 @@ class _OrderScreenState extends State<OrderScreen> {
       );
     }
     Map? order = (snapshot.data as DatabaseEvent).snapshot.value as Map;
-    List tables = order.keys.toList();
+    List orderKeys = order.keys.toList();
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -75,12 +75,12 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount:
-                  (snapshot.data as DatabaseEvent).snapshot.children.length,
+              itemCount: orderKeys.length,
               itemBuilder: (context, index) {
+                String key = orderKeys[index];
                 bool isOpened = false;
-                return listExpansionView(isOpened, tables, index,
-                    (order[tables[index]] as Map).values.toList());
+                return listExpansionView(
+                    isOpened, orderKeys, index, (order[key] as Map));
               },
             ),
           ),
@@ -90,7 +90,7 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   Widget listExpansionView(
-      bool isOpened, List tables, int index, List orderList) {
+      bool isOpened, List orderKeys, int index, Map orderDetail) {
     return StatefulBuilder(builder: (context, changeState) {
       return Container(
           width: double.infinity,
@@ -119,7 +119,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     width: 10,
                   ),
                   CustomText(
-                    text: tables[index],
+                    text: orderDetail["table_name"],
                     fontsize: 15,
                   ),
                 ],
@@ -130,7 +130,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 height: 20,
               ),
               SizedBox(
-                height: (orderList[index]["waiter"] == "none") ? 310 : 250,
+                height: (orderDetail["waiter"] == "none") ? 310 : 250,
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,18 +143,17 @@ class _OrderScreenState extends State<OrderScreen> {
                           RichText(
                             text: TextSpan(children: [
                               TextSpan(
-                                  text: "${orderList[index]["name"]} \n"
-                                      .toUpperCase(),
+                                  text:
+                                      "${orderDetail["name"]} \n".toUpperCase(),
                                   style: const TextStyle(fontSize: 18)),
                               const TextSpan(text: "Is the table cleaned : "),
                               TextSpan(
-                                  text: "${orderList[index]["isTableClean"]}"
+                                  text: "${orderDetail["isTableClean"]}"
                                       .toUpperCase(),
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: orderList[index]["isTableClean"] ==
-                                            "yes"
+                                    color: orderDetail["isTableClean"] == "yes"
                                         ? Colors.green
                                         : Colors.red,
                                   )),
@@ -164,12 +163,12 @@ class _OrderScreenState extends State<OrderScreen> {
                             text: TextSpan(children: [
                               const TextSpan(text: "Assigned Waiter : "),
                               TextSpan(
-                                  text: "${orderList[index]["waiter"]}"
-                                      .toUpperCase(),
+                                  text:
+                                      "${orderDetail["waiter"]}".toUpperCase(),
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: orderList[index]["waiter"] != "none"
+                                    color: orderDetail["waiter"] != "none"
                                         ? Colors.green
                                         : Colors.red,
                                   )),
@@ -184,13 +183,13 @@ class _OrderScreenState extends State<OrderScreen> {
                     SizedBox(
                         height: 150,
                         child: OrderItemDisplay(
-                          name: orderList[index]["name"],
+                          name: orderDetail["name"],
                           restaurantName: widget.restaurantsKey,
                         )),
                     const SizedBox(
                       height: 20,
                     ),
-                    if (orderList[index]["waiter"] == "none")
+                    if (orderDetail["waiter"] == "none")
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -203,7 +202,7 @@ class _OrderScreenState extends State<OrderScreen> {
                                 context: context,
                                 builder: (context) => AllWaiterDisplay(
                                   restaurantKey: widget.restaurantsKey,
-                                  tableKey: tables[index],
+                                  tableKey: orderKeys[index],
                                 ),
                               );
                             },
@@ -223,7 +222,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           ),
                         ],
                       ),
-                    if (orderList[index]["waiter"] == "none")
+                    if (orderDetail["waiter"] == "none")
                       const SizedBox(
                         height: 20,
                       ),
