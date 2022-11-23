@@ -25,6 +25,7 @@ class DatabaseService extends StorageService {
     }
   }
 
+  
   static Future<Map?> loginUser(String email, String password) async {
     Map? authUser;
     DatabaseEvent superAdmin = await db
@@ -162,7 +163,6 @@ class DatabaseService extends StorageService {
   Future createOrder(String restaurantsKey, String tableKey, Map data,
       List cartItems, String name) async {
     await db.ref().child("orders").child(restaurantsKey).push().set(data);
-
     db
         .ref()
         .child("order_items")

@@ -44,7 +44,7 @@ class CartPage extends StatelessWidget {
             child: ListView.builder(
               itemCount: cart.cartItems.length,
               itemBuilder: (context, index) {
-                return cartItemDisplay(context, cart.cartItems[index]);
+                return cartItemDisplay(context, cart.cartItems[index], cart);
               },
             ),
           ),
@@ -88,7 +88,7 @@ class CartPage extends StatelessWidget {
                 };
                 await DatabaseService()
                     .createOrder(
-                        restaurantsKey, tableKey, data, cart.cartItems, name)
+                        restaurantsKey, tableKey, data, cart.cartItems, phone)
                     .then((value) {
                   KRoutes.pop(context);
                   Fluttertoast.showToast(msg: "Ordered Successfully");
@@ -113,7 +113,7 @@ class CartPage extends StatelessWidget {
     return total.toString();
   }
 
-  Widget cartItemDisplay(BuildContext context, Map data) {
+  Widget cartItemDisplay(BuildContext context, Map data, Cart cart) {
     final ref = StorageService.storage.ref().child(data["image"]);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -209,7 +209,12 @@ class CartPage extends StatelessWidget {
                   }),
             ],
           ),
-        )
+        ),
+        InkWell(
+            onTap: () {
+              cart.removeCartItem(data);
+            },
+            child: const Icon(Icons.delete))
       ],
     );
   }

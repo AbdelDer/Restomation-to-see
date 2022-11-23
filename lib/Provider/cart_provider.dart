@@ -24,12 +24,21 @@ class Cart extends ChangeNotifier {
 
   deleteCartItem(value) {
     if (cartItems.contains(value) && value["quantity"] > 0) {
-      int index =
-          cartItems.indexWhere((element) => element["name"] == value["name"]);
+      int index = cartItems.indexWhere((element) {
+        return element["name"] == value["name"];
+      });
       cartItems[index] = value;
     } else {
       cartItems.remove(value);
     }
+    notifyListeners();
+  }
+
+  removeCartItem(value) {
+    int index = cartItems.indexWhere((element) {
+      return element["name"] == value["name"];
+    });
+    cartItems.removeAt(index);
     notifyListeners();
   }
 }

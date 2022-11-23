@@ -1,5 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/all_waiters_display.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_item_display.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -19,6 +21,7 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,7 +133,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 height: 20,
               ),
               SizedBox(
-                height: (orderDetail["waiter"] == "none") ? 310 : 250,
+                height: 310,
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,21 +186,23 @@ class _OrderScreenState extends State<OrderScreen> {
                     SizedBox(
                         height: 150,
                         child: OrderItemDisplay(
-                          name: orderDetail["name"],
+                          phone: orderDetail["phone"],
                           restaurantName: widget.restaurantsKey,
                         )),
                     const SizedBox(
                       height: 20,
                     ),
-                    if (orderDetail["waiter"] == "none")
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CustomButton(
-                            buttonColor: primaryColor,
-                            text: "Assign Order",
-                            textColor: kWhite,
-                            function: () {
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CustomButton(
+                          buttonColor: primaryColor,
+                          text: (orderDetail["waiter"] == "none")
+                              ? "Assign Order"
+                              : "Free Table",
+                          textColor: kWhite,
+                          function: () {
+                            if (orderDetail["waiter"] == "none") {
                               showDialog(
                                 context: context,
                                 builder: (context) => AllWaiterDisplay(
@@ -205,23 +210,73 @@ class _OrderScreenState extends State<OrderScreen> {
                                   tableKey: orderKeys[index],
                                 ),
                               );
-                            },
-                            width: 130,
-                            height: 40,
-                          ),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          CustomButton(
-                            buttonColor: primaryColor,
-                            text: "Cancel Order",
-                            textColor: kWhite,
-                            function: () {},
-                            width: 130,
-                            height: 40,
-                          ),
-                        ],
-                      ),
+                            } else if (orderDetail["order_status"] ==
+                                "delivered") {
+                              DatabaseService.db
+                                  .ref()
+                                  .child("orders")
+                                  .child(widget.restaurantsKey)
+                                  .child(orderKeys[index])
+                                  .remove();
+                              DatabaseService.db
+                                  .ref()
+                                  .child("completed-orders")
+                                  .child(widget.restaurantsKey)
+                                  .child(formatter.format(DateTime.now()))
+                                  .child(orderDetail["phone"])
+                                  .push()
+                                  .update({
+                                "name": orderDetail["name"],
+                                "phone": orderDetail["phone"],
+                                "table_name": orderDetail["table_name"],
+                                "order_status": "completed",
+                                "isTableClean": orderDetail["isTableClean"],
+                                "waiter": orderDetail["waiter"]
+                              });
+                            } else {
+                              Fluttertoast.showToast(
+                                  msg:
+                                      "You cannot free the table until it is delivered");
+                            }
+                          },
+                          width: 130,
+                          height: 40,
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        CustomButton(
+                          buttonColor: primaryColor,
+                          text: "Cancel Order",
+                          textColor: kWhite,
+                          function: () {
+                            DatabaseService.db
+                                .ref()
+                                .child("orders")
+                                .child(widget.restaurantsKey)
+                                .child(orderKeys[index])
+                                .remove();
+                            DatabaseService.db
+                                .ref()
+                                .child("cancelled_orders")
+                                .child(widget.restaurantsKey)
+                                .child(formatter.format(DateTime.now()))
+                                .child(orderDetail["phone"])
+                                .push()
+                                .update({
+                              "name": orderDetail["name"],
+                              "phone": orderDetail["phone"],
+                              "table_name": orderDetail["table_name"],
+                              "order_status": "cancelled",
+                              "isTableClean": orderDetail["isTableClean"],
+                              "waiter": orderDetail["waiter"]
+                            });
+                          },
+                          width: 130,
+                          height: 40,
+                        ),
+                      ],
+                    ),
                     if (orderDetail["waiter"] == "none")
                       const SizedBox(
                         height: 20,

@@ -7,9 +7,9 @@ import 'package:restomation/Widgets/custom_text.dart';
 
 class CustomerOrderItemsView extends StatelessWidget {
   final String restaurantName;
-  final String name;
+  final String phone;
   const CustomerOrderItemsView(
-      {super.key, required this.restaurantName, required this.name});
+      {super.key, required this.restaurantName, required this.phone});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class CustomerOrderItemsView extends StatelessWidget {
           .ref()
           .child("order_items")
           .child(restaurantName)
-          .child(name)
+          .child(phone)
           .limitToLast(1)
           .onValue,
       builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) =>

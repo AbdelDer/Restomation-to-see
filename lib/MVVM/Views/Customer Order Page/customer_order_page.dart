@@ -157,7 +157,7 @@ class CustomerOrderPage extends StatelessWidget {
                 ),
                 Expanded(
                     child: CustomerOrderItemsView(
-                  name: name,
+                  phone: phone,
                   restaurantName: restaurantsKey,
                 )),
                 if (order["order_status"].toString().toLowerCase() == "done")

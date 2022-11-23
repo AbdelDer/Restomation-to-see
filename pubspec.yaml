@@ -51,6 +51,7 @@ dependencies:
   badges: ^2.0.3
   beamer: ^1.5.3
   cloud_functions: ^3.3.9
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

@@ -7,11 +7,11 @@ import '../../Repo/Storage Service/storage_service.dart';
 
 class OrderItemDisplay extends StatelessWidget {
   final String restaurantName;
-  final String name;
+  final String phone;
   const OrderItemDisplay({
     super.key,
     required this.restaurantName,
-    required this.name,
+    required this.phone,
   });
 
   @override
@@ -21,7 +21,8 @@ class OrderItemDisplay extends StatelessWidget {
             .ref()
             .child("order_items")
             .child(restaurantName)
-            .child(name)
+            .child(phone)
+            .limitToLast(1)
             .onValue,
         builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
