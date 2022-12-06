@@ -37,7 +37,7 @@ class OrderItemDisplay extends StatelessWidget {
           List orderItemsKeys = orderItems.keys.toList();
           List items = orderItems[orderItemsKeys[0]];
           return ListView.builder(
-            scrollDirection: Axis.horizontal,
+            scrollDirection: Axis.vertical,
             itemCount: items.length,
             itemBuilder: (context, itemIndex) {
               return orderItemDisplay(context, items[itemIndex]);
@@ -49,9 +49,9 @@ class OrderItemDisplay extends StatelessWidget {
   Widget orderItemDisplay(BuildContext context, Map data) {
     final ref = StorageService.storage.ref().child(data["image"]);
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -8,7 +8,9 @@ import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
+import '../../../Utils/app_routes.dart';
 import '../../../Utils/contants.dart';
+import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_button.dart';
 import '../../Repo/Database Service/database_service.dart';
 
@@ -130,26 +132,30 @@ class _OrderScreenState extends State<OrderScreen> {
             ),
             children: [
               const SizedBox(
-                height: 20,
+                height: 10,
               ),
-              SizedBox(
-                height: 310,
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          RichText(
-                            text: TextSpan(children: [
-                              TextSpan(
-                                  text:
-                                      "${orderDetail["name"]} \n".toUpperCase(),
-                                  style: const TextStyle(fontSize: 18)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RichText(
+                          text: TextSpan(children: [
+                            TextSpan(
+                                text: "${orderDetail["name"]} \n".toUpperCase(),
+                                style: const TextStyle(fontSize: 18)),
+                            if (orderDetail["table_name"]
+                                    .toString()
+                                    .toLowerCase() !=
+                                "take away")
                               const TextSpan(text: "Is the table cleaned : "),
+                            if (orderDetail["table_name"]
+                                    .toString()
+                                    .toLowerCase() !=
+                                "take away")
                               TextSpan(
                                   text: "${orderDetail["isTableClean"]}"
                                       .toUpperCase(),
@@ -160,8 +166,12 @@ class _OrderScreenState extends State<OrderScreen> {
                                         ? Colors.green
                                         : Colors.red,
                                   )),
-                            ]),
-                          ),
+                          ]),
+                        ),
+                        if (orderDetail["table_name"]
+                                .toString()
+                                .toLowerCase() !=
+                            "take away")
                           RichText(
                             text: TextSpan(children: [
                               const TextSpan(text: "Assigned Waiter : "),
@@ -177,32 +187,52 @@ class _OrderScreenState extends State<OrderScreen> {
                                   )),
                             ]),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    SizedBox(
-                        height: 150,
-                        child: OrderItemDisplay(
-                          phone: orderDetail["phone"],
-                          restaurantName: widget.restaurantsKey,
-                        )),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                      height: 400,
+                      child: OrderItemDisplay(
+                        phone: orderDetail["phone"],
+                        restaurantName: widget.restaurantsKey,
+                      )),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (orderDetail["table_name"].toString().toLowerCase() ==
+                              "take away" &&
+                          orderDetail["order_status"] == "pending")
                         CustomButton(
                           buttonColor: primaryColor,
-                          text: (orderDetail["waiter"] == "none")
-                              ? "Assign Order"
-                              : "Free Table",
+                          text: (orderDetail["table_name"]
+                                      .toString()
+                                      .toLowerCase() ==
+                                  "take away")
+                              ? "Accept Order"
+                              : (orderDetail["waiter"] == "none")
+                                  ? "Assign Order"
+                                  : "Free Table",
                           textColor: kWhite,
-                          function: () {
-                            if (orderDetail["waiter"] == "none") {
+                          function: () async {
+                            if (orderDetail["table_name"]
+                                    .toString()
+                                    .toLowerCase() ==
+                                "take away") {
+                              Alerts.customLoadingAlert(context);
+                              await DatabaseService.db
+                                  .ref()
+                                  .child("orders")
+                                  .child(widget.restaurantsKey)
+                                  .child(orderKeys[index])
+                                  .update({"order_status": "preparing"}).then(
+                                      (value) => KRoutes.pop(context));
+                            } else if (orderDetail["waiter"] == "none") {
                               showDialog(
                                 context: context,
                                 builder: (context) => AllWaiterDisplay(
@@ -242,47 +272,46 @@ class _OrderScreenState extends State<OrderScreen> {
                           width: 130,
                           height: 40,
                         ),
-                        const SizedBox(
-                          width: 20,
-                        ),
-                        CustomButton(
-                          buttonColor: primaryColor,
-                          text: "Cancel Order",
-                          textColor: kWhite,
-                          function: () {
-                            DatabaseService.db
-                                .ref()
-                                .child("orders")
-                                .child(widget.restaurantsKey)
-                                .child(orderKeys[index])
-                                .remove();
-                            DatabaseService.db
-                                .ref()
-                                .child("cancelled_orders")
-                                .child(widget.restaurantsKey)
-                                .child(formatter.format(DateTime.now()))
-                                .child(orderDetail["phone"])
-                                .push()
-                                .update({
-                              "name": orderDetail["name"],
-                              "phone": orderDetail["phone"],
-                              "table_name": orderDetail["table_name"],
-                              "order_status": "cancelled",
-                              "isTableClean": orderDetail["isTableClean"],
-                              "waiter": orderDetail["waiter"]
-                            });
-                          },
-                          width: 130,
-                          height: 40,
-                        ),
-                      ],
-                    ),
-                    if (orderDetail["waiter"] == "none")
                       const SizedBox(
-                        height: 20,
+                        width: 10,
                       ),
-                  ],
-                ),
+                      CustomButton(
+                        buttonColor: primaryColor,
+                        text: "Cancel Order",
+                        textColor: kWhite,
+                        function: () {
+                          DatabaseService.db
+                              .ref()
+                              .child("orders")
+                              .child(widget.restaurantsKey)
+                              .child(orderKeys[index])
+                              .remove();
+                          DatabaseService.db
+                              .ref()
+                              .child("cancelled_orders")
+                              .child(widget.restaurantsKey)
+                              .child(formatter.format(DateTime.now()))
+                              .child(orderDetail["phone"])
+                              .push()
+                              .update({
+                            "name": orderDetail["name"],
+                            "phone": orderDetail["phone"],
+                            "table_name": orderDetail["table_name"],
+                            "order_status": "cancelled",
+                            "isTableClean": orderDetail["isTableClean"],
+                            "waiter": orderDetail["waiter"]
+                          });
+                        },
+                        width: 130,
+                        height: 40,
+                      ),
+                    ],
+                  ),
+                  if (orderDetail["waiter"] == "none")
+                    const SizedBox(
+                      height: 20,
+                    ),
+                ],
               ),
             ],
           ));
