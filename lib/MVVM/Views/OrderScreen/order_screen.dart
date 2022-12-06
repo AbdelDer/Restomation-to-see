@@ -205,73 +205,70 @@ class _OrderScreenState extends State<OrderScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (orderDetail["table_name"].toString().toLowerCase() ==
-                              "take away" &&
-                          orderDetail["order_status"] == "pending")
-                        CustomButton(
-                          buttonColor: primaryColor,
-                          text: (orderDetail["table_name"]
-                                      .toString()
-                                      .toLowerCase() ==
-                                  "take away")
-                              ? "Accept Order"
-                              : (orderDetail["waiter"] == "none")
-                                  ? "Assign Order"
-                                  : "Free Table",
-                          textColor: kWhite,
-                          function: () async {
-                            if (orderDetail["table_name"]
+                      CustomButton(
+                        buttonColor: primaryColor,
+                        text: (orderDetail["table_name"]
                                     .toString()
                                     .toLowerCase() ==
-                                "take away") {
-                              Alerts.customLoadingAlert(context);
-                              await DatabaseService.db
-                                  .ref()
-                                  .child("orders")
-                                  .child(widget.restaurantsKey)
-                                  .child(orderKeys[index])
-                                  .update({"order_status": "preparing"}).then(
-                                      (value) => KRoutes.pop(context));
-                            } else if (orderDetail["waiter"] == "none") {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AllWaiterDisplay(
-                                  restaurantKey: widget.restaurantsKey,
-                                  tableKey: orderKeys[index],
-                                ),
-                              );
-                            } else if (orderDetail["order_status"] ==
-                                "delivered") {
-                              DatabaseService.db
-                                  .ref()
-                                  .child("orders")
-                                  .child(widget.restaurantsKey)
-                                  .child(orderKeys[index])
-                                  .remove();
-                              DatabaseService.db
-                                  .ref()
-                                  .child("completed-orders")
-                                  .child(widget.restaurantsKey)
-                                  .child(formatter.format(DateTime.now()))
-                                  .child(orderDetail["phone"])
-                                  .push()
-                                  .update({
-                                "name": orderDetail["name"],
-                                "phone": orderDetail["phone"],
-                                "table_name": orderDetail["table_name"],
-                                "order_status": "completed",
-                                "isTableClean": orderDetail["isTableClean"],
-                                "waiter": orderDetail["waiter"]
-                              });
-                            } else {
-                              Fluttertoast.showToast(
-                                  msg:
-                                      "You cannot free the table until it is delivered");
-                            }
-                          },
-                          width: 130,
-                          height: 40,
-                        ),
+                                "take away")
+                            ? "Accept Order"
+                            : (orderDetail["waiter"] == "none")
+                                ? "Assign Order"
+                                : "Free Table",
+                        textColor: kWhite,
+                        function: () async {
+                          if (orderDetail["table_name"]
+                                  .toString()
+                                  .toLowerCase() ==
+                              "take away") {
+                            Alerts.customLoadingAlert(context);
+                            await DatabaseService.db
+                                .ref()
+                                .child("orders")
+                                .child(widget.restaurantsKey)
+                                .child(orderKeys[index])
+                                .update({"order_status": "preparing"}).then(
+                                    (value) => KRoutes.pop(context));
+                          } else if (orderDetail["waiter"] == "none") {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AllWaiterDisplay(
+                                restaurantKey: widget.restaurantsKey,
+                                tableKey: orderKeys[index],
+                              ),
+                            );
+                          } else if (orderDetail["order_status"] ==
+                              "delivered") {
+                            DatabaseService.db
+                                .ref()
+                                .child("orders")
+                                .child(widget.restaurantsKey)
+                                .child(orderKeys[index])
+                                .remove();
+                            DatabaseService.db
+                                .ref()
+                                .child("completed-orders")
+                                .child(widget.restaurantsKey)
+                                .child(formatter.format(DateTime.now()))
+                                .child(orderDetail["phone"])
+                                .push()
+                                .update({
+                              "name": orderDetail["name"],
+                              "phone": orderDetail["phone"],
+                              "table_name": orderDetail["table_name"],
+                              "order_status": "completed",
+                              "isTableClean": orderDetail["isTableClean"],
+                              "waiter": orderDetail["waiter"]
+                            });
+                          } else {
+                            Fluttertoast.showToast(
+                                msg:
+                                    "You cannot free the table until it is delivered");
+                          }
+                        },
+                        width: 130,
+                        height: 40,
+                      ),
                       const SizedBox(
                         width: 10,
                       ),
@@ -307,10 +304,9 @@ class _OrderScreenState extends State<OrderScreen> {
                       ),
                     ],
                   ),
-                  if (orderDetail["waiter"] == "none")
-                    const SizedBox(
-                      height: 20,
-                    ),
+                  const SizedBox(
+                    height: 20,
+                  ),
                 ],
               ),
             ],
