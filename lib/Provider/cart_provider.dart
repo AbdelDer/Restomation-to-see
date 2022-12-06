@@ -11,8 +11,19 @@ class Cart extends ChangeNotifier {
     } else {
       cartItems.add(value);
     }
-
     notifyListeners();
+  }
+
+  void updateState() {
+    notifyListeners();
+  }
+
+  String getTotalPrice(List items) {
+    double total = 0;
+    for (var element in items) {
+      total += double.parse(element["price"]) * element["quantity"];
+    }
+    return total.toString();
   }
 
   updateCartItem(Map value, String instructions) {

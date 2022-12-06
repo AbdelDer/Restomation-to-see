@@ -16,9 +16,11 @@ import '../../../Widgets/custom_button.dart';
 
 class TablesPage extends StatefulWidget {
   final String restaurantsKey;
+  final String restaurantsImageName;
   const TablesPage({
     super.key,
     required this.restaurantsKey,
+    required this.restaurantsImageName,
   });
 
   @override
@@ -109,15 +111,13 @@ class _TablesPageState extends State<TablesPage> {
 
             return Column(
               children: [
-                // Beamer.of(context).beamToNamed(
-                //     "/customer-table/${widget.restaurantsKey},${table["table_name"]}");
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     InkWell(
                       onTap: () {
                         Beamer.of(context).beamToNamed(
-                            "/customer-table/${widget.restaurantsKey},${table["table_name"]}");
+                            "/customer-table/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}");
                       },
                       child: CustomText(
                         text: table["table_name"],
@@ -190,54 +190,66 @@ class _TablesPageState extends State<TablesPage> {
 
   void showCustomDialog(BuildContext context,
       {bool update = false, Map? table}) {
+    final formKey = GlobalKey<FormState>();
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             content: SizedBox(
               width: 300,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CustomText(text: "Create Table"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  FormTextField(
-                    controller: tableController,
-                    suffixIcon: const Icon(Icons.table_bar),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  CustomButton(
-                      buttonColor: primaryColor,
-                      text: update ? "Update" : "Create",
-                      textColor: kWhite,
-                      function: () async {
-                        Alerts.customLoadingAlert(context);
-                        if (update) {
-                          await DatabaseService.updateTable(
-                                  widget.restaurantsKey,
-                                  table!["key"],
-                                  tableController.text,
-                                  "https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text}")
-                              .then((value) {
-                            KRoutes.pop(context);
-                            return KRoutes.pop(context);
-                          });
-                        } else {
-                          await DatabaseService.createTable(
-                                  widget.restaurantsKey,
-                                  tableController.text,
-                                  'https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text}')
-                              .then((value) {
-                            KRoutes.pop(context);
-                            return KRoutes.pop(context);
-                          });
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomText(text: "Create Table"),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    FormTextField(
+                      controller: tableController,
+                      suffixIcon: const Icon(Icons.table_bar),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Fill this field";
                         }
-                      })
-                ],
+                        return null;
+                      },
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomButton(
+                        buttonColor: primaryColor,
+                        text: update ? "Update" : "Create",
+                        textColor: kWhite,
+                        function: () async {
+                          if (formKey.currentState!.validate()) {
+                            Alerts.customLoadingAlert(context);
+                            if (update) {
+                              await DatabaseService.updateTable(
+                                      widget.restaurantsKey,
+                                      table!["key"],
+                                      tableController.text,
+                                      "https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text},${widget.restaurantsImageName}")
+                                  .then((value) {
+                                KRoutes.pop(context);
+                                return KRoutes.pop(context);
+                              });
+                            } else {
+                              await DatabaseService.createTable(
+                                      widget.restaurantsKey,
+                                      tableController.text,
+                                      'https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text},${widget.restaurantsImageName}')
+                                  .then((value) {
+                                KRoutes.pop(context);
+                                return KRoutes.pop(context);
+                              });
+                            }
+                          }
+                        })
+                  ],
+                ),
               ),
             ),
           );

@@ -76,7 +76,7 @@ class _HomePageState extends State<HomePage> {
             return GestureDetector(
               onTap: () {
                 Beamer.of(context).beamToNamed(
-                    "/restaurants-details/${restaurants["restaurantsName"]}");
+                    "/restaurants-details/${restaurants["restaurantsName"]},${restaurants["imageName"]}");
               },
               child: Padding(
                 padding: const EdgeInsets.all(10),

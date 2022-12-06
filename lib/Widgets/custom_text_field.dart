@@ -5,7 +5,7 @@ class FormTextField extends StatefulWidget {
   final Widget suffixIcon;
   final TextInputType keyboardtype;
   final bool isPass;
-  final String? Function(String?)? function;
+  final String? Function(String?)? validator;
   final int? maxLength;
   const FormTextField(
       {Key? key,
@@ -13,7 +13,7 @@ class FormTextField extends StatefulWidget {
       required this.suffixIcon,
       this.keyboardtype = TextInputType.text,
       this.isPass = false,
-      this.function,
+      this.validator,
       this.maxLength})
       : super(key: key);
 
@@ -31,7 +31,7 @@ class _FormTextFieldState extends State<FormTextField> {
       obscureText: widget.isPass ? isVisible : false,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       maxLength: widget.maxLength,
-      validator: widget.function,
+      validator: widget.validator,
       decoration: InputDecoration(
           counterText: "",
           isDense: true,

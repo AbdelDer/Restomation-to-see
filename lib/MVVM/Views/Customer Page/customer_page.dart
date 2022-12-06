@@ -6,11 +6,17 @@ import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
+import '../../Repo/Storage Service/storage_service.dart';
+
 class CustomerPage extends StatefulWidget {
   final String restaurantsKey;
   final String tableKey;
+  final String restaurantsImageName;
   const CustomerPage(
-      {super.key, required this.restaurantsKey, required this.tableKey});
+      {super.key,
+      required this.restaurantsKey,
+      required this.tableKey,
+      required this.restaurantsImageName});
 
   @override
   State<CustomerPage> createState() => _CustomerPageState();
@@ -21,7 +27,10 @@ class _CustomerPageState extends State<CustomerPage> {
   TextEditingController phoneController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    
+    final ref = StorageService.storage
+        .ref()
+        .child("restaurantLogos/")
+        .child(widget.restaurantsImageName);
     String selectedValue = "yes";
     return Scaffold(
       backgroundColor: kWhite,
@@ -51,9 +60,20 @@ class _CustomerPageState extends State<CustomerPage> {
                 ),
                 Align(
                   alignment: Alignment.center,
-                  child: Image.asset(
-                    "assets/splash.png",
-                    width: 200,
+                  child: FutureBuilder(
+                    future: ref.getDownloadURL(),
+                    builder: (context, AsyncSnapshot<String> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return CircleAvatar(
+                          radius: 100,
+                          backgroundColor: kWhite,
+                          foregroundImage: NetworkImage(snapshot.data!),
+                        );
+                      }
+                      return const CircleAvatar(
+                          radius: 100,
+                          child: CircularProgressIndicator.adaptive());
+                    },
                   ),
                 ),
                 const SizedBox(

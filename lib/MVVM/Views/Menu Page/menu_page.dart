@@ -144,6 +144,7 @@ class _MenuPageState extends State<MenuPage> {
       {bool update = false, Map? itemData}) {
     FilePickerResult? image;
     Reference? isExisting;
+    final formKey = GlobalKey<FormState>();
     showDialog(
         context: widget.previousScreenContext,
         builder: (context) {
@@ -152,254 +153,278 @@ class _MenuPageState extends State<MenuPage> {
               scrollable: true,
               content: SizedBox(
                 width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomText(text: "Upload Image"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    InkWell(
-                        onTap: () async {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CustomButton(
-                                      buttonColor: primaryColor,
-                                      text: "Select existing images",
-                                      textColor: kWhite,
-                                      function: () {
-                                        KRoutes.pop(context);
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return AlertDialog(
-                                                title: const CustomText(
-                                                    text: "Existing Images :"),
-                                                content: SizedBox(
-                                                  height: 500,
-                                                  width: 500,
-                                                  child: StreamBuilder(
-                                                    stream: DatabaseService
-                                                        .storage
-                                                        .ref()
-                                                        .child("food_images")
-                                                        .listAll()
-                                                        .asStream(),
-                                                    builder: (context,
-                                                        AsyncSnapshot<
-                                                                ListResult>
-                                                            snapshot) {
-                                                      if (snapshot
-                                                              .connectionState ==
-                                                          ConnectionState
-                                                              .waiting) {
-                                                        return const Center(
-                                                            child:
-                                                                CircularProgressIndicator());
-                                                      }
-                                                      if (snapshot.hasError) {
-                                                        return const Text(
-                                                            "error");
-                                                      }
-                                                      List<Reference>
-                                                          allImages = snapshot
-                                                              .data!.items
-                                                              .toList();
-                                                      return GridView.builder(
-                                                        itemCount:
-                                                            allImages.length,
-                                                        gridDelegate:
-                                                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                                                crossAxisCount:
-                                                                    2,
-                                                                mainAxisSpacing:
-                                                                    10,
-                                                                crossAxisSpacing:
-                                                                    10),
-                                                        itemBuilder:
-                                                            (context, index) {
-                                                          return FutureBuilder(
-                                                              future: allImages[
-                                                                      index]
-                                                                  .getDownloadURL(),
-                                                              builder: (BuildContext
-                                                                      context,
-                                                                  AsyncSnapshot
-                                                                      snapshot) {
-                                                                if (snapshot
-                                                                        .connectionState ==
-                                                                    ConnectionState
-                                                                        .done) {
-                                                                  return InkWell(
-                                                                    onTap: () {
-                                                                      KRoutes.pop(
-                                                                          context);
-                                                                      refreshState(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomText(text: "Upload Image"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      InkWell(
+                          onTap: () async {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CustomButton(
+                                        buttonColor: primaryColor,
+                                        text: "Select existing images",
+                                        textColor: kWhite,
+                                        function: () {
+                                          KRoutes.pop(context);
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) {
+                                              return AlertDialog(
+                                                  title: const CustomText(
+                                                      text:
+                                                          "Existing Images :"),
+                                                  content: SizedBox(
+                                                    height: 500,
+                                                    width: 500,
+                                                    child: StreamBuilder(
+                                                      stream: DatabaseService
+                                                          .storage
+                                                          .ref()
+                                                          .child("food_images")
+                                                          .listAll()
+                                                          .asStream(),
+                                                      builder: (context,
+                                                          AsyncSnapshot<
+                                                                  ListResult>
+                                                              snapshot) {
+                                                        if (snapshot
+                                                                .connectionState ==
+                                                            ConnectionState
+                                                                .waiting) {
+                                                          return const Center(
+                                                              child:
+                                                                  CircularProgressIndicator());
+                                                        }
+                                                        if (snapshot.hasError) {
+                                                          return const Text(
+                                                              "error");
+                                                        }
+                                                        List<Reference>
+                                                            allImages = snapshot
+                                                                .data!.items
+                                                                .toList();
+                                                        return GridView.builder(
+                                                          itemCount:
+                                                              allImages.length,
+                                                          gridDelegate:
+                                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                                                  crossAxisCount:
+                                                                      2,
+                                                                  mainAxisSpacing:
+                                                                      10,
+                                                                  crossAxisSpacing:
+                                                                      10),
+                                                          itemBuilder:
+                                                              (context, index) {
+                                                            return FutureBuilder(
+                                                                future: allImages[
+                                                                        index]
+                                                                    .getDownloadURL(),
+                                                                builder: (BuildContext
+                                                                        context,
+                                                                    AsyncSnapshot
+                                                                        snapshot) {
+                                                                  if (snapshot
+                                                                          .connectionState ==
+                                                                      ConnectionState
+                                                                          .done) {
+                                                                    return InkWell(
+                                                                      onTap:
                                                                           () {
-                                                                        isExisting =
-                                                                            allImages[index];
-                                                                      });
-                                                                    },
-                                                                    child:
-                                                                        Container(
-                                                                      decoration: BoxDecoration(
-                                                                          borderRadius: BorderRadius.circular(15),
-                                                                          boxShadow: const [
-                                                                            BoxShadow(
-                                                                                offset: Offset(0, 0),
-                                                                                spreadRadius: 2,
-                                                                                blurRadius: 2,
-                                                                                color: Colors.black12)
-                                                                          ],
-                                                                          image: DecorationImage(image: NetworkImage(snapshot.data!), fit: BoxFit.cover)),
+                                                                        KRoutes.pop(
+                                                                            context);
+                                                                        refreshState(
+                                                                            () {
+                                                                          isExisting =
+                                                                              allImages[index];
+                                                                        });
+                                                                      },
+                                                                      child:
+                                                                          Container(
+                                                                        decoration: BoxDecoration(
+                                                                            borderRadius: BorderRadius.circular(15),
+                                                                            boxShadow: const [
+                                                                              BoxShadow(offset: Offset(0, 0), spreadRadius: 2, blurRadius: 2, color: Colors.black12)
+                                                                            ],
+                                                                            image: DecorationImage(image: NetworkImage(snapshot.data!), fit: BoxFit.cover)),
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                  return Container(
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              15),
+                                                                      boxShadow: const [
+                                                                        BoxShadow(
+                                                                            offset: Offset(
+                                                                                0, 0),
+                                                                            spreadRadius:
+                                                                                2,
+                                                                            blurRadius:
+                                                                                2,
+                                                                            color:
+                                                                                Colors.black12)
+                                                                      ],
                                                                     ),
                                                                   );
-                                                                }
-                                                                return Container(
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            15),
-                                                                    boxShadow: const [
-                                                                      BoxShadow(
-                                                                          offset: Offset(0,
-                                                                              0),
-                                                                          spreadRadius:
-                                                                              2,
-                                                                          blurRadius:
-                                                                              2,
-                                                                          color:
-                                                                              Colors.black12)
-                                                                    ],
-                                                                  ),
-                                                                );
-                                                              });
-                                                        },
-                                                      );
-                                                    },
-                                                  ),
-                                                ));
-                                          },
-                                        );
-                                      }),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  CustomButton(
-                                      buttonColor: primaryColor,
-                                      text: "Upload",
-                                      textColor: kWhite,
-                                      function: () async {
-                                        image =
-                                            await FilePicker.platform.pickFiles(
-                                          allowMultiple: false,
-                                          type: FileType.custom,
-                                          allowedExtensions: [
-                                            "png",
-                                            "jpg",
-                                          ],
-                                        ).then((value) {
-                                          if (value == null) {
-                                            Fluttertoast.showToast(
-                                                msg: "No file selected");
-                                          } else {
-                                            KRoutes.pop(context);
-                                            refreshState(() {});
-                                          }
-                                          return value;
-                                        });
-                                      }),
-                                ],
+                                                                });
+                                                          },
+                                                        );
+                                                      },
+                                                    ),
+                                                  ));
+                                            },
+                                          );
+                                        }),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    CustomButton(
+                                        buttonColor: primaryColor,
+                                        text: "Upload",
+                                        textColor: kWhite,
+                                        function: () async {
+                                          image = await FilePicker.platform
+                                              .pickFiles(
+                                            allowMultiple: false,
+                                            type: FileType.custom,
+                                            allowedExtensions: [
+                                              "png",
+                                              "jpg",
+                                            ],
+                                          ).then((value) {
+                                            if (value == null) {
+                                              Fluttertoast.showToast(
+                                                  msg: "No file selected");
+                                            } else {
+                                              KRoutes.pop(context);
+                                              refreshState(() {});
+                                            }
+                                            return value;
+                                          });
+                                        }),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        child: isExisting != null
-                            ? FutureBuilder(
-                                future: isExisting!.getDownloadURL(),
-                                builder: (BuildContext context,
-                                    AsyncSnapshot snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.done) {
-                                    return CircleAvatar(
+                            );
+                          },
+                          child: isExisting != null
+                              ? FutureBuilder(
+                                  future: isExisting!.getDownloadURL(),
+                                  builder: (BuildContext context,
+                                      AsyncSnapshot snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.done) {
+                                      return CircleAvatar(
+                                        radius: 100,
+                                        backgroundColor: kWhite,
+                                        foregroundImage:
+                                            NetworkImage(snapshot.data),
+                                      );
+                                    }
+                                    return const CircleAvatar(
+                                      radius: 100,
+                                      backgroundColor: kGrey,
+                                    );
+                                  })
+                              : image != null
+                                  ? CircleAvatar(
                                       radius: 100,
                                       backgroundColor: kWhite,
-                                      foregroundImage:
-                                          NetworkImage(snapshot.data),
-                                    );
-                                  }
-                                  return const CircleAvatar(
-                                    radius: 100,
-                                    backgroundColor: kGrey,
-                                  );
-                                })
-                            : image != null
-                                ? CircleAvatar(
-                                    radius: 100,
-                                    backgroundColor: kWhite,
-                                    foregroundImage:
-                                        MemoryImage(image!.files.single.bytes!),
-                                  )
-                                : const CircleAvatar(
-                                    radius: 100,
-                                    backgroundColor: kWhite,
-                                    foregroundImage: NetworkImage(
-                                        "https://cdn.dribbble.com/users/1965140/screenshots/9776931/dribbble_75_4x.png"),
-                                  )),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Item name"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: menuItemNameController,
-                      suffixIcon: const Icon(Icons.person),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Item price"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: menuItemPriceController,
-                      keyboardtype: TextInputType.number,
-                      suffixIcon: const Icon(Icons.monetization_on_outlined),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Short description"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: menuItemDescriptionController,
-                      suffixIcon: const Icon(Icons.description),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const ListDropDown(),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    CustomButton(
-                        buttonColor: primaryColor,
-                        text: update ? "Update" : "create",
-                        textColor: kWhite,
-                        function: () async {
-                          createItem(update, image, itemData, isExisting);
-                        }),
-                  ],
+                                      foregroundImage: MemoryImage(
+                                          image!.files.single.bytes!),
+                                    )
+                                  : const CircleAvatar(
+                                      radius: 100,
+                                      backgroundColor: kWhite,
+                                      foregroundImage: NetworkImage(
+                                          "https://cdn.dribbble.com/users/1965140/screenshots/9776931/dribbble_75_4x.png"),
+                                    )),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Item name"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: menuItemNameController,
+                        suffixIcon: const Icon(Icons.person),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Fill this field";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Item price"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: menuItemPriceController,
+                        keyboardtype: TextInputType.number,
+                        suffixIcon: const Icon(Icons.monetization_on_outlined),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Fill this field";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Short description"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: menuItemDescriptionController,
+                        suffixIcon: const Icon(Icons.description),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Fill this field";
+                          }
+                          if (value.length < 15) {
+                            return "Description should not be less than 15 characters";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const ListDropDown(),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      CustomButton(
+                          buttonColor: primaryColor,
+                          text: update ? "Update" : "create",
+                          textColor: kWhite,
+                          function: () async {
+                            if (formKey.currentState!.validate()) {
+                              createItem(update, image, itemData, isExisting);
+                            }
+                          }),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -413,9 +438,7 @@ class _MenuPageState extends State<MenuPage> {
       if (menuItemNameController.text.isEmpty ||
           menuItemPriceController.text.isEmpty ||
           menuItemDescriptionController.text.isEmpty) {
-        Fluttertoast.showToast(
-            msg:
-                "Make sure to fill all fields and upload an image of the item");
+        Fluttertoast.showToast(msg: "Please upload an image of the item");
       } else {
         String? fileName;
         Uint8List? fileBytes;

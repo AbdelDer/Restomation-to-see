@@ -73,7 +73,18 @@ class _LoginState extends State<Login> {
             height: 10,
           ),
           FormTextField(
-              controller: email, suffixIcon: const Icon(Icons.email_outlined)),
+            controller: email,
+            suffixIcon: const Icon(Icons.email_outlined),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Field can't be empty";
+              }
+              if (!value.contains("@") || !value.contains(".")) {
+                return "Enter a valid email";
+              }
+              return null;
+            },
+          ),
           const SizedBox(
             height: 20,
           ),
@@ -85,9 +96,17 @@ class _LoginState extends State<Login> {
             height: 10,
           ),
           FormTextField(
-              controller: password,
-              isPass: true,
-              suffixIcon: const Icon(Icons.visibility_outlined)),
+            controller: password,
+            isPass: true,
+            suffixIcon: const Icon(Icons.visibility_outlined),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Field can't be empty";
+              }
+
+              return null;
+            },
+          ),
           const SizedBox(
             height: 10,
           ),
@@ -110,20 +129,22 @@ class _LoginState extends State<Login> {
                   buttonColor: Colors.amber,
                   text: "login",
                   function: () async {
-                    Alerts.customLoadingAlert(context);
-                    var response = await DatabaseService.loginUser(
-                      email.text,
-                      password.text,
-                    );
-                    if (response != null) {
-                      if (response["role"] == "super_admin") {
-                        pushScreen(null);
+                    if (_formKey.currentState!.validate()) {
+                      Alerts.customLoadingAlert(context);
+                      var response = await DatabaseService.loginUser(
+                        email.text,
+                        password.text,
+                      );
+                      if (response != null) {
+                        if (response["role"] == "super_admin") {
+                          pushScreen(null);
+                        } else {
+                          pushScreen(
+                              "/restaurants-details/${response["assigned_restaurant"]}");
+                        }
                       } else {
-                        pushScreen(
-                            "/restaurants-details/${response["assigned_restaurant"]}");
+                        showError();
                       }
-                    } else {
-                      showError();
                     }
                   })),
           const SizedBox(

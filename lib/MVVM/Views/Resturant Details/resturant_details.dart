@@ -4,7 +4,11 @@ import 'package:restomation/Widgets/custom_app_bar.dart';
 
 class RestaurantsDetailPage extends StatelessWidget {
   final String restaurantsKey;
-  const RestaurantsDetailPage({super.key, required this.restaurantsKey});
+  final String restaurantsImageName;
+  const RestaurantsDetailPage(
+      {super.key,
+      required this.restaurantsKey,
+      required this.restaurantsImageName});
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +37,8 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://s.alicdn.com/@sc04/kf/H436ab8e73d1244f1a216e047dc16421cd.jpg",
                 "page": () {
-                  Beamer.of(context)
-                      .beamToNamed("/restaurants-tables/$restaurantsKey");
+                  Beamer.of(context).beamToNamed(
+                      "/restaurants-tables/$restaurantsKey,$restaurantsImageName");
                 }
               },
               {

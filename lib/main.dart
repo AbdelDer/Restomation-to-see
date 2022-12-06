@@ -1,5 +1,6 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/RestaurantService/restaurant_service.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
@@ -60,6 +61,7 @@ class _MyAppState extends State<MyApp> {
             type: BeamPageType.fadeTransition,
             child: RestaurantsDetailPage(
               restaurantsKey: parameters[0],
+              restaurantsImageName: parameters[1],
             ),
           );
         },
@@ -94,6 +96,7 @@ class _MyAppState extends State<MyApp> {
             type: BeamPageType.fadeTransition,
             child: TablesPage(
               restaurantsKey: parameters[0],
+              restaurantsImageName: parameters[1],
             ),
           );
         },
@@ -145,6 +148,7 @@ class _MyAppState extends State<MyApp> {
             child: CustomerPage(
               restaurantsKey: parameters[0],
               tableKey: parameters[1],
+              restaurantsImageName: parameters[2],
             ),
           );
         },
@@ -199,10 +203,12 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(dividerColor: Colors.transparent),
+        theme: ThemeData(
+            dividerColor: Colors.transparent,
+            textTheme: GoogleFonts.poppinsTextTheme()),
         routeInformationParser: BeamerParser(),
         routerDelegate: routerDelegate,
       ),
     );
-  }
+  } 
 }

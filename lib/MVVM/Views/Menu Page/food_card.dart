@@ -260,6 +260,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                     }
                   },
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Icon(
                         Icons.add,

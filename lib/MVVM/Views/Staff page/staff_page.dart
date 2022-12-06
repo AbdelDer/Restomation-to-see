@@ -191,6 +191,7 @@ class _StaffPageState extends State<StaffPage> {
       {bool update = false, Map? person}) {
     FilePickerResult? image;
     String selectedValue = "waiter";
+    final formKey = GlobalKey<FormState>();
     showDialog(
         context: context,
         builder: (context) {
@@ -199,196 +200,237 @@ class _StaffPageState extends State<StaffPage> {
               scrollable: true,
               content: SizedBox(
                 width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomText(text: "Upload Image"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    InkWell(
-                        onTap: () async {
-                          image = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: [
-                              "png",
-                              "jpg",
-                            ],
-                          );
-                          if (image == null) {
-                            Fluttertoast.showToast(msg: "No file selected");
-                          } else {
-                            refreshState(() {});
-                          }
-                        },
-                        child: image != null
-                            ? CircleAvatar(
-                                radius: 100,
-                                backgroundColor: kWhite,
-                                foregroundImage:
-                                    MemoryImage(image!.files.single.bytes!),
-                              )
-                            : const CircleAvatar(
-                                radius: 100,
-                                backgroundColor: kWhite,
-                                foregroundImage: NetworkImage(
-                                    "https://media.istockphoto.com/vectors/cartoon-image-people-avatar-profile-flat-vector-social-media-photo-vector-id1339903732?k=20&m=1339903732&s=612x612&w=0&h=hHtK0ro8X1vLOxUAuHX_AUcbjyTylR9-9Q0OjgJm16E="),
-                              )),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Person's name"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: personNameController,
-                      suffixIcon: const Icon(Icons.person),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Person's phone"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: personPhoneController,
-                      keyboardtype: TextInputType.number,
-                      maxLength: 10,
-                      suffixIcon: const Icon(Icons.phone),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Person's email"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: personEmailController,
-                      suffixIcon: const Icon(Icons.email),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Person's Password"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: personPasswordController,
-                      isPass: true,
-                      suffixIcon: const Icon(Icons.visibility),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        CustomButton(
-                          buttonColor:
-                              selectedValue == "waiter" ? primaryColor : kGrey,
-                          text: "Waiter",
-                          textColor: kWhite,
-                          function: () {
-                            refreshState(() {
-                              selectedValue = "waiter";
-                            });
-                          },
-                          width: 130,
-                          height: 40,
-                        ),
-                        CustomButton(
-                          buttonColor:
-                              selectedValue == "cook" ? primaryColor : kGrey,
-                          text: "Cook",
-                          textColor: kWhite,
-                          function: () {
-                            refreshState(() {
-                              selectedValue = "cook";
-                            });
-                          },
-                          width: 130,
-                          height: 40,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    CustomButton(
-                        buttonColor: primaryColor,
-                        text: update ? "Update" : "create",
-                        textColor: kWhite,
-                        function: () async {
-                          if (image == null ||
-                              personNameController.text.isEmpty ||
-                              personPhoneController.text.isEmpty) {
-                            Fluttertoast.showToast(
-                                msg:
-                                    "Make sure to fill all fields and upload an image of the item");
-                          } else {
-                            final fileBytes = image!.files.single.bytes;
-                            final fileName = image!.files.single.name;
-                            if (update) {
-                              Map<String, Object?> item = {
-                                "assigned_restaurant": widget.restaurantsKey,
-                                "name": personNameController.text,
-                                "phoneNo": personPhoneController.text,
-                                "image":
-                                    "staff/${widget.restaurantsKey}/$fileName",
-                                "email": personEmailController.text,
-                                "password": personPasswordController.text,
-                                "role": selectedValue.toLowerCase(),
-                              };
-                              Alerts.customLoadingAlert(context);
-                              await DatabaseService.updateStaffCategoryPerson(
-                                      widget.restaurantsKey,
-                                      person!["key"],
-                                      person["image"],
-                                      fileName,
-                                      item,
-                                      fileBytes!)
-                                  .then((value) {
-                                personNameController.clear();
-                                personPhoneController.clear();
-                                personEmailController.clear();
-                                personPasswordController.clear();
-                                KRoutes.pop(context);
-                                return KRoutes.pop(context);
-                              });
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomText(text: "Upload Image"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      InkWell(
+                          onTap: () async {
+                            image = await FilePicker.platform.pickFiles(
+                              allowMultiple: false,
+                              type: FileType.custom,
+                              allowedExtensions: [
+                                "png",
+                                "jpg",
+                              ],
+                            );
+                            if (image == null) {
+                              Fluttertoast.showToast(msg: "No file selected");
                             } else {
-                              Map item = {
-                                "assigned_restaurant": widget.restaurantsKey,
-                                "name": personNameController.text,
-                                "phoneNo": personPhoneController.text,
-                                "image":
-                                    "staff/${widget.restaurantsKey}/$fileName",
-                                "email": personEmailController.text,
-                                "password": personPasswordController.text,
-                                "role": selectedValue.toLowerCase(),
-                              };
-                              Alerts.customLoadingAlert(context);
-                              await DatabaseService.createStaffCategoryPerson(
-                                      widget.restaurantsKey,
-                                      fileName,
-                                      item,
-                                      fileBytes!)
-                                  .then((value) {
-                                personNameController.clear();
-                                personPhoneController.clear();
-                                personEmailController.clear();
-                                personPasswordController.clear();
-                                KRoutes.pop(context);
-                                return KRoutes.pop(context);
-                              });
+                              refreshState(() {});
                             }
+                          },
+                          child: image != null
+                              ? CircleAvatar(
+                                  radius: 100,
+                                  backgroundColor: kWhite,
+                                  foregroundImage:
+                                      MemoryImage(image!.files.single.bytes!),
+                                )
+                              : const CircleAvatar(
+                                  radius: 100,
+                                  backgroundColor: kWhite,
+                                  foregroundImage: NetworkImage(
+                                      "https://media.istockphoto.com/vectors/cartoon-image-people-avatar-profile-flat-vector-social-media-photo-vector-id1339903732?k=20&m=1339903732&s=612x612&w=0&h=hHtK0ro8X1vLOxUAuHX_AUcbjyTylR9-9Q0OjgJm16E="),
+                                )),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Person's name"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: personNameController,
+                        suffixIcon: const Icon(Icons.person),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
                           }
-                        }),
-                  ],
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Person's phone"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: personPhoneController,
+                        keyboardtype: TextInputType.number,
+                        maxLength: 10,
+                        suffixIcon: const Icon(Icons.phone),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
+                          }
+                          if (value.length < 10) {
+                            return "Number should not be less than 10 digits";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Person's email"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: personEmailController,
+                        suffixIcon: const Icon(Icons.email),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
+                          }
+                          if (!value.contains("@") || !value.contains(".")) {
+                            return "Enter a valid Email";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Person's Password"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: personPasswordController,
+                        isPass: true,
+                        suffixIcon: const Icon(Icons.visibility),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
+                          }
+                          if (value.length < 6) {
+                            return "Password should not be less than 6 characters";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          CustomButton(
+                            buttonColor: selectedValue == "waiter"
+                                ? primaryColor
+                                : kGrey,
+                            text: "Waiter",
+                            textColor: kWhite,
+                            function: () {
+                              refreshState(() {
+                                selectedValue = "waiter";
+                              });
+                            },
+                            width: 130,
+                            height: 40,
+                          ),
+                          CustomButton(
+                            buttonColor:
+                                selectedValue == "cook" ? primaryColor : kGrey,
+                            text: "Cook",
+                            textColor: kWhite,
+                            function: () {
+                              refreshState(() {
+                                selectedValue = "cook";
+                              });
+                            },
+                            width: 130,
+                            height: 40,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      CustomButton(
+                          buttonColor: primaryColor,
+                          text: update ? "Update" : "create",
+                          textColor: kWhite,
+                          function: () async {
+                            if (formKey.currentState!.validate()) {
+                              if (image == null) {
+                                Fluttertoast.showToast(
+                                    msg:
+                                        "Please upload the image of the person");
+                              } else {
+                                final fileBytes = image!.files.single.bytes;
+                                final fileName = image!.files.single.name;
+                                if (update) {
+                                  Map<String, Object?> item = {
+                                    "assigned_restaurant":
+                                        widget.restaurantsKey,
+                                    "name": personNameController.text,
+                                    "phoneNo": personPhoneController.text,
+                                    "image":
+                                        "staff/${widget.restaurantsKey}/$fileName",
+                                    "email": personEmailController.text,
+                                    "password": personPasswordController.text,
+                                    "role": selectedValue.toLowerCase(),
+                                  };
+                                  Alerts.customLoadingAlert(context);
+                                  await DatabaseService
+                                          .updateStaffCategoryPerson(
+                                              widget.restaurantsKey,
+                                              person!["key"],
+                                              person["image"],
+                                              fileName,
+                                              item,
+                                              fileBytes!)
+                                      .then((value) {
+                                    personNameController.clear();
+                                    personPhoneController.clear();
+                                    personEmailController.clear();
+                                    personPasswordController.clear();
+                                    KRoutes.pop(context);
+                                    return KRoutes.pop(context);
+                                  });
+                                } else {
+                                  Map item = {
+                                    "assigned_restaurant":
+                                        widget.restaurantsKey,
+                                    "name": personNameController.text,
+                                    "phoneNo": personPhoneController.text,
+                                    "image":
+                                        "staff/${widget.restaurantsKey}/$fileName",
+                                    "email": personEmailController.text,
+                                    "password": personPasswordController.text,
+                                    "role": selectedValue.toLowerCase(),
+                                  };
+                                  Alerts.customLoadingAlert(context);
+                                  await DatabaseService
+                                          .createStaffCategoryPerson(
+                                              widget.restaurantsKey,
+                                              fileName,
+                                              item,
+                                              fileBytes!)
+                                      .then((value) {
+                                    personNameController.clear();
+                                    personPhoneController.clear();
+                                    personEmailController.clear();
+                                    personPasswordController.clear();
+                                    KRoutes.pop(context);
+                                    return KRoutes.pop(context);
+                                  });
+                                }
+                              }
+                            }
+                          }),
+                    ],
+                  ),
                 ),
               ),
             );

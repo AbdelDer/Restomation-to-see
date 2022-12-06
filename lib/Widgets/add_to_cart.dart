@@ -60,6 +60,7 @@ class _AddToCartState extends State<AddToCart> {
                         setState(() {
                           initialValue--;
                           cart.cartItems[index]["quantity"] = initialValue;
+                          cart.updateState();
                         });
                         if (initialValue == 0) {
                           cart.deleteCartItem(widget.foodData);
@@ -75,6 +76,7 @@ class _AddToCartState extends State<AddToCart> {
                         setState(() {
                           initialValue++;
                           cart.cartItems[index]["quantity"] = initialValue;
+                          cart.updateState();
                         });
                       },
                       child: const Icon(

@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -44,18 +45,6 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           title: "Menu",
           appBar: AppBar(),
           widgets: [
-            if (widget.name != null)
-              CustomCartBadgeIcon(
-                tableKey: widget.tableKey!,
-                restaurantsKey: widget.restaurantsKey,
-                name: widget.name!,
-                phone: widget.phone!,
-                isTableClean: widget.isTableClean!,
-              ),
-            if (widget.name == null)
-              const SizedBox(
-                width: 10,
-              ),
             if (widget.name == null)
               InkWell(
                 onTap: () {
@@ -81,6 +70,15 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
             ),
           ],
           appBarHeight: 50),
+      bottomNavigationBar: (widget.name != null)
+          ? CustomCartBadgeIcon(
+              tableKey: widget.tableKey!,
+              restaurantsKey: widget.restaurantsKey,
+              name: widget.name!,
+              phone: widget.phone!,
+              isTableClean: widget.isTableClean!,
+            )
+          : null,
       body: StreamBuilder(
           stream: FirebaseDatabase.instance
               .ref()
@@ -152,6 +150,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   }
 
   void showCustomDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
     showDialog(
         context: context,
         builder: (context) {
@@ -159,34 +158,48 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
             scrollable: true,
             content: SizedBox(
               width: 300,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CustomText(text: "Create Category"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  FormTextField(
-                    controller: categoryController,
-                    suffixIcon: const Icon(Icons.shower_sharp),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  CustomButton(
-                      buttonColor: primaryColor,
-                      text: "create",
-                      textColor: kWhite,
-                      function: () async {
-                        Alerts.customLoadingAlert(context);
-                        await DatabaseService.createCategory(
-                                widget.restaurantsKey, categoryController.text)
-                            .then((value) {
-                          KRoutes.pop(context);
-                          return KRoutes.pop(context);
-                        });
-                      })
-                ],
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CustomText(text: "Create Category"),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    FormTextField(
+                      controller: categoryController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Fill this field";
+                        }
+                        return null;
+                      },
+                      suffixIcon: const Icon(Icons.shower_sharp),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    CustomButton(
+                        buttonColor: primaryColor,
+                        text: "create",
+                        textColor: kWhite,
+                        function: () async {
+                          if (!formKey.currentState!.validate()) {
+                            Fluttertoast.showToast(msg: "Field can't be empty");
+                          } else {
+                            Alerts.customLoadingAlert(context);
+                            await DatabaseService.createCategory(
+                                    widget.restaurantsKey,
+                                    categoryController.text)
+                                .then((value) {
+                              KRoutes.pop(context);
+                              return KRoutes.pop(context);
+                            });
+                          }
+                        })
+                  ],
+                ),
               ),
             ),
           );

@@ -163,6 +163,7 @@ class _AdminScreenState extends State<AdminScreen> {
 
   Future<void> showCustomDialog(BuildContext context,
       {bool update = false, Map? person}) async {
+    final formKey = GlobalKey<FormState>();
     await showDialog(
         context: context,
         builder: (context) {
@@ -171,71 +172,101 @@ class _AdminScreenState extends State<AdminScreen> {
               scrollable: true,
               content: SizedBox(
                 width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomText(text: "Create Admin"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Name"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: name,
-                      suffixIcon: const Icon(Icons.shower_sharp),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Email"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: email,
-                      suffixIcon: const Icon(Icons.email),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "Password"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: password,
-                      isPass: true,
-                      keyboardtype: TextInputType.number,
-                      suffixIcon: const Icon(Icons.visibility),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    CustomButton(
-                        buttonColor: primaryColor,
-                        text: update == true ? "Update" : "create",
-                        textColor: kWhite,
-                        function: () async {
-                          Alerts.customLoadingAlert(context);
-                          await DatabaseService.createSubAdminRestaurant(
-                                  widget.restaurantsKey,
-                                  name.text,
-                                  email.text,
-                                  password.text,
-                                  update: update,
-                                  personKey: person?["key"])
-                              .then((value) {
-                            KRoutes.pop(context);
-                            KRoutes.pop(context);
-                            return Fluttertoast.showToast(
-                                msg: update == true
-                                    ? "Admin Updated Successfully"
-                                    : "Admin Created Successfully");
-                          });
-                        }),
-                  ],
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomText(text: "Create Admin"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Name"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: name,
+                        suffixIcon: const Icon(Icons.shower_sharp),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
+                          }
+
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Email"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: email,
+                        suffixIcon: const Icon(Icons.email),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
+                          }
+                          if (!value.contains("@") || !value.contains(".")) {
+                            return "Enter a valid Email";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const CustomText(text: "Password"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: password,
+                        isPass: true,
+                        keyboardtype: TextInputType.number,
+                        suffixIcon: const Icon(Icons.visibility),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Field cannot be empty";
+                          }
+                          if (value.length < 6) {
+                            return "Password should not be less than 6 characters";
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      CustomButton(
+                          buttonColor: primaryColor,
+                          text: update == true ? "Update" : "create",
+                          textColor: kWhite,
+                          function: () async {
+                            if (formKey.currentState!.validate()) {
+                              Alerts.customLoadingAlert(context);
+                              await DatabaseService.createSubAdminRestaurant(
+                                      widget.restaurantsKey,
+                                      name.text,
+                                      email.text,
+                                      password.text,
+                                      update: update,
+                                      personKey: person?["key"])
+                                  .then((value) {
+                                KRoutes.pop(context);
+                                KRoutes.pop(context);
+                                return Fluttertoast.showToast(
+                                    msg: update == true
+                                        ? "Admin Updated Successfully"
+                                        : "Admin Created Successfully");
+                              });
+                            }
+                          }),
+                    ],
+                  ),
                 ),
               ),
             );
