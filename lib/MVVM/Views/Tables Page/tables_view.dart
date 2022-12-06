@@ -1,8 +1,6 @@
 import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -31,7 +29,6 @@ class _TablesPageState extends State<TablesPage> {
   final TextEditingController tableController = TextEditingController();
 
   final TextEditingController controller = TextEditingController();
-  int? tableNumber;
 
   @override
   Widget build(BuildContext context) {
@@ -45,18 +42,7 @@ class _TablesPageState extends State<TablesPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (tableNumber == null) {
-              Fluttertoast.showToast(msg: "Wait till all Tables are fetched");
-            } else {
-              await DatabaseService.createTable(
-                      widget.restaurantsKey,
-                      "Table ${(tableNumber! + 1)}",
-                      "https://naqeeb9a.github.io/#/customer-table/${widget.restaurantsKey},Table ${(tableNumber! + 1)}")
-                  .then((value) {
-                KRoutes.pop(context);
-                return KRoutes.pop(context);
-              });
-            }
+            showCustomDialog(context);
           },
           label: const CustomText(
             text: "Create table",
@@ -100,12 +86,11 @@ class _TablesPageState extends State<TablesPage> {
       return const Expanded(child: CustomLoader());
     }
     if (snapshot.data!.snapshot.children.isEmpty) {
-      tableNumber = snapshot.data!.snapshot.children.length;
       return const Expanded(
         child: Center(child: CustomText(text: "No Tables Added Yet !!")),
       );
     }
-    tableNumber = snapshot.data!.snapshot.children.length;
+
     Map allrestaurantsTables = snapshot.data!.snapshot.value as Map;
     List restaurantsTables = allrestaurantsTables.keys.toList();
     final suggestions = allrestaurantsTables.keys.toList().where((element) {
@@ -122,28 +107,80 @@ class _TablesPageState extends State<TablesPage> {
             Map table = allrestaurantsTables[e] as Map;
             table["key"] = e;
 
-            return Slidable(
-              endActionPane: _actionPane(table),
-              child: InkWell(
-                onTap: () {
-                  Beamer.of(context).beamToNamed(
-                      "/customer-table/${widget.restaurantsKey},${table["table_name"]}");
-                },
-                child: Row(
+            return Column(
+              children: [
+                // Beamer.of(context).beamToNamed(
+                //     "/customer-table/${widget.restaurantsKey},${table["table_name"]}");
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CustomText(
-                      text: table["table_name"],
-                      fontsize: 20,
+                    InkWell(
+                      onTap: () {
+                        Beamer.of(context).beamToNamed(
+                            "/customer-table/${widget.restaurantsKey},${table["table_name"]}");
+                      },
+                      child: CustomText(
+                        text: table["table_name"],
+                        fontsize: 20,
+                      ),
                     ),
-                    QrImage(
-                      data: '${table["qrLink"]}',
-                      version: QrVersions.auto,
-                      size: 150,
+                    InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: SizedBox(
+                              width: MediaQuery.of(context).size.width / 2,
+                              child: QrImage(
+                                data: '${table["qrLink"]}',
+                                version: QrVersions.auto,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: QrImage(
+                        data: '${table["qrLink"]}',
+                        version: QrVersions.auto,
+                        size: 150,
+                      ),
                     ),
                   ],
                 ),
-              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      color: primaryColor,
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                      ),
+                      onPressed: () {
+                        tableController.text = table["table_name"];
+
+                        showCustomDialog(context, table: table, update: true);
+                      },
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    IconButton(
+                      color: Colors.red,
+                      icon: const Icon(
+                        Icons.delete_outline,
+                      ),
+                      onPressed: () {
+                        DatabaseService.db
+                            .ref()
+                            .child("tables")
+                            .child(widget.restaurantsKey)
+                            .child(table["key"])
+                            .remove();
+                      },
+                    ),
+                  ],
+                )
+              ],
             );
           }).toList(),
         ),
@@ -151,83 +188,60 @@ class _TablesPageState extends State<TablesPage> {
     );
   }
 
-  void showCustomDialog(BuildContext context, Map table) {
+  void showCustomDialog(BuildContext context,
+      {bool update = false, Map? table}) {
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            scrollable: true,
             content: SizedBox(
               width: 300,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CustomText(text: "Update Table"),
+                  const CustomText(text: "Create Table"),
                   const SizedBox(
                     height: 10,
                   ),
                   FormTextField(
                     controller: tableController,
-                    suffixIcon: const Icon(Icons.shower_sharp),
+                    suffixIcon: const Icon(Icons.table_bar),
                   ),
                   const SizedBox(
                     height: 20,
                   ),
                   CustomButton(
                       buttonColor: primaryColor,
-                      text: "Update",
+                      text: update ? "Update" : "Create",
                       textColor: kWhite,
                       function: () async {
                         Alerts.customLoadingAlert(context);
-
-                        await DatabaseService.updateTable(widget.restaurantsKey,
-                                table["key"], tableController.text)
-                            .then((value) {
-                          KRoutes.pop(context);
-                          return KRoutes.pop(context);
-                        });
+                        if (update) {
+                          await DatabaseService.updateTable(
+                                  widget.restaurantsKey,
+                                  table!["key"],
+                                  tableController.text,
+                                  "https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text}")
+                              .then((value) {
+                            KRoutes.pop(context);
+                            return KRoutes.pop(context);
+                          });
+                        } else {
+                          await DatabaseService.createTable(
+                                  widget.restaurantsKey,
+                                  tableController.text,
+                                  'https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text}')
+                              .then((value) {
+                            KRoutes.pop(context);
+                            return KRoutes.pop(context);
+                          });
+                        }
                       })
                 ],
               ),
             ),
           );
         });
-  }
-
-  ActionPane _actionPane(
-    Map table,
-  ) {
-    return ActionPane(
-      motion: const ScrollMotion(),
-      children: [
-        SlidableAction(
-          onPressed: (context) {
-            tableController.text = table["key"];
-
-            showCustomDialog(context, table);
-          },
-          backgroundColor: const Color(0xFF21B7CA),
-          foregroundColor: Colors.white,
-          icon: Icons.share,
-          label: 'Edit',
-        ),
-        SlidableAction(
-          onPressed: (context) {
-            DatabaseService.db
-                .ref()
-                .child("restaurants")
-                .child(widget.restaurantsKey)
-                .child("tables")
-                .child(table["key"])
-                .remove();
-          },
-          backgroundColor: const Color(0xFFFE4A49),
-          foregroundColor: Colors.white,
-          icon: Icons.delete,
-          label: 'Delete',
-        ),
-      ],
-    );
   }
 
   @override

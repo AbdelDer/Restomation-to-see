@@ -354,20 +354,17 @@ class _MenuPageState extends State<MenuPage> {
                     const SizedBox(
                       height: 10,
                     ),
-                    if (update == false) const CustomText(text: "Item name"),
-                    if (update == false)
-                      const SizedBox(
-                        height: 10,
-                      ),
-                    if (update == false)
-                      FormTextField(
-                        controller: menuItemNameController,
-                        suffixIcon: const Icon(Icons.shower_sharp),
-                      ),
-                    if (update == false)
-                      const SizedBox(
-                        height: 10,
-                      ),
+                    const CustomText(text: "Item name"),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    FormTextField(
+                      controller: menuItemNameController,
+                      suffixIcon: const Icon(Icons.person),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     const CustomText(text: "Item price"),
                     const SizedBox(
                       height: 10,
@@ -375,7 +372,7 @@ class _MenuPageState extends State<MenuPage> {
                     FormTextField(
                       controller: menuItemPriceController,
                       keyboardtype: TextInputType.number,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.monetization_on_outlined),
                     ),
                     const SizedBox(
                       height: 10,
@@ -386,7 +383,7 @@ class _MenuPageState extends State<MenuPage> {
                     ),
                     FormTextField(
                       controller: menuItemDescriptionController,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.description),
                     ),
                     const SizedBox(
                       height: 10,
@@ -484,8 +481,8 @@ class _MenuPageState extends State<MenuPage> {
           "category": widget.categoryKey
         };
         Alerts.customLoadingAlert(context);
-        await DatabaseService.createCategoryItems(widget.restaurantsKey,
-                widget.categoryKey, widget.restaurantsKey,
+        await DatabaseService.createCategoryItems(
+                widget.restaurantsKey, widget.categoryKey,
                 fileName: fileName,
                 item: item,
                 bytes: fileBytes,
@@ -503,11 +500,8 @@ class _MenuPageState extends State<MenuPage> {
       Alerts.customLoadingAlert(context);
       DatabaseService.db
           .ref()
-          .child("restaurants")
+          .child("menu_items")
           .child(widget.restaurantsKey)
-          .child("menu")
-          .child(widget.categoryKey)
-          .child("items")
           .child(foodItem["key"])
           .remove();
       KRoutes.pop(context);

@@ -111,18 +111,59 @@ class _AdminScreenState extends State<AdminScreen> {
       children: adminsList.map((e) {
         Map person = allAdmins[e] as Map;
         person["key"] = e;
-        return ListTile(
-          title: Text(
-            person["email"],
-          ),
-          trailing: const Icon(Icons.person_outline),
+        return Row(
+          children: [
+            Expanded(
+              child: ListTile(
+                title: Text(
+                  person["email"],
+                ),
+                subtitle: Text(person["password"]),
+                trailing: const Icon(Icons.person_outline),
+              ),
+            ),
+            IconButton(
+              color: primaryColor,
+              icon: const Icon(
+                Icons.edit_outlined,
+              ),
+              onPressed: () async {
+                name.text = person["name"];
+                email.text = person["email"];
+                password.text = person["password"];
+                await showCustomDialog(context, person: person, update: true)
+                    .then((value) {
+                  name.clear();
+                  email.clear();
+                  password.clear();
+                });
+              },
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            IconButton(
+              color: Colors.red,
+              icon: const Icon(
+                Icons.delete_outline,
+              ),
+              onPressed: () async {
+                await DatabaseService.db
+                    .ref()
+                    .child("admins")
+                    .child(person["key"])
+                    .remove();
+              },
+            ),
+          ],
         );
       }).toList(),
     );
   }
 
-  void showCustomDialog(BuildContext context) {
-    showDialog(
+  Future<void> showCustomDialog(BuildContext context,
+      {bool update = false, Map? person}) async {
+    await showDialog(
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, refreshState) {
@@ -154,7 +195,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     ),
                     FormTextField(
                       controller: email,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.email),
                     ),
                     const SizedBox(
                       height: 10,
@@ -165,15 +206,16 @@ class _AdminScreenState extends State<AdminScreen> {
                     ),
                     FormTextField(
                       controller: password,
+                      isPass: true,
                       keyboardtype: TextInputType.number,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.visibility),
                     ),
                     const SizedBox(
                       height: 20,
                     ),
                     CustomButton(
                         buttonColor: primaryColor,
-                        text: "create",
+                        text: update == true ? "Update" : "create",
                         textColor: kWhite,
                         function: () async {
                           Alerts.customLoadingAlert(context);
@@ -182,12 +224,15 @@ class _AdminScreenState extends State<AdminScreen> {
                                   name.text,
                                   email.text,
                                   password.text,
-                                  "/restaurants-details/${widget.restaurantsKey}")
+                                  update: update,
+                                  personKey: person?["key"])
                               .then((value) {
                             KRoutes.pop(context);
                             KRoutes.pop(context);
                             return Fluttertoast.showToast(
-                                msg: "Admin Created Successfully");
+                                msg: update == true
+                                    ? "Admin Updated Successfully"
+                                    : "Admin Created Successfully");
                           });
                         }),
                   ],

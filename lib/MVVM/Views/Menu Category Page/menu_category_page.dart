@@ -61,10 +61,19 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                 onTap: () {
                   showCustomDialog(context);
                 },
-                child: const Icon(
-                  Icons.add,
-                  size: 30,
-                  color: kblack,
+                child: Row(
+                  children: const [
+                    Icon(
+                      Icons.add,
+                      size: 30,
+                      color: primaryColor,
+                    ),
+                    CustomText(
+                      text: " Category",
+                      fontsize: 20,
+                      color: primaryColor,
+                    ),
+                  ],
                 ),
               ),
             const SizedBox(

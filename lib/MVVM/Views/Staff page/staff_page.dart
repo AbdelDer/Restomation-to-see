@@ -1,7 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
@@ -32,7 +31,8 @@ class _StaffPageState extends State<StaffPage> {
   final TextEditingController personNameController = TextEditingController();
   final TextEditingController personPhoneController = TextEditingController();
   final TextEditingController personEmailController = TextEditingController();
-  final TextEditingController personAddressController = TextEditingController();
+  final TextEditingController personPasswordController =
+      TextEditingController();
   final TextEditingController controller = TextEditingController();
 
   @override
@@ -122,29 +122,66 @@ class _StaffPageState extends State<StaffPage> {
         Map person = allStaff[e] as Map;
         person["key"] = e;
         final ref = StorageService.storage.ref().child(person["image"]);
-        return Slidable(
-          endActionPane: _actionPane(person),
-          child: ListTile(
-            leading: FutureBuilder(
-                future: ref.getDownloadURL(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return CircleAvatar(
-                      backgroundColor: kWhite,
-                      foregroundImage: NetworkImage(snapshot.data!),
-                    );
-                  }
-                  return const CircleAvatar(
-                    backgroundColor: kWhite,
-                    child: CircularProgressIndicator.adaptive(),
-                  );
-                }),
-            title: Text(
-              person["name"],
+        return Row(
+          children: [
+            Expanded(
+              child: ListTile(
+                leading: FutureBuilder(
+                    future: ref.getDownloadURL(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        return CircleAvatar(
+                          backgroundColor: kWhite,
+                          foregroundImage: NetworkImage(snapshot.data!),
+                        );
+                      }
+                      return const CircleAvatar(
+                        backgroundColor: kWhite,
+                        child: CircularProgressIndicator.adaptive(),
+                      );
+                    }),
+                title: Text(
+                  person["name"] + " (" + person["role"] + ")",
+                ),
+                subtitle: Text(person["password"]),
+                trailing: const Icon(Icons.person_outline),
+              ),
             ),
-            subtitle: Text(person["role"]),
-            trailing: const Icon(Icons.person_outline),
-          ),
+            IconButton(
+              color: primaryColor,
+              icon: const Icon(
+                Icons.edit_outlined,
+              ),
+              onPressed: () {
+                personNameController.text = person["name"];
+                personPhoneController.text = person["phoneNo"];
+                personEmailController.text = person["email"];
+                personPasswordController.text = person["password"];
+                showCustomDialog(context, update: true, person: person);
+              },
+            ),
+            IconButton(
+              color: Colors.red,
+              icon: const Icon(
+                Icons.delete_outline,
+              ),
+              onPressed: () async {
+                Alerts.customLoadingAlert(context);
+                await DatabaseService.storage
+                    .ref()
+                    .child(person["image"])
+                    .delete()
+                    .then((value) async {
+                  await DatabaseService.db
+                      .ref()
+                      .child("staff")
+                      .child(person["key"])
+                      .remove()
+                      .then((value) => KRoutes.pop(context));
+                });
+              },
+            ),
+          ],
         );
       }).toList(),
     );
@@ -207,7 +244,7 @@ class _StaffPageState extends State<StaffPage> {
                     ),
                     FormTextField(
                       controller: personNameController,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.person),
                     ),
                     const SizedBox(
                       height: 10,
@@ -220,7 +257,7 @@ class _StaffPageState extends State<StaffPage> {
                       controller: personPhoneController,
                       keyboardtype: TextInputType.number,
                       maxLength: 10,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.phone),
                     ),
                     const SizedBox(
                       height: 10,
@@ -231,18 +268,19 @@ class _StaffPageState extends State<StaffPage> {
                     ),
                     FormTextField(
                       controller: personEmailController,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      suffixIcon: const Icon(Icons.email),
                     ),
                     const SizedBox(
                       height: 10,
                     ),
-                    const CustomText(text: "Person's address"),
+                    const CustomText(text: "Person's Password"),
                     const SizedBox(
                       height: 10,
                     ),
                     FormTextField(
-                      controller: personAddressController,
-                      suffixIcon: const Icon(Icons.shower_sharp),
+                      controller: personPasswordController,
+                      isPass: true,
+                      suffixIcon: const Icon(Icons.visibility),
                     ),
                     const SizedBox(
                       height: 20,
@@ -296,14 +334,14 @@ class _StaffPageState extends State<StaffPage> {
                             final fileBytes = image!.files.single.bytes;
                             final fileName = image!.files.single.name;
                             if (update) {
-                              Map item = {
+                              Map<String, Object?> item = {
                                 "assigned_restaurant": widget.restaurantsKey,
                                 "name": personNameController.text,
                                 "phoneNo": personPhoneController.text,
                                 "image":
-                                    "restaurants/${widget.restaurantsKey}/staff/$fileName",
+                                    "staff/${widget.restaurantsKey}/$fileName",
                                 "email": personEmailController.text,
-                                "address": personAddressController.text,
+                                "password": personPasswordController.text,
                                 "role": selectedValue.toLowerCase(),
                               };
                               Alerts.customLoadingAlert(context);
@@ -318,7 +356,7 @@ class _StaffPageState extends State<StaffPage> {
                                 personNameController.clear();
                                 personPhoneController.clear();
                                 personEmailController.clear();
-                                personAddressController.clear();
+                                personPasswordController.clear();
                                 KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
@@ -328,9 +366,9 @@ class _StaffPageState extends State<StaffPage> {
                                 "name": personNameController.text,
                                 "phoneNo": personPhoneController.text,
                                 "image":
-                                    "restaurants/${widget.restaurantsKey}/staff/$fileName",
+                                    "staff/${widget.restaurantsKey}/$fileName",
                                 "email": personEmailController.text,
-                                "address": personAddressController.text,
+                                "password": personPasswordController.text,
                                 "role": selectedValue.toLowerCase(),
                               };
                               Alerts.customLoadingAlert(context);
@@ -343,7 +381,7 @@ class _StaffPageState extends State<StaffPage> {
                                 personNameController.clear();
                                 personPhoneController.clear();
                                 personEmailController.clear();
-                                personAddressController.clear();
+                                personPasswordController.clear();
                                 KRoutes.pop(context);
                                 return KRoutes.pop(context);
                               });
@@ -358,53 +396,12 @@ class _StaffPageState extends State<StaffPage> {
         });
   }
 
-  ActionPane _actionPane(
-    Map person,
-  ) {
-    return ActionPane(
-      motion: const ScrollMotion(),
-      children: [
-        SlidableAction(
-          onPressed: (context) {
-            personNameController.text = person["name"];
-            personPhoneController.text = person["phoneNo"];
-            personEmailController.text = person["email"];
-            personAddressController.text = person["address"];
-            showCustomDialog(context, update: true, person: person);
-          },
-          backgroundColor: const Color(0xFF21B7CA),
-          foregroundColor: Colors.white,
-          icon: Icons.share,
-          label: 'Edit',
-        ),
-        SlidableAction(
-          onPressed: (context) {
-            Alerts.customLoadingAlert(context);
-            DatabaseService.storage.ref().child(person["image"]).delete();
-            DatabaseService.db
-                .ref()
-                .child("restaurants")
-                .child(widget.restaurantsKey)
-                .child("staff")
-                .child(person["key"])
-                .remove();
-            KRoutes.pop(context);
-          },
-          backgroundColor: const Color(0xFFFE4A49),
-          foregroundColor: Colors.white,
-          icon: Icons.delete,
-          label: 'Delete',
-        ),
-      ],
-    );
-  }
-
   @override
   void dispose() {
     personNameController.dispose();
     personPhoneController.dispose();
     personEmailController.dispose();
-    personAddressController.dispose();
+    personPasswordController.dispose();
     controller.dispose();
     super.dispose();
   }
