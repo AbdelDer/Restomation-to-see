@@ -39,7 +39,10 @@ class CustomerOrderPage extends StatelessWidget {
                 buttonColor: primaryColor,
                 text: "Add more items",
                 textColor: kWhite,
-                function: () {}),
+                function: () {
+                  Beamer.of(context).beamToNamed(
+                      "/restaurants-menu-category/$restaurantsKey,$tableKey,$name,$phone,yes");
+                }),
             CustomButton(
                 buttonColor: primaryColor,
                 text: "Pay",

@@ -145,6 +145,152 @@ class _MenuPageState extends State<MenuPage> {
     FilePickerResult? image;
     Reference? isExisting;
     final formKey = GlobalKey<FormState>();
+    void showImages(void Function(void Function()) refreshState, String name) {
+      KRoutes.pop(context);
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: const CustomText(text: "Existing Images :"),
+              content: SizedBox(
+                height: 500,
+                width: 500,
+                child: StreamBuilder(
+                  stream: DatabaseService.storage
+                      .ref()
+                      .child("existing_images")
+                      .child(name)
+                      .listAll()
+                      .asStream(),
+                  builder: (context, AsyncSnapshot<ListResult> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return const Text("error");
+                    }
+                    List<Reference> allImages = snapshot.data!.items.toList();
+                    return GridView.builder(
+                      itemCount: allImages.length,
+                      padding: const EdgeInsets.all(5),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 10,
+                              crossAxisSpacing: 10),
+                      itemBuilder: (context, index) {
+                        return FutureBuilder(
+                            future: allImages[index].getDownloadURL(),
+                            builder:
+                                (BuildContext context, AsyncSnapshot snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return InkWell(
+                                  onTap: () {
+                                    KRoutes.pop(context);
+                                    refreshState(() {
+                                      isExisting = allImages[index];
+                                    });
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                              offset: Offset(0, 0),
+                                              spreadRadius: 2,
+                                              blurRadius: 2,
+                                              color: Colors.black12)
+                                        ],
+                                        image: DecorationImage(
+                                            image: NetworkImage(snapshot.data!),
+                                            fit: BoxFit.cover)),
+                                  ),
+                                );
+                              }
+                              return Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        offset: Offset(0, 0),
+                                        spreadRadius: 2,
+                                        blurRadius: 2,
+                                        color: Colors.black12)
+                                  ],
+                                ),
+                              );
+                            });
+                      },
+                    );
+                  },
+                ),
+              ));
+        },
+      );
+    }
+
+    void showExistingCategories(void Function(void Function()) refreshState) {
+      KRoutes.pop(context);
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: kGrey.shade200,
+              title: const CustomText(text: "Pick a Category :"),
+              content: Container(
+                color: kGrey.shade200,
+                height: 500,
+                width: 500,
+                child: StreamBuilder(
+                  stream: FirebaseDatabase.instance
+                      .ref()
+                      .child("existing_images")
+                      .onValue,
+                  builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return const Text("error");
+                    }
+                    List allCategories = snapshot.data!.snapshot.value as List;
+                    return ListView.builder(
+                      itemCount: allCategories.length,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            showImages(refreshState, allCategories[index]);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Card(
+                              child: ListTile(
+                                title: CustomText(text: allCategories[index]),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      // separatorBuilder: (BuildContext context, int index) {
+                      //   return const Divider(
+                      //     color: kGrey,
+                      //     indent: 30,
+                      //     endIndent: 30,
+                      //   );
+                      // },
+                    );
+                  },
+                ),
+              ));
+        },
+      );
+    }
+
     showDialog(
         context: widget.previousScreenContext,
         builder: (context) {
@@ -175,118 +321,7 @@ class _MenuPageState extends State<MenuPage> {
                                         text: "Select existing images",
                                         textColor: kWhite,
                                         function: () {
-                                          KRoutes.pop(context);
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) {
-                                              return AlertDialog(
-                                                  title: const CustomText(
-                                                      text:
-                                                          "Existing Images :"),
-                                                  content: SizedBox(
-                                                    height: 500,
-                                                    width: 500,
-                                                    child: StreamBuilder(
-                                                      stream: DatabaseService
-                                                          .storage
-                                                          .ref()
-                                                          .child("food_images")
-                                                          .listAll()
-                                                          .asStream(),
-                                                      builder: (context,
-                                                          AsyncSnapshot<
-                                                                  ListResult>
-                                                              snapshot) {
-                                                        if (snapshot
-                                                                .connectionState ==
-                                                            ConnectionState
-                                                                .waiting) {
-                                                          return const Center(
-                                                              child:
-                                                                  CircularProgressIndicator());
-                                                        }
-                                                        if (snapshot.hasError) {
-                                                          return const Text(
-                                                              "error");
-                                                        }
-                                                        List<Reference>
-                                                            allImages = snapshot
-                                                                .data!.items
-                                                                .toList();
-                                                        return GridView.builder(
-                                                          itemCount:
-                                                              allImages.length,
-                                                          gridDelegate:
-                                                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                                                  crossAxisCount:
-                                                                      2,
-                                                                  mainAxisSpacing:
-                                                                      10,
-                                                                  crossAxisSpacing:
-                                                                      10),
-                                                          itemBuilder:
-                                                              (context, index) {
-                                                            return FutureBuilder(
-                                                                future: allImages[
-                                                                        index]
-                                                                    .getDownloadURL(),
-                                                                builder: (BuildContext
-                                                                        context,
-                                                                    AsyncSnapshot
-                                                                        snapshot) {
-                                                                  if (snapshot
-                                                                          .connectionState ==
-                                                                      ConnectionState
-                                                                          .done) {
-                                                                    return InkWell(
-                                                                      onTap:
-                                                                          () {
-                                                                        KRoutes.pop(
-                                                                            context);
-                                                                        refreshState(
-                                                                            () {
-                                                                          isExisting =
-                                                                              allImages[index];
-                                                                        });
-                                                                      },
-                                                                      child:
-                                                                          Container(
-                                                                        decoration: BoxDecoration(
-                                                                            borderRadius: BorderRadius.circular(15),
-                                                                            boxShadow: const [
-                                                                              BoxShadow(offset: Offset(0, 0), spreadRadius: 2, blurRadius: 2, color: Colors.black12)
-                                                                            ],
-                                                                            image: DecorationImage(image: NetworkImage(snapshot.data!), fit: BoxFit.cover)),
-                                                                      ),
-                                                                    );
-                                                                  }
-                                                                  return Container(
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              15),
-                                                                      boxShadow: const [
-                                                                        BoxShadow(
-                                                                            offset: Offset(
-                                                                                0, 0),
-                                                                            spreadRadius:
-                                                                                2,
-                                                                            blurRadius:
-                                                                                2,
-                                                                            color:
-                                                                                Colors.black12)
-                                                                      ],
-                                                                    ),
-                                                                  );
-                                                                });
-                                                          },
-                                                        );
-                                                      },
-                                                    ),
-                                                  ));
-                                            },
-                                          );
+                                          showExistingCategories(refreshState);
                                         }),
                                     const SizedBox(
                                       height: 10,

@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Cart/cart.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
+import 'package:restomation/MVVM/Views/Customer%20Page/page_decider.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
 import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
@@ -84,6 +85,21 @@ class _MyAppState extends State<MyApp> {
                     phone: parameters[3],
                     isTableClean: parameters[4],
                   ),
+          );
+        },
+        "/restaurants-page-decider/:parameters": (p0, p1, p2) {
+          final String restaurantsParams =
+              p1.pathParameters["parameters"] ?? "";
+          List<String> parameters = restaurantsParams.split(",");
+          return BeamPage(
+            key: const ValueKey("customer-table"),
+            title: parameters[0],
+            type: BeamPageType.fadeTransition,
+            child: PageDecider(
+              restaurantsKey: parameters[0],
+              tableKey: parameters[1],
+              restaurantsImageName: parameters[2],
+            ),
           );
         },
         "/restaurants-tables/:parameters": (p0, p1, p2) {
@@ -210,5 +226,5 @@ class _MyAppState extends State<MyApp> {
         routerDelegate: routerDelegate,
       ),
     );
-  } 
+  }
 }
