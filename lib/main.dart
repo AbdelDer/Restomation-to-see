@@ -74,9 +74,10 @@ class _MyAppState extends State<MyApp> {
             key: const ValueKey("menu-category"),
             title: parameters[0],
             type: BeamPageType.fadeTransition,
-            child: parameters.length == 1
+            child: parameters.length == 2
                 ? MenuCategoryPage(
                     restaurantsKey: parameters[0],
+                    addMoreItems: parameters[1],
                   )
                 : MenuCategoryPage(
                     restaurantsKey: parameters[0],
@@ -84,6 +85,9 @@ class _MyAppState extends State<MyApp> {
                     name: parameters[2],
                     phone: parameters[3],
                     isTableClean: parameters[4],
+                    addMoreItems: parameters[5],
+                    orderItemsKey: parameters[6],
+                    existingItemCount: parameters[7],
                   ),
           );
         },
@@ -182,6 +186,9 @@ class _MyAppState extends State<MyApp> {
                 name: parameters[2],
                 phone: parameters[3],
                 isTableClean: parameters[4],
+                addMoreItems: parameters[5],
+                orderItemsKey: parameters[6],
+                existingItemCount: parameters[7],
               ));
         },
         "/customer-order/:parameters": (p0, p1, p2) {

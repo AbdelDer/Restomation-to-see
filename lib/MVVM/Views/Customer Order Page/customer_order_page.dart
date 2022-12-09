@@ -1,5 +1,4 @@
 import 'package:beamer/beamer.dart';
-import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
@@ -30,36 +29,6 @@ class CustomerOrderPage extends StatelessWidget {
           appBar: AppBar(),
           widgets: const [],
           appBarHeight: 50),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            CustomButton(
-                buttonColor: primaryColor,
-                text: "Add more items",
-                textColor: kWhite,
-                function: () {
-                  Beamer.of(context).beamToNamed(
-                      "/restaurants-menu-category/$restaurantsKey,$tableKey,$name,$phone,yes");
-                }),
-            CustomButton(
-                buttonColor: primaryColor,
-                text: "Pay",
-                textColor: kWhite,
-                function: () {
-                  CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.confirm,
-                      showCancelBtn: true,
-                      width: 300,
-                      text: "How do You want to pay?",
-                      cancelBtnText: "Cash",
-                      confirmBtnText: "Card");
-                })
-          ],
-        ),
-      ),
       body: StreamBuilder(
         stream: DatabaseService.db
             .ref()
@@ -190,6 +159,9 @@ class CustomerOrderPage extends StatelessWidget {
                     child: CustomerOrderItemsView(
                   phone: phone,
                   restaurantName: restaurantsKey,
+                  name: name,
+                  tableKey: tableKey,
+                  isTableClean: order[orderKey]["isTableClean"],
                 )),
                 if (order["order_status"].toString().toLowerCase() == "done")
                   Column(

@@ -63,8 +63,8 @@ class DatabaseService extends StorageService {
     return authUser;
   }
 
-  static Future createSubAdminRestaurant(String restaurantsKey, String name,
-      String email, String password, 
+  static Future createSubAdminRestaurant(
+      String restaurantsKey, String name, String email, String password,
       {bool update = false, String? personKey}) async {
     if (update && personKey != null) {
       await db.ref().child("admins").child(personKey).update({
@@ -175,5 +175,19 @@ class DatabaseService extends StorageService {
         .child(name)
         .push()
         .set(cartItems);
+  }
+
+  Future updateOrderItems(String restaurantsKey, List cartItems, String name,
+      String orderItemsKey, int itemCount) async {
+    for (var i = 0; i < cartItems.length; i++) {
+      await db
+          .ref()
+          .child("order_items")
+          .child(restaurantsKey)
+          .child(name)
+          .child(orderItemsKey)
+          .update({(i + (itemCount)).toString(): cartItems[i]});
+    }
+    itemCount++;
   }
 }

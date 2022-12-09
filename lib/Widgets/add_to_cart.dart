@@ -4,7 +4,7 @@ import 'package:restomation/Provider/cart_provider.dart';
 
 class AddToCart extends StatefulWidget {
   final Map foodData;
-  const AddToCart({super.key, required this.foodData});
+  const AddToCart({super.key, required this.foodData,});
 
   @override
   State<AddToCart> createState() => _AddToCartState();

@@ -13,6 +13,9 @@ class CustomCartBadgeIcon extends StatelessWidget {
   final String name;
   final String phone;
   final String isTableClean;
+  final String? addMoreItems;
+  final String? orderItemsKey;
+  final String? existingItemCount;
   const CustomCartBadgeIcon({
     super.key,
     required this.restaurantsKey,
@@ -20,6 +23,9 @@ class CustomCartBadgeIcon extends StatelessWidget {
     required this.name,
     required this.phone,
     required this.isTableClean,
+    required this.addMoreItems,
+    required this.orderItemsKey,
+    required this.existingItemCount,
   });
 
   @override
@@ -32,7 +38,7 @@ class CustomCartBadgeIcon extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           Beamer.of(context).beamToNamed(
-              "/customer-cart/$restaurantsKey,$tableKey,$name,$phone,$isTableClean");
+              "/customer-cart/$restaurantsKey,$tableKey,$name,$phone,$isTableClean,$addMoreItems,$orderItemsKey,$existingItemCount");
         },
         child: Container(
           padding: const EdgeInsets.all(20),

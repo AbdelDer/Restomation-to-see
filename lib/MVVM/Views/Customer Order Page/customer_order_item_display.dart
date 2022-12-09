@@ -1,3 +1,5 @@
+import 'package:beamer/beamer.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
@@ -5,11 +7,21 @@ import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
+import '../../../Widgets/custom_button.dart';
+
 class CustomerOrderItemsView extends StatelessWidget {
   final String restaurantName;
   final String phone;
+  final String tableKey;
+  final String name;
+  final String isTableClean;
   const CustomerOrderItemsView(
-      {super.key, required this.restaurantName, required this.phone});
+      {super.key,
+      required this.restaurantName,
+      required this.phone,
+      required this.tableKey,
+      required this.name,
+      required this.isTableClean});
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +34,12 @@ class CustomerOrderItemsView extends StatelessWidget {
           .limitToLast(1)
           .onValue,
       builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) =>
-          orderItemView(snapshot),
+          orderItemView(context, snapshot),
     );
   }
 
-  Widget orderItemView(AsyncSnapshot<DatabaseEvent> snapshot) {
+  Widget orderItemView(
+      BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -83,6 +96,36 @@ class CustomerOrderItemsView extends StatelessWidget {
                 child: myOrderedItems(context, items[itemIndex]),
               );
             },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              CustomButton(
+                  buttonColor: primaryColor,
+                  text: "Add more items",
+                  textColor: kWhite,
+                  function: () {
+                    Beamer.of(context).beamToNamed(
+                        "/restaurants-menu-category/$restaurantName,$tableKey,$name,$phone,$isTableClean,yes,${orderItemsKeys[0]},${items.length}");
+                  }),
+              CustomButton(
+                  buttonColor: primaryColor,
+                  text: "Pay",
+                  textColor: kWhite,
+                  function: () {
+                    CoolAlert.show(
+                        context: context,
+                        type: CoolAlertType.confirm,
+                        showCancelBtn: true,
+                        width: 300,
+                        text: "How do You want to pay?",
+                        cancelBtnText: "Cash",
+                        confirmBtnText: "Card");
+                  })
+            ],
           ),
         ),
       ],

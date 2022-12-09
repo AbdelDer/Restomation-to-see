@@ -26,7 +26,7 @@ class CustomFoodCard extends StatefulWidget {
       required this.restaurantsKey,
       required this.categoryKey,
       required this.edit,
-      required this.delete});
+      required this.delete,});
 
   @override
   State<CustomFoodCard> createState() => _CustomFoodCardState();

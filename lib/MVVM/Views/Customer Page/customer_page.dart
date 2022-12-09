@@ -176,7 +176,7 @@ class _CustomerPageState extends State<CustomerPage> {
                         function: () {
                           if (formKey.currentState!.validate()) {
                             Beamer.of(context).beamToNamed(
-                                "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue");
+                                "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue,no");
                           }
                         }),
                   ),

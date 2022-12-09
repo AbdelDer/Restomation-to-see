@@ -29,7 +29,7 @@ class RestaurantsDetailPage extends StatelessWidget {
                     "https://thumbs.dreamstime.com/b/vintage-frames-gold-restaurant-bar-food-drinks-cafe-menu-black-background-vector-illustrtor-badge-border-branding-bundle-186691349.jpg",
                 "page": () {
                   Beamer.of(context).beamToNamed(
-                      "/restaurants-menu-category/$restaurantsKey");
+                      "/restaurants-menu-category/$restaurantsKey,no");
                 }
               },
               {

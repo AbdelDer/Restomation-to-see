@@ -19,6 +19,9 @@ class MenuCategoryPage extends StatefulWidget {
   final String? name;
   final String? phone;
   final String? isTableClean;
+  final String? addMoreItems;
+  final String? orderItemsKey;
+  final String? existingItemCount;
   const MenuCategoryPage({
     super.key,
     required this.restaurantsKey,
@@ -26,6 +29,9 @@ class MenuCategoryPage extends StatefulWidget {
     this.name,
     this.phone,
     this.isTableClean,
+    required this.addMoreItems,
+    this.orderItemsKey,
+    this.existingItemCount,
   });
 
   @override
@@ -77,6 +83,9 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
               name: widget.name!,
               phone: widget.phone!,
               isTableClean: widget.isTableClean!,
+              addMoreItems: widget.addMoreItems,
+              orderItemsKey: widget.orderItemsKey,
+              existingItemCount: widget.existingItemCount,
             )
           : null,
       body: StreamBuilder(
@@ -144,6 +153,9 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                         phone: widget.phone,
                         isTableClean: widget.isTableClean,
                         previousScreenContext: context,
+                        addMoreItems: widget.addMoreItems,
+                        orderItemsKey: widget.orderItemsKey,
+                        existingItemCount: widget.existingItemCount,
                       ))
                   .toList(),
             )));

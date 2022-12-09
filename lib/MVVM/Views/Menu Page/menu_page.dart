@@ -26,6 +26,9 @@ class MenuPage extends StatefulWidget {
   final String? name;
   final String? phone;
   final String? isTableClean;
+  final String? addMoreItems;
+  final String? orderItemsKey;
+  final String? existingItemCount;
   const MenuPage(
       {super.key,
       required this.restaurantsKey,
@@ -34,7 +37,10 @@ class MenuPage extends StatefulWidget {
       this.name,
       this.phone,
       this.isTableClean,
-      required this.previousScreenContext});
+      required this.previousScreenContext,
+      this.addMoreItems,
+      required this.orderItemsKey,
+      required this.existingItemCount});
 
   @override
   State<MenuPage> createState() => _MenuPageState();

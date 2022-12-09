@@ -19,13 +19,19 @@ class CartPage extends StatelessWidget {
   final String name;
   final String isTableClean;
   final String phone;
+  final String? addMoreItems;
+  final String? orderItemsKey;
+  final String? existingItemCount;
   const CartPage(
       {super.key,
       required this.restaurantsKey,
       required this.tableKey,
       required this.name,
       required this.phone,
-      required this.isTableClean});
+      required this.isTableClean,
+      required this.addMoreItems,
+      required this.orderItemsKey,
+      required this.existingItemCount});
 
   @override
   Widget build(BuildContext context) {
@@ -74,28 +80,43 @@ class CartPage extends StatelessWidget {
           ),
           CustomButton(
               buttonColor: primaryColor,
-              text: "Order",
+              text: addMoreItems == "yes" ? "Update Order" : "Order",
               textColor: kWhite,
               function: () async {
-                CoolAlert.show(context: context, type: CoolAlertType.loading);
-                Map data = {
-                  "name": name,
-                  "phone": phone,
-                  "table_name": tableKey,
-                  "order_status": "pending",
-                  "isTableClean": isTableClean,
-                  "waiter": "none"
-                };
-                await DatabaseService()
-                    .createOrder(
-                        restaurantsKey, tableKey, data, cart.cartItems, phone)
-                    .then((value) {
-                  KRoutes.pop(context);
-                  Fluttertoast.showToast(msg: "Ordered Successfully");
+                if (addMoreItems == "yes") {
+                  CoolAlert.show(context: context, type: CoolAlertType.loading);
 
-                  Beamer.of(context).beamToNamed(
-                      "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                });
+                  await DatabaseService()
+                      .updateOrderItems(restaurantsKey, cart.cartItems, phone,
+                          orderItemsKey!, int.parse(existingItemCount!))
+                      .then((value) {
+                    KRoutes.pop(context);
+                    Fluttertoast.showToast(msg: "Ordered Successfully");
+
+                    Beamer.of(context).beamToReplacementNamed(
+                        "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
+                  });
+                } else {
+                  CoolAlert.show(context: context, type: CoolAlertType.loading);
+                  Map data = {
+                    "name": name,
+                    "phone": phone,
+                    "table_name": tableKey,
+                    "order_status": "pending",
+                    "isTableClean": isTableClean,
+                    "waiter": "none"
+                  };
+                  await DatabaseService()
+                      .createOrder(
+                          restaurantsKey, tableKey, data, cart.cartItems, phone)
+                      .then((value) {
+                    KRoutes.pop(context);
+                    Fluttertoast.showToast(msg: "Ordered Successfully");
+
+                    Beamer.of(context).beamToReplacementNamed(
+                        "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
+                  });
+                }
               }),
           const SizedBox(
             height: 20,
