@@ -117,7 +117,7 @@ class _TablesPageState extends State<TablesPage> {
                     InkWell(
                       onTap: () {
                         Beamer.of(context).beamToNamed(
-                            "/restaurants-page-decider/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}");
+                            "/customer-table/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}");
                       },
                       child: CustomText(
                         text: table["table_name"],

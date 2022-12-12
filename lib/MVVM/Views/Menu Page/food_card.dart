@@ -18,15 +18,16 @@ class CustomFoodCard extends StatefulWidget {
   final String categoryKey;
   final VoidCallback edit;
   final VoidCallback delete;
-  const CustomFoodCard(
-      {super.key,
-      required this.data,
-      required this.name,
-      required this.phone,
-      required this.restaurantsKey,
-      required this.categoryKey,
-      required this.edit,
-      required this.delete,});
+  const CustomFoodCard({
+    super.key,
+    required this.data,
+    required this.name,
+    required this.phone,
+    required this.restaurantsKey,
+    required this.categoryKey,
+    required this.edit,
+    required this.delete,
+  });
 
   @override
   State<CustomFoodCard> createState() => _CustomFoodCardState();
@@ -217,21 +218,15 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                     if (value == true) {
                       DatabaseService.db
                           .ref()
-                          .child("restaurants")
+                          .child("menu_items")
                           .child(widget.restaurantsKey)
-                          .child("menu")
-                          .child(widget.categoryKey)
-                          .child("items")
                           .child(widget.data["key"])
                           .update({"status": "available"});
                     } else {
                       DatabaseService.db
                           .ref()
-                          .child("restaurants")
+                          .child("menu_items")
                           .child(widget.restaurantsKey)
-                          .child("menu")
-                          .child(widget.categoryKey)
-                          .child("items")
                           .child(widget.data["key"])
                           .update({"status": "unavailable"});
                     }

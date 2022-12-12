@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -387,11 +388,13 @@ class _MenuPageState extends State<MenuPage> {
                                       foregroundImage: MemoryImage(
                                           image!.files.single.bytes!),
                                     )
-                                  : const CircleAvatar(
+                                  : CircleAvatar(
                                       radius: 100,
-                                      backgroundColor: kWhite,
-                                      foregroundImage: NetworkImage(
-                                          "https://cdn.dribbble.com/users/1965140/screenshots/9776931/dribbble_75_4x.png"),
+                                      backgroundColor: kGrey.shade200,
+                                      child: const Icon(
+                                        Icons.add_a_photo,
+                                        size: 30,
+                                      ),
                                     )),
                       const SizedBox(
                         height: 10,
@@ -420,7 +423,7 @@ class _MenuPageState extends State<MenuPage> {
                       FormTextField(
                         controller: menuItemPriceController,
                         keyboardtype: TextInputType.number,
-                        suffixIcon: const Icon(Icons.monetization_on_outlined),
+                        suffixIcon: const Icon(FontAwesomeIcons.rupeeSign),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Fill this field";
@@ -476,53 +479,42 @@ class _MenuPageState extends State<MenuPage> {
   Future<void> createItem(bool update, FilePickerResult? image, Map? itemData,
       Reference? isExisting) async {
     if (update == true) {
-      if (menuItemNameController.text.isEmpty ||
-          menuItemPriceController.text.isEmpty ||
-          menuItemDescriptionController.text.isEmpty) {
-        Fluttertoast.showToast(msg: "Please upload an image of the item");
-      } else {
-        String? fileName;
-        Uint8List? fileBytes;
-        if (image != null) {
-          fileBytes = image.files.single.bytes;
-          fileName = image.files.single.name;
-        }
-        Map<String, Object?> item = {
-          "name": menuItemNameController.text,
-          "price": menuItemPriceController.text,
-          "image": isExisting != null
-              ? isExisting.fullPath
-              : image == null
-                  ? itemData!["image"]
-                  : "food_images/$fileName",
-          "description": menuItemDescriptionController.text,
-          "type": selectedMenuOption,
-          "status": itemData!["status"],
-          "reviews": itemData["reviews"],
-          "upselling": itemData["upselling"],
-          "rating": itemData["rating"],
-          "category": itemData["category"]
-        };
-        Alerts.customLoadingAlert(widget.previousScreenContext);
-        await DatabaseService.updateCategoryItems(widget.restaurantsKey,
-                widget.categoryKey, itemData["key"], itemData["image"],
-                fileName: fileName,
-                item: item,
-                bytes: fileBytes,
-                isExsiting: isExisting != null ? true : false)
-            .then((value) {
-          KRoutes.pop(widget.previousScreenContext);
-          return KRoutes.pop(widget.previousScreenContext);
-        });
+      String? fileName;
+      Uint8List? fileBytes;
+      if (image != null) {
+        fileBytes = image.files.single.bytes;
+        fileName = image.files.single.name;
       }
+      Map<String, Object?> item = {
+        "name": menuItemNameController.text,
+        "price": menuItemPriceController.text,
+        "image": isExisting != null
+            ? isExisting.fullPath
+            : image == null
+                ? itemData!["image"]
+                : "food_images/$fileName",
+        "description": menuItemDescriptionController.text,
+        "type": selectedMenuOption,
+        "status": itemData!["status"],
+        "reviews": itemData["reviews"],
+        "upselling": itemData["upselling"],
+        "rating": itemData["rating"],
+        "category": itemData["category"]
+      };
+      Alerts.customLoadingAlert(widget.previousScreenContext);
+      await DatabaseService.updateCategoryItems(widget.restaurantsKey,
+              widget.categoryKey, itemData["key"], itemData["image"],
+              fileName: fileName,
+              item: item,
+              bytes: fileBytes,
+              isExsiting: isExisting != null ? true : false)
+          .then((value) {
+        KRoutes.pop(widget.previousScreenContext);
+        return KRoutes.pop(widget.previousScreenContext);
+      });
     } else {
-      if ((image == null && isExisting == null) ||
-          menuItemNameController.text.isEmpty ||
-          menuItemPriceController.text.isEmpty ||
-          menuItemDescriptionController.text.isEmpty) {
-        Fluttertoast.showToast(
-            msg:
-                "Make sure to fill all fields and upload an image of the item");
+      if (image == null && isExisting == null) {
+        Fluttertoast.showToast(msg: "Please upload an image of the item");
       } else {
         String? fileName;
         Uint8List? fileBytes;

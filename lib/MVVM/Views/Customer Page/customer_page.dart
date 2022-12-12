@@ -6,6 +6,7 @@ import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
+import '../../Repo/Database Service/database_service.dart';
 import '../../Repo/Storage Service/storage_service.dart';
 
 class CustomerPage extends StatefulWidget {
@@ -25,6 +26,32 @@ class CustomerPage extends StatefulWidget {
 class _CustomerPageState extends State<CustomerPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  Future<void> checkExistingOrder() async {
+    await DatabaseService.db
+        .ref("orders")
+        .child(widget.restaurantsKey)
+        .once()
+        .then((value) {
+      if (value.snapshot.value != null) {
+        Map orders = (value.snapshot.value as Map);
+        List orderKeys = orders.keys.toList();
+        for (var key in orderKeys) {
+          if (orders[key]["table_name"] == widget.tableKey) {
+            Beamer.of(context).beamToNamed(
+                "/customer-order/${widget.restaurantsKey},${widget.tableKey},${orders[key]["name"]},${orders[key]["phone"]}");
+            return;
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    checkExistingOrder();
+    super.initState();
+  }
+
   final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -176,7 +203,7 @@ class _CustomerPageState extends State<CustomerPage> {
                         function: () {
                           if (formKey.currentState!.validate()) {
                             Beamer.of(context).beamToNamed(
-                                "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue,no");
+                                "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue,no,0,0");
                           }
                         }),
                   ),
