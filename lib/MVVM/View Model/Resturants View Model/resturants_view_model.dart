@@ -52,6 +52,7 @@ class RestaurantsViewModel extends ChangeNotifier {
     setLoading(false);
   }
 
+
   Future createrestaurants(
       String name, String fileName, Uint8List bytes) async {
     setLoading(true);

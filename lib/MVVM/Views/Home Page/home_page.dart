@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:beamer/beamer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -24,9 +27,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController restaurantsController = TextEditingController();
+  getRestaurants() async {
+    await FirebaseFirestore.instance
+        .collection("/restaurants")
+        .get()
+        .then((value) => print(jsonEncode(value.docs[0].data())));
+  }
 
   @override
   Widget build(BuildContext context) {
+    getRestaurants();
     return Scaffold(
         appBar: BaseAppBar(
             title: "Select restaurants",

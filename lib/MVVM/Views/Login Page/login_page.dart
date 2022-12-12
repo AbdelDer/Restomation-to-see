@@ -1,15 +1,14 @@
-import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:restomation/Utils/app_routes.dart';
-import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
+
+import '../../Models/Login Model/login_model.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -125,28 +124,26 @@ class _LoginState extends State<Login> {
           ),
           Align(
               alignment: Alignment.center,
-              child: CustomButton(
-                  buttonColor: Colors.amber,
-                  text: "login",
-                  function: () async {
-                    if (_formKey.currentState!.validate()) {
-                      Alerts.customLoadingAlert(context);
-                      var response = await DatabaseService.loginUser(
-                        email.text,
-                        password.text,
-                      );
-                      if (response != null) {
-                        if (response["role"] == "super_admin") {
-                          pushScreen(null);
-                        } else {
-                          pushScreen(
-                              "/restaurants-details/${response["assigned_restaurant"]}");
+              child: loginViewModel.loading
+                  ? const CircularProgressIndicator()
+                  : CustomButton(
+                      buttonColor: Colors.amber,
+                      text: "login",
+                      function: () async {
+                        if (_formKey.currentState!.validate()) {
+                          await loginViewModel
+                              .loginUser(email.text, password.text)
+                              .then((value) {
+                            if (loginViewModel.modelError != null) {
+                              Fluttertoast.showToast(
+                                  msg: loginViewModel.modelError!.errorResponse
+                                      .toString());
+                              return;
+                            }
+                            pushScreen(loginViewModel.loggedInUser!);
+                          });
                         }
-                      } else {
-                        showError();
-                      }
-                    }
-                  })),
+                      })),
           const SizedBox(
             height: 10,
           ),
@@ -155,9 +152,8 @@ class _LoginState extends State<Login> {
     );
   }
 
-  pushScreen(String? path) {
-    KRoutes.pop(context);
-    Beamer.of(context).beamToNamed(path ?? "/home");
+  pushScreen(LoginModel loginModel) {
+    if (loginModel.role == "super_admin") {}
   }
 
   showError() {

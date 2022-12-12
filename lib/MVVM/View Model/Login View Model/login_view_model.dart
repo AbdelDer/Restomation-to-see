@@ -1,16 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
+import 'package:restomation/MVVM/Models/Login%20Model/login_model.dart';
 import 'package:restomation/MVVM/Models/model_error.dart';
-import 'package:restomation/MVVM/Repo/Login%20Service/login_service.dart';
+import 'package:restomation/MVVM/Repo/Authentication/authentication_service.dart';
 import 'package:restomation/MVVM/Repo/api_status.dart';
 
 class LoginViewModel extends ChangeNotifier {
   bool _loading = false;
-  User? _loggedInUser;
+  LoginModel? _loggedInUser;
   ModelError? _modelError;
 
   bool get loading => _loading;
-  User? get loggedInUser => _loggedInUser;
+  LoginModel? get loggedInUser => _loggedInUser;
   ModelError? get modelError => _modelError;
 
   setLoading(bool loading) {
@@ -18,7 +18,7 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  setLoggedInUser(User loggedInUser) {
+  setLoggedInUser(LoginModel loggedInUser) {
     _loggedInUser = loggedInUser;
   }
 
@@ -26,11 +26,11 @@ class LoginViewModel extends ChangeNotifier {
     _modelError = modelError;
   }
 
-  loginUser(TextEditingController email, TextEditingController password) async {
+  Future loginUser(String email, String password) async {
     setLoading(true);
-    var response = await LoginService.loginUser(email, password);
+    var response = await AuthMethods().loginUser(email, password);
     if (response is Success) {
-      setLoggedInUser(response.response as User);
+      setLoggedInUser(response.response as LoginModel);
     }
     if (response is Failure) {
       ModelError modelError = ModelError(response.code, response.errorResponse);

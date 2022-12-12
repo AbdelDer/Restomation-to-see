@@ -16,6 +16,7 @@ import 'package:restomation/MVVM/Views/OrderScreen/order_screen.dart';
 import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
 import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
 import 'package:restomation/Provider/cart_provider.dart';
+import 'package:restomation/Utils/go_router.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
 import 'MVVM/Views/Resturant Details/resturant_details.dart';
@@ -229,8 +230,8 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
             dividerColor: Colors.transparent,
             textTheme: GoogleFonts.poppinsTextTheme()),
-        routeInformationParser: BeamerParser(),
-        routerDelegate: routerDelegate,
+        routeInformationParser: route.routeInformationParser,
+        routerDelegate: route.routerDelegate,
       ),
     );
   }
