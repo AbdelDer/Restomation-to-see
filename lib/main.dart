@@ -126,6 +126,7 @@ class _MyAppState extends State<MyApp> {
               type: BeamPageType.fadeTransition,
               child: AdminScreen(
                 restaurantsKey: parameters[0],
+                restaurantImageName: parameters[1],
               ));
         },
         "/restaurants-orders/:parameters": (p0, p1, p2) {

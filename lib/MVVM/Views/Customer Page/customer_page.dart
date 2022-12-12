@@ -46,13 +46,14 @@ class _CustomerPageState extends State<CustomerPage> {
     });
   }
 
+  final formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     checkExistingOrder();
     super.initState();
   }
 
-  final formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     final ref = StorageService.storage

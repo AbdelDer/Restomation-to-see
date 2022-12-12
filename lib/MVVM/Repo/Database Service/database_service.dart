@@ -15,6 +15,7 @@ class DatabaseService extends StorageService {
       await storage.ref("restaurantLogos/$fileName").putData(bytes);
       db.ref().child("restaurants").push().set(
         {
+          "imageName": fileName,
           "restaurantsName": name,
           "imagePath": "restaurantLogos/$fileName",
         },
@@ -63,8 +64,8 @@ class DatabaseService extends StorageService {
     return authUser;
   }
 
-  static Future createSubAdminRestaurant(
-      String restaurantsKey, String name, String email, String password,
+  static Future createSubAdminRestaurant(String restaurantsKey, String name,
+      String email, String password, String imageName,
       {bool update = false, String? personKey}) async {
     if (update && personKey != null) {
       await db.ref().child("admins").child(personKey).update({
@@ -80,6 +81,7 @@ class DatabaseService extends StorageService {
         "email": email,
         "password": password,
         "role": "sub_admin",
+        "imageName": imageName,
         "assigned_restaurant": restaurantsKey
       });
     }

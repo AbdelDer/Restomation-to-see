@@ -64,8 +64,8 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://static.vecteezy.com/system/resources/thumbnails/006/017/842/small_2x/customer-service-icon-user-with-laptop-computer-and-headphone-illustration-free-vector.jpg",
                 "page": () {
-                  Beamer.of(context)
-                      .beamToNamed("/restaurants-admins/$restaurantsKey");
+                  Beamer.of(context).beamToNamed(
+                      "/restaurants-admins/$restaurantsKey,$restaurantsImageName");
                 }
               },
             ]

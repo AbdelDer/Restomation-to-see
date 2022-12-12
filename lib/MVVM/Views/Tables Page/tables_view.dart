@@ -117,7 +117,7 @@ class _TablesPageState extends State<TablesPage> {
                     InkWell(
                       onTap: () {
                         Beamer.of(context).beamToNamed(
-                            "/customer-table/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}");
+                            '/customer-table/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}');
                       },
                       child: CustomText(
                         text: table["table_name"],
@@ -231,7 +231,7 @@ class _TablesPageState extends State<TablesPage> {
                                       widget.restaurantsKey,
                                       table!["key"],
                                       tableController.text,
-                                      "https://naqeeb9a.github.io/#/restaurants-page-decider/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}")
+                                      'https://naqeeb9a.github.io/#/customer-table/${widget.restaurantsKey},${tableController.text},${widget.restaurantsImageName}')
                                   .then((value) {
                                 KRoutes.pop(context);
                                 return KRoutes.pop(context);
@@ -240,7 +240,7 @@ class _TablesPageState extends State<TablesPage> {
                               await DatabaseService.createTable(
                                       widget.restaurantsKey,
                                       tableController.text,
-                                      'https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text},${widget.restaurantsImageName}')
+                                      'https://naqeeb9a.github.io/#/customer-table/${widget.restaurantsKey},${tableController.text},${widget.restaurantsImageName}')
                                   .then((value) {
                                 KRoutes.pop(context);
                                 return KRoutes.pop(context);

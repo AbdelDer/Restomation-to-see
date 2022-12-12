@@ -45,6 +45,11 @@ class Cart extends ChangeNotifier {
     notifyListeners();
   }
 
+  clearCart() {
+    cartItems.clear();
+    notifyListeners();
+  }
+
   removeCartItem(value) {
     int index = cartItems.indexWhere((element) {
       return element["name"] == value["name"];

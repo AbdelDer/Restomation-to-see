@@ -92,7 +92,7 @@ class CartPage extends StatelessWidget {
                       .then((value) {
                     KRoutes.pop(context);
                     Fluttertoast.showToast(msg: "Ordered Successfully");
-
+                    cart.clearCart();
                     Beamer.of(context).beamToReplacementNamed(
                         "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
                   });
@@ -112,7 +112,7 @@ class CartPage extends StatelessWidget {
                       .then((value) {
                     KRoutes.pop(context);
                     Fluttertoast.showToast(msg: "Ordered Successfully");
-
+                    cart.clearCart();
                     Beamer.of(context).beamToReplacementNamed(
                         "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
                   });

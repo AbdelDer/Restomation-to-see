@@ -140,7 +140,7 @@ class _LoginState extends State<Login> {
                           pushScreen(null);
                         } else {
                           pushScreen(
-                              "/restaurants-details/${response["assigned_restaurant"]}");
+                              "/restaurants-details/${response["assigned_restaurant"]},${response["imageName"]}");
                         }
                       } else {
                         showError();

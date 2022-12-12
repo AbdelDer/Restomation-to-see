@@ -5,7 +5,6 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -283,13 +282,6 @@ class _MenuPageState extends State<MenuPage> {
                           ),
                         );
                       },
-                      // separatorBuilder: (BuildContext context, int index) {
-                      //   return const Divider(
-                      //     color: kGrey,
-                      //     indent: 30,
-                      //     endIndent: 30,
-                      //   );
-                      // },
                     );
                   },
                 ),
@@ -390,10 +382,10 @@ class _MenuPageState extends State<MenuPage> {
                                     )
                                   : CircleAvatar(
                                       radius: 100,
-                                      backgroundColor: kGrey.shade200,
+                                      backgroundColor: kGrey.shade100,
                                       child: const Icon(
                                         Icons.add_a_photo,
-                                        size: 30,
+                                        size: 35,
                                       ),
                                     )),
                       const SizedBox(
@@ -423,7 +415,7 @@ class _MenuPageState extends State<MenuPage> {
                       FormTextField(
                         controller: menuItemPriceController,
                         keyboardtype: TextInputType.number,
-                        suffixIcon: const Icon(FontAwesomeIcons.rupeeSign),
+                        suffixIcon: const Icon(Icons.currency_rupee),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return "Fill this field";

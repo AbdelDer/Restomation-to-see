@@ -15,7 +15,11 @@ import '../../../Widgets/custom_text_field.dart';
 
 class AdminScreen extends StatefulWidget {
   final String restaurantsKey;
-  const AdminScreen({super.key, required this.restaurantsKey});
+  final String restaurantImageName;
+  const AdminScreen(
+      {super.key,
+      required this.restaurantsKey,
+      required this.restaurantImageName});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -253,6 +257,7 @@ class _AdminScreenState extends State<AdminScreen> {
                                       name.text,
                                       email.text,
                                       password.text,
+                                      widget.restaurantImageName,
                                       update: update,
                                       personKey: person?["key"])
                                   .then((value) {
