@@ -1,16 +1,53 @@
 import 'package:go_router/go_router.dart';
+import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
+import 'package:restomation/MVVM/Views/OrderScreen/order_screen.dart';
+import 'package:restomation/MVVM/Views/Resturant%20Details/resturant_details.dart';
+import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
+import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
 
-final GoRouter route = GoRouter(routes: [
-  GoRoute(
-    path: "/",
-    routes: [
-      GoRoute(
-        path: "home",
-        builder: (context, state) => const HomePage(),
-      ),
-    ],
-    builder: (context, state) => const Login(),
-  ),
-]);
+final GoRouter goRoute = GoRouter(
+  routes: [
+    GoRoute(
+      name: "login",
+      path: "/",
+      builder: (context, state) => const Login(),
+    ),
+    GoRoute(
+      name: "home",
+      path: "/home",
+      builder: (context, state) => const HomePage(),
+    ),
+    GoRoute(
+      name: "restaurant-details",
+      path: "/restaurant-details",
+      builder: (context, state) => const RestaurantsDetailPage(),
+    ),
+    GoRoute(
+      name: "menu",
+      path: "/menu",
+      builder: (context, state) => const HomePage(),
+    ),
+    GoRoute(
+      name: "tables",
+      path: "/tables",
+      builder: (context, state) => const TablesPage(),
+    ),
+    GoRoute(
+      name: "staff",
+      path: "/Staff",
+      builder: (context, state) => const StaffPage(),
+    ),
+    GoRoute(
+      name: "orders",
+      path: "/Orders",
+      builder: (context, state) => const OrderScreen(),
+    ),
+    GoRoute(
+      name: "admins",
+      path: "/Admins",
+      builder: (context, state) => const AdminScreen(),
+    ),
+  ],
+);

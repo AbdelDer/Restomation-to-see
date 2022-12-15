@@ -1,22 +1,16 @@
-import 'dart:convert';
-
-import 'package:beamer/beamer.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
+import 'package:restomation/MVVM/Repo/Restaurant%20Service/restaurant_service.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
+import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
-import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
-import 'package:restomation/Widgets/custom_text_field.dart';
 
-import '../../../Utils/app_routes.dart';
-import '../../View Model/Resturants View Model/resturants_view_model.dart';
+import '../../Models/RestaurantsModel/restaurants_model.dart';
+import '../../Repo/Storage Service/storage_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -27,16 +21,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController restaurantsController = TextEditingController();
-  getRestaurants() async {
-    await FirebaseFirestore.instance
-        .collection("/restaurants")
-        .get()
-        .then((value) => print(jsonEncode(value.docs[0].data())));
-  }
 
   @override
   Widget build(BuildContext context) {
-    getRestaurants();
     return Scaffold(
         appBar: BaseAppBar(
             title: "Select restaurants",
@@ -45,7 +32,8 @@ class _HomePageState extends State<HomePage> {
             appBarHeight: 50),
         floatingActionButton: FloatingActionButton.extended(
             onPressed: () {
-              showCustomDialog(context);
+              EssentialFunctions()
+                  .createRestaurantDialogue(context, restaurantsController);
             },
             label: const CustomText(
               text: "Create restaurants",
@@ -53,40 +41,40 @@ class _HomePageState extends State<HomePage> {
             )),
         body: Center(
             child: StreamBuilder(
-                stream: FirebaseDatabase.instance
-                    .ref()
-                    .child("restaurants")
-                    .onValue,
-                builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                stream: RestaurantService().getRestaurants(),
+                builder:
+                    (context, AsyncSnapshot<List<RestaurantModel>> snapshot) {
                   return restaurantsView(snapshot);
                 })));
   }
 
-  Widget restaurantsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
+  Widget restaurantsView(AsyncSnapshot<List<RestaurantModel>> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
-    if (snapshot.data!.snapshot.children.isEmpty) {
+    if (snapshot.hasError) {
+      return const Center(
+        child: CustomText(text: "Error"),
+      );
+    }
+    if (snapshot.data!.isEmpty) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [CustomText(text: "No restaurants added Yet !!")],
       );
     }
-
-    Map restaurantsObject = snapshot.data!.snapshot.value as Map;
-    List restaurantskeysList = restaurantsObject.keys.toList();
+    List<RestaurantModel> restaurantsList = snapshot.data!;
     return Center(
       child: SingleChildScrollView(
         child: Wrap(
-          children: restaurantskeysList.map((e) {
-            Map restaurants = restaurantsObject[e];
-            restaurants["key"] = e;
-            final ref =
-                StorageService.storage.ref().child(restaurants["imagePath"]);
+          children: restaurantsList.map((e) {
+            final ref = StorageService.storage.ref().child(e.imagePath!);
             return GestureDetector(
               onTap: () {
-                Beamer.of(context).beamToNamed(
-                    "/restaurants-details/${restaurants["restaurantsName"]},${restaurants["imageName"]}");
+                context
+                    .read<SelectedRestaurantProvider>()
+                    .updateSelectedRestaurant(e);
+                context.push("/restaurant-details");
               },
               child: Padding(
                 padding: const EdgeInsets.all(10),
@@ -110,7 +98,7 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(
                       height: 10,
                     ),
-                    Text(restaurants["restaurantsName"].toString())
+                    Text(e.name!)
                   ],
                 ),
               ),
@@ -119,111 +107,6 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  }
-
-  void showCustomDialog(BuildContext context) {
-    FilePickerResult? image;
-    showDialog(
-        context: context,
-        builder: (context) {
-          RestaurantsViewModel restaurantsViewModel =
-              context.watch<RestaurantsViewModel>();
-          return StatefulBuilder(builder: (context, refreshState) {
-            return AlertDialog(
-              scrollable: true,
-              content: SizedBox(
-                width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomText(text: "Upload Image"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    InkWell(
-                        onTap: () async {
-                          image = await FilePicker.platform.pickFiles(
-                            allowMultiple: false,
-                            type: FileType.custom,
-                            allowedExtensions: [
-                              "png",
-                              "jpg",
-                            ],
-                          );
-                          if (image == null) {
-                            Fluttertoast.showToast(msg: "No file selected");
-                          } else {
-                            refreshState(() {});
-                          }
-                        },
-                        child: image != null
-                            ? CircleAvatar(
-                                radius: 100,
-                                backgroundColor: kWhite,
-                                foregroundImage:
-                                    MemoryImage(image!.files.single.bytes!),
-                              )
-                            : const CircleAvatar(
-                                radius: 100,
-                                backgroundColor: kWhite,
-                                foregroundImage: AssetImage("/upload_logo.jpg"),
-                              )),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    const CustomText(text: "restaurants name"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: restaurantsController,
-                      suffixIcon: const Icon(Icons.shower_sharp),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    restaurantsViewModel.loading
-                        ? const CircularProgressIndicator.adaptive()
-                        : CustomButton(
-                            buttonColor: primaryColor,
-                            text: "create",
-                            textColor: kWhite,
-                            function: () async {
-                              if (restaurantsController.text.isEmpty ||
-                                  image == null) {
-                                Fluttertoast.showToast(
-                                    msg:
-                                        "Make sure to upload a restaurants Logo and a Valid name");
-                              } else {
-                                final fileBytes = image!.files.single.bytes;
-
-                                final fileName = image!.files.single.name;
-                                await restaurantsViewModel
-                                    .createrestaurants(
-                                        restaurantsController.text,
-                                        fileName,
-                                        fileBytes!)
-                                    .then((value) {
-                                  restaurantsController.clear();
-                                  if (restaurantsViewModel.modelError == null) {
-                                    KRoutes.pop(context);
-                                    Fluttertoast.showToast(
-                                        msg: "restaurants created");
-                                    restaurantsViewModel.setModelError(null);
-                                  } else {
-                                    Fluttertoast.showToast(
-                                        msg: "Unable to create restaurants");
-                                    restaurantsViewModel.setModelError(null);
-                                  }
-                                });
-                              }
-                            })
-                  ],
-                ),
-              ),
-            );
-          });
-        });
   }
 
   @override

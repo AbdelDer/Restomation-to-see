@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -153,7 +154,15 @@ class _LoginState extends State<Login> {
   }
 
   pushScreen(LoginModel loginModel) {
-    if (loginModel.role == "super_admin") {}
+    if (loginModel.role == "super_admin") {
+      context.push("/home");
+      return;
+    }
+    if (loginModel.role == "restaurant_admin") {
+      context.push("/restaurant-details");
+      return;
+    }
+    Fluttertoast.showToast(msg: "Unkown role please contact super admin");
   }
 
   showError() {

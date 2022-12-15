@@ -2,21 +2,25 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/all_waiters_display.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_item_display.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
+import '../../../Provider/selected_restaurant_provider.dart';
 import '../../../Utils/app_routes.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_button.dart';
+import '../../Models/RestaurantsModel/restaurants_model.dart';
 import '../../Repo/Database Service/database_service.dart';
 
 class OrderScreen extends StatefulWidget {
-  final String restaurantsKey;
-  const OrderScreen({super.key, required this.restaurantsKey});
+  const OrderScreen({
+    super.key,
+  });
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -26,9 +30,11 @@ class _OrderScreenState extends State<OrderScreen> {
   final DateFormat formatter = DateFormat('yyyy-MM-dd');
   @override
   Widget build(BuildContext context) {
+    RestaurantModel? restaurantModel =
+        context.read<SelectedRestaurantProvider>().restaurantModel;
     return Scaffold(
         appBar: BaseAppBar(
-          title: widget.restaurantsKey,
+          title: restaurantModel?.name ?? "",
           appBar: AppBar(),
           widgets: const [],
           appBarHeight: 50,
@@ -39,15 +45,16 @@ class _OrderScreenState extends State<OrderScreen> {
           stream: DatabaseService.db
               .ref()
               .child("orders")
-              .child(widget.restaurantsKey)
+              .child(restaurantModel?.name ?? "")
               .onValue,
           builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-            return orderDisplayView(snapshot);
+            return orderDisplayView(snapshot, restaurantModel!);
           },
         )));
   }
 
-  Widget orderDisplayView(AsyncSnapshot<DatabaseEvent> snapshot) {
+  Widget orderDisplayView(
+      AsyncSnapshot<DatabaseEvent> snapshot, RestaurantModel restaurantModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
@@ -84,8 +91,8 @@ class _OrderScreenState extends State<OrderScreen> {
               itemBuilder: (context, index) {
                 String key = orderKeys[index];
                 bool isOpened = false;
-                return listExpansionView(
-                    isOpened, orderKeys, index, (order[key] as Map));
+                return listExpansionView(isOpened, orderKeys, index,
+                    (order[key] as Map), restaurantModel);
               },
             ),
           ),
@@ -94,8 +101,8 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Widget listExpansionView(
-      bool isOpened, List orderKeys, int index, Map orderDetail) {
+  Widget listExpansionView(bool isOpened, List orderKeys, int index,
+      Map orderDetail, RestaurantModel restaurantModel) {
     return StatefulBuilder(builder: (context, changeState) {
       return Container(
           width: double.infinity,
@@ -197,7 +204,7 @@ class _OrderScreenState extends State<OrderScreen> {
                       height: 400,
                       child: OrderItemDisplay(
                         phone: orderDetail["phone"],
-                        restaurantName: widget.restaurantsKey,
+                        restaurantName: restaurantModel.name ?? "",
                       )),
                   const SizedBox(
                     height: 10,
@@ -225,7 +232,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             await DatabaseService.db
                                 .ref()
                                 .child("orders")
-                                .child(widget.restaurantsKey)
+                                .child(restaurantModel.name ?? "")
                                 .child(orderKeys[index])
                                 .update({"order_status": "preparing"}).then(
                                     (value) => KRoutes.pop(context));
@@ -233,7 +240,7 @@ class _OrderScreenState extends State<OrderScreen> {
                             showDialog(
                               context: context,
                               builder: (context) => AllWaiterDisplay(
-                                restaurantKey: widget.restaurantsKey,
+                                restaurantKey: restaurantModel.name ?? "",
                                 tableKey: orderKeys[index],
                               ),
                             );
@@ -242,13 +249,13 @@ class _OrderScreenState extends State<OrderScreen> {
                             DatabaseService.db
                                 .ref()
                                 .child("orders")
-                                .child(widget.restaurantsKey)
+                                .child(restaurantModel.name ?? "")
                                 .child(orderKeys[index])
                                 .remove();
                             DatabaseService.db
                                 .ref()
                                 .child("completed-orders")
-                                .child(widget.restaurantsKey)
+                                .child(restaurantModel.name ?? "")
                                 .child(formatter.format(DateTime.now()))
                                 .child(orderDetail["phone"])
                                 .push()
@@ -280,13 +287,13 @@ class _OrderScreenState extends State<OrderScreen> {
                           DatabaseService.db
                               .ref()
                               .child("orders")
-                              .child(widget.restaurantsKey)
+                              .child(restaurantModel.name ?? "")
                               .child(orderKeys[index])
                               .remove();
                           DatabaseService.db
                               .ref()
                               .child("cancelled_orders")
-                              .child(widget.restaurantsKey)
+                              .child(restaurantModel.name ?? "")
                               .child(formatter.format(DateTime.now()))
                               .child(orderDetail["phone"])
                               .push()

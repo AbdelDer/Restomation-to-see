@@ -14,8 +14,9 @@ import '../../../Widgets/custom_text.dart';
 import '../../../Widgets/custom_text_field.dart';
 
 class AdminScreen extends StatefulWidget {
-  final String restaurantsKey;
-  const AdminScreen({super.key, required this.restaurantsKey});
+  const AdminScreen({
+    super.key,
+  });
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -30,10 +31,7 @@ class _AdminScreenState extends State<AdminScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BaseAppBar(
-          title: widget.restaurantsKey,
-          appBar: AppBar(),
-          widgets: const [],
-          appBarHeight: 50),
+          title: "", appBar: AppBar(), widgets: const [], appBarHeight: 50),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
             showCustomDialog(context);
@@ -66,7 +64,6 @@ class _AdminScreenState extends State<AdminScreen> {
                             .ref()
                             .child("admins")
                             .orderByChild("assigned_restaurant")
-                            .equalTo(widget.restaurantsKey)
                             .onValue,
                         builder:
                             (context, AsyncSnapshot<DatabaseEvent> snapshot) {
@@ -249,12 +246,8 @@ class _AdminScreenState extends State<AdminScreen> {
                             if (formKey.currentState!.validate()) {
                               Alerts.customLoadingAlert(context);
                               await DatabaseService.createSubAdminRestaurant(
-                                      widget.restaurantsKey,
-                                      name.text,
-                                      email.text,
-                                      password.text,
-                                      update: update,
-                                      personKey: person?["key"])
+                                      ",", name.text, email.text, password.text,
+                                      update: update, personKey: person?["key"])
                                   .then((value) {
                                 KRoutes.pop(context);
                                 KRoutes.pop(context);

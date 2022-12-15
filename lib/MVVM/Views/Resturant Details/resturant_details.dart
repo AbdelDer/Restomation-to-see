@@ -1,20 +1,23 @@
-import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 
+import '../../Models/RestaurantsModel/restaurants_model.dart';
+import 'package:go_router/go_router.dart';
+
 class RestaurantsDetailPage extends StatelessWidget {
-  final String restaurantsKey;
-  final String restaurantsImageName;
-  const RestaurantsDetailPage(
-      {super.key,
-      required this.restaurantsKey,
-      required this.restaurantsImageName});
+  const RestaurantsDetailPage({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
+    RestaurantModel? restaurantModel =
+        context.read<SelectedRestaurantProvider>().restaurantModel;
     return Scaffold(
       appBar: BaseAppBar(
-          title: restaurantsKey,
+          title: restaurantModel?.name ?? "No name",
           appBar: AppBar(),
           widgets: const [],
           automaticallyImplyLeading: true,
@@ -28,8 +31,7 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://thumbs.dreamstime.com/b/vintage-frames-gold-restaurant-bar-food-drinks-cafe-menu-black-background-vector-illustrtor-badge-border-branding-bundle-186691349.jpg",
                 "page": () {
-                  Beamer.of(context).beamToNamed(
-                      "/restaurants-menu-category/$restaurantsKey,no");
+                  context.push("/menu");
                 }
               },
               {
@@ -37,8 +39,7 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://s.alicdn.com/@sc04/kf/H436ab8e73d1244f1a216e047dc16421cd.jpg",
                 "page": () {
-                  Beamer.of(context).beamToNamed(
-                      "/restaurants-tables/$restaurantsKey,$restaurantsImageName");
+                  context.push("/tables");
                 }
               },
               {
@@ -46,8 +47,7 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://static.vecteezy.com/system/resources/thumbnails/006/903/981/small_2x/restaurant-waiter-serve-dish-to-customer-free-vector.jpg",
                 "page": () {
-                  Beamer.of(context)
-                      .beamToNamed("/restaurants-staff/$restaurantsKey");
+                  context.push("/staff");
                 }
               },
               {
@@ -55,8 +55,7 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://static.vecteezy.com/system/resources/previews/009/322/978/non_2x/illustration-of-food-service-via-mobile-application-free-vector.jpg",
                 "page": () {
-                  Beamer.of(context)
-                      .beamToNamed("/restaurants-orders/$restaurantsKey");
+                  context.push("/orders");
                 }
               },
               {
@@ -64,8 +63,7 @@ class RestaurantsDetailPage extends StatelessWidget {
                 "image":
                     "https://static.vecteezy.com/system/resources/thumbnails/006/017/842/small_2x/customer-service-icon-user-with-laptop-computer-and-headphone-illustration-free-vector.jpg",
                 "page": () {
-                  Beamer.of(context)
-                      .beamToNamed("/restaurants-admins/$restaurantsKey");
+                  context.push("/admins");
                 }
               },
             ]

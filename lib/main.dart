@@ -2,9 +2,9 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/RestaurantService/restaurant_service.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Cart/cart.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
@@ -17,9 +17,11 @@ import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
 import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
 import 'package:restomation/Provider/cart_provider.dart';
 import 'package:restomation/Utils/go_router.dart';
+import 'package:url_strategy/url_strategy.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
 import 'MVVM/Views/Resturant Details/resturant_details.dart';
+import 'Provider/selected_restaurant_provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -27,6 +29,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  setPathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -61,10 +64,7 @@ class _MyAppState extends State<MyApp> {
             key: ValueKey(parameters[0]),
             title: parameters[0],
             type: BeamPageType.fadeTransition,
-            child: RestaurantsDetailPage(
-              restaurantsKey: parameters[0],
-              restaurantsImageName: parameters[1],
-            ),
+            child: const RestaurantsDetailPage(),
           );
         },
         "/restaurants-menu-category/:parameters": (p0, p1, p2) {
@@ -115,10 +115,7 @@ class _MyAppState extends State<MyApp> {
             key: const ValueKey("restaurants-tables"),
             title: parameters[0],
             type: BeamPageType.fadeTransition,
-            child: TablesPage(
-              restaurantsKey: parameters[0],
-              restaurantsImageName: parameters[1],
-            ),
+            child: const TablesPage(),
           );
         },
         "/restaurants-staff/:parameters": (p0, p1, p2) {
@@ -129,9 +126,7 @@ class _MyAppState extends State<MyApp> {
               key: const ValueKey("staff"),
               title: parameters[0],
               type: BeamPageType.fadeTransition,
-              child: StaffPage(
-                restaurantsKey: parameters[0],
-              ));
+              child: const StaffPage());
         },
         "/restaurants-admins/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
@@ -141,9 +136,7 @@ class _MyAppState extends State<MyApp> {
               key: const ValueKey("staff"),
               title: parameters[0],
               type: BeamPageType.fadeTransition,
-              child: AdminScreen(
-                restaurantsKey: parameters[0],
-              ));
+              child: const AdminScreen());
         },
         "/restaurants-orders/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
@@ -153,9 +146,7 @@ class _MyAppState extends State<MyApp> {
             key: const ValueKey("orders"),
             title: parameters[0],
             type: BeamPageType.fadeTransition,
-            child: OrderScreen(
-              restaurantsKey: parameters[0],
-            ),
+            child: const OrderScreen(),
           );
         },
         "/customer-table/:parameters": (p0, p1, p2) {
@@ -222,16 +213,19 @@ class _MyAppState extends State<MyApp> {
           create: (context) => Cart(),
         ),
         ChangeNotifierProvider(
-          create: (context) => RestaurantService(),
+          create: (context) => TablesViewModel(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => SelectedRestaurantProvider(),
+        )
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             dividerColor: Colors.transparent,
             textTheme: GoogleFonts.poppinsTextTheme()),
-        routeInformationParser: route.routeInformationParser,
-        routerDelegate: route.routerDelegate,
+        routerDelegate: goRoute.routerDelegate,
+        routeInformationParser: goRoute.routeInformationParser,
       ),
     );
   }

@@ -15,7 +15,7 @@ class AuthMethods {
           email: email, password: password);
       await firestore
           .collection("/users")
-          .where(cred.user!.uid)
+          .where("uid", isEqualTo: cred.user!.uid)
           .get()
           .then((value) {
         data = value.docs[0].data();

@@ -2,6 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
@@ -16,11 +19,8 @@ import '../../Repo/Database Service/database_service.dart';
 import '../../Repo/Storage Service/storage_service.dart';
 
 class StaffPage extends StatefulWidget {
-  final String restaurantsKey;
-
   const StaffPage({
     super.key,
-    required this.restaurantsKey,
   });
 
   @override
@@ -37,6 +37,8 @@ class _StaffPageState extends State<StaffPage> {
 
   @override
   Widget build(BuildContext context) {
+    RestaurantModel? restaurantModel =
+        context.read<SelectedRestaurantProvider>().restaurantModel;
     return Scaffold(
       appBar: BaseAppBar(
         title: "",
@@ -47,7 +49,7 @@ class _StaffPageState extends State<StaffPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            showCustomDialog(context);
+            showCustomDialog(context, restaurantModel!);
           },
           label: const CustomText(
             text: "Create Staff",
@@ -77,11 +79,11 @@ class _StaffPageState extends State<StaffPage> {
                             .ref()
                             .child("staff")
                             .orderByChild("assigned_restaurant")
-                            .equalTo(widget.restaurantsKey)
+                            .equalTo(restaurantModel?.name ?? "")
                             .onValue,
                         builder:
                             (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                          return staffView(snapshot);
+                          return staffView(snapshot, restaurantModel!);
                         }),
                   ),
                 ],
@@ -89,7 +91,8 @@ class _StaffPageState extends State<StaffPage> {
     );
   }
 
-  Widget staffView(AsyncSnapshot<DatabaseEvent> snapshot) {
+  Widget staffView(
+      AsyncSnapshot<DatabaseEvent> snapshot, RestaurantModel restaurantModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
@@ -157,7 +160,8 @@ class _StaffPageState extends State<StaffPage> {
                 personPhoneController.text = person["phoneNo"];
                 personEmailController.text = person["email"];
                 personPasswordController.text = person["password"];
-                showCustomDialog(context, update: true, person: person);
+                showCustomDialog(context, restaurantModel,
+                    update: true, person: person);
               },
             ),
             IconButton(
@@ -187,7 +191,7 @@ class _StaffPageState extends State<StaffPage> {
     );
   }
 
-  void showCustomDialog(BuildContext context,
+  void showCustomDialog(BuildContext context, RestaurantModel restaurantModel,
       {bool update = false, Map? person}) {
     FilePickerResult? image;
     String selectedValue = "waiter";
@@ -372,11 +376,11 @@ class _StaffPageState extends State<StaffPage> {
                                 if (update) {
                                   Map<String, Object?> item = {
                                     "assigned_restaurant":
-                                        widget.restaurantsKey,
+                                        restaurantModel.name ?? "",
                                     "name": personNameController.text,
                                     "phoneNo": personPhoneController.text,
                                     "image":
-                                        "staff/${widget.restaurantsKey}/$fileName",
+                                        "staff/${restaurantModel.name ?? ""}/$fileName",
                                     "email": personEmailController.text,
                                     "password": personPasswordController.text,
                                     "role": selectedValue.toLowerCase(),
@@ -384,7 +388,7 @@ class _StaffPageState extends State<StaffPage> {
                                   Alerts.customLoadingAlert(context);
                                   await DatabaseService
                                           .updateStaffCategoryPerson(
-                                              widget.restaurantsKey,
+                                              restaurantModel.name ?? "",
                                               person!["key"],
                                               person["image"],
                                               fileName,
@@ -401,11 +405,11 @@ class _StaffPageState extends State<StaffPage> {
                                 } else {
                                   Map item = {
                                     "assigned_restaurant":
-                                        widget.restaurantsKey,
+                                        restaurantModel.name ?? "",
                                     "name": personNameController.text,
                                     "phoneNo": personPhoneController.text,
                                     "image":
-                                        "staff/${widget.restaurantsKey}/$fileName",
+                                        "staff/${restaurantModel.name ?? ""}/$fileName",
                                     "email": personEmailController.text,
                                     "password": personPasswordController.text,
                                     "role": selectedValue.toLowerCase(),
@@ -413,7 +417,7 @@ class _StaffPageState extends State<StaffPage> {
                                   Alerts.customLoadingAlert(context);
                                   await DatabaseService
                                           .createStaffCategoryPerson(
-                                              widget.restaurantsKey,
+                                              restaurantModel.name ?? "",
                                               fileName,
                                               item,
                                               fileBytes!)

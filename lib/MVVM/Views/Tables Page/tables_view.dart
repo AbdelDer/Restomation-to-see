@@ -1,26 +1,23 @@
-import 'package:beamer/beamer.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:restomation/MVVM/Models/Tables%20Model/tables_model.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/Utils/app_routes.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
+import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
-import 'package:restomation/Widgets/custom_text_field.dart';
 
-import '../../../Widgets/custom_alert.dart';
-import '../../../Widgets/custom_button.dart';
+import '../../Models/RestaurantsModel/restaurants_model.dart';
+import '../../Repo/Tables Service/tables_service.dart';
+import '../../View Model/Tables View Model/tables_view_model.dart';
 
 class TablesPage extends StatefulWidget {
-  final String restaurantsKey;
-  final String restaurantsImageName;
   const TablesPage({
     super.key,
-    required this.restaurantsKey,
-    required this.restaurantsImageName,
   });
 
   @override
@@ -34,9 +31,12 @@ class _TablesPageState extends State<TablesPage> {
 
   @override
   Widget build(BuildContext context) {
+    RestaurantModel? restaurantModel =
+        context.read<SelectedRestaurantProvider>().restaurantModel;
+    TablesViewModel tablesViewModel = context.watch<TablesViewModel>();
     return Scaffold(
       appBar: BaseAppBar(
-        title: "",
+        title: restaurantModel?.name ?? "",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -44,7 +44,8 @@ class _TablesPageState extends State<TablesPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            showCustomDialog(context);
+            EssentialFunctions().createUpdateTable(
+                context, restaurantModel, tableController, tablesViewModel);
           },
           label: const CustomText(
             text: "Create table",
@@ -69,45 +70,46 @@ class _TablesPageState extends State<TablesPage> {
                     },
                   ),
                   StreamBuilder(
-                      stream: FirebaseDatabase.instance
-                          .ref()
-                          .child("tables")
-                          .child(widget.restaurantsKey)
-                          .onValue,
+                      stream:
+                          TablesService().getTables(restaurantModel?.id ?? ""),
                       builder:
-                          (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                        return tableView(snapshot);
+                          (context, AsyncSnapshot<List<TablesModel>> snapshot) {
+                        return tableView(
+                            snapshot, restaurantModel, tablesViewModel);
                       }),
                 ],
               ))),
     );
   }
 
-  Widget tableView(AsyncSnapshot<DatabaseEvent> snapshot) {
+  Widget tableView(AsyncSnapshot<List<TablesModel>> snapshot,
+      RestaurantModel? restaurantModel, TablesViewModel tablesViewModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Expanded(child: CustomLoader());
     }
-    if (snapshot.data!.snapshot.children.isEmpty) {
+    if (snapshot.hasError) {
+      return const Center(
+        child: CustomText(text: "Error"),
+      );
+    }
+    if (snapshot.data!.isEmpty) {
       return const Expanded(
         child: Center(child: CustomText(text: "No Tables Added Yet !!")),
       );
     }
 
-    Map allrestaurantsTables = snapshot.data!.snapshot.value as Map;
-    List restaurantsTables = allrestaurantsTables.keys.toList();
-    final suggestions = allrestaurantsTables.keys.toList().where((element) {
-      final categoryTitle =
-          allrestaurantsTables[element]["tableName"].toString().toLowerCase();
+    List<TablesModel> restaurantsList = snapshot.data!;
+    final suggestions = restaurantsList.where((element) {
+      final categoryTitle = element.name.toString().toLowerCase();
       final input = controller.text.toLowerCase();
       return categoryTitle.contains(input);
     }).toList();
-    restaurantsTables = suggestions;
+    restaurantsList = suggestions;
     return Expanded(
       child: SingleChildScrollView(
         child: Column(
-          children: restaurantsTables.map((e) {
-            Map table = allrestaurantsTables[e] as Map;
-            table["key"] = e;
+          children: restaurantsList.map((e) {
+            e.id = e.id;
 
             return Column(
               children: [
@@ -115,12 +117,9 @@ class _TablesPageState extends State<TablesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     InkWell(
-                      onTap: () {
-                        Beamer.of(context).beamToNamed(
-                            "/restaurants-page-decider/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}");
-                      },
+                      onTap: () {},
                       child: CustomText(
-                        text: table["table_name"],
+                        text: e.name ?? "",
                         fontsize: 20,
                       ),
                     ),
@@ -132,7 +131,7 @@ class _TablesPageState extends State<TablesPage> {
                             content: SizedBox(
                               width: MediaQuery.of(context).size.width / 2,
                               child: QrImage(
-                                data: '${table["qrLink"]}',
+                                data: e.qrLink ?? "",
                                 version: QrVersions.auto,
                               ),
                             ),
@@ -140,7 +139,7 @@ class _TablesPageState extends State<TablesPage> {
                         );
                       },
                       child: QrImage(
-                        data: '${table["qrLink"]}',
+                        data: e.qrLink ?? "",
                         version: QrVersions.auto,
                         size: 150,
                       ),
@@ -156,9 +155,11 @@ class _TablesPageState extends State<TablesPage> {
                         Icons.edit_outlined,
                       ),
                       onPressed: () {
-                        tableController.text = table["table_name"];
+                        tableController.text = e.name ?? "";
 
-                        showCustomDialog(context, table: table, update: true);
+                        EssentialFunctions().createUpdateTable(context,
+                            restaurantModel, tableController, tablesViewModel,
+                            table: e, update: true);
                       },
                     ),
                     const SizedBox(
@@ -173,8 +174,8 @@ class _TablesPageState extends State<TablesPage> {
                         DatabaseService.db
                             .ref()
                             .child("tables")
-                            .child(widget.restaurantsKey)
-                            .child(table["key"])
+                            .child(restaurantModel?.id ?? "")
+                            .child(e.id ?? "")
                             .remove();
                       },
                     ),
@@ -186,74 +187,6 @@ class _TablesPageState extends State<TablesPage> {
         ),
       ),
     );
-  }
-
-  void showCustomDialog(BuildContext context,
-      {bool update = false, Map? table}) {
-    final formKey = GlobalKey<FormState>();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            content: SizedBox(
-              width: 300,
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomText(text: "Create Table"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: tableController,
-                      suffixIcon: const Icon(Icons.table_bar),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Fill this field";
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    CustomButton(
-                        buttonColor: primaryColor,
-                        text: update ? "Update" : "Create",
-                        textColor: kWhite,
-                        function: () async {
-                          if (formKey.currentState!.validate()) {
-                            Alerts.customLoadingAlert(context);
-                            if (update) {
-                              await DatabaseService.updateTable(
-                                      widget.restaurantsKey,
-                                      table!["key"],
-                                      tableController.text,
-                                      "https://naqeeb9a.github.io/#/restaurants-page-decider/${widget.restaurantsKey},${table["table_name"]},${widget.restaurantsImageName}")
-                                  .then((value) {
-                                KRoutes.pop(context);
-                                return KRoutes.pop(context);
-                              });
-                            } else {
-                              await DatabaseService.createTable(
-                                      widget.restaurantsKey,
-                                      tableController.text,
-                                      'https://naqeeb9a.github.io/#/customer-table/KFC,${tableController.text},${widget.restaurantsImageName}')
-                                  .then((value) {
-                                KRoutes.pop(context);
-                                return KRoutes.pop(context);
-                              });
-                            }
-                          }
-                        })
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
   }
 
   @override
