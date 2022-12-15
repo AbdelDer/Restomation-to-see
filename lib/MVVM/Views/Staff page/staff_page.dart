@@ -1,22 +1,16 @@
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
+import 'package:restomation/MVVM/Models/Staff%20Model/staff_model.dart';
+import 'package:restomation/MVVM/Repo/Staff%20Service/staff_service.dart';
 import 'package:restomation/Provider/selected_restaurant_provider.dart';
-import 'package:restomation/Widgets/custom_button.dart';
+import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
-import '../../../Utils/app_routes.dart';
 import '../../../Utils/contants.dart';
-import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_app_bar.dart';
 import '../../../Widgets/custom_search.dart';
 import '../../../Widgets/custom_text.dart';
-import '../../../Widgets/custom_text_field.dart';
-import '../../Repo/Database Service/database_service.dart';
-import '../../Repo/Storage Service/storage_service.dart';
 
 class StaffPage extends StatefulWidget {
   const StaffPage({
@@ -39,9 +33,10 @@ class _StaffPageState extends State<StaffPage> {
   Widget build(BuildContext context) {
     RestaurantModel? restaurantModel =
         context.read<SelectedRestaurantProvider>().restaurantModel;
+
     return Scaffold(
       appBar: BaseAppBar(
-        title: "",
+        title: restaurantModel?.name ?? "No name",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -49,7 +44,14 @@ class _StaffPageState extends State<StaffPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            showCustomDialog(context, restaurantModel!);
+            EssentialFunctions().createStaffDialog(
+              context,
+              restaurantModel!,
+              personNameController,
+              personPhoneController,
+              personEmailController,
+              personPasswordController,
+            );
           },
           label: const CustomText(
             text: "Create Staff",
@@ -75,15 +77,14 @@ class _StaffPageState extends State<StaffPage> {
                   ),
                   Expanded(
                     child: StreamBuilder(
-                        stream: FirebaseDatabase.instance
-                            .ref()
-                            .child("staff")
-                            .orderByChild("assigned_restaurant")
-                            .equalTo(restaurantModel?.name ?? "")
-                            .onValue,
-                        builder:
-                            (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                          return staffView(snapshot, restaurantModel!);
+                        stream:
+                            StaffService().getStaff(restaurantModel?.id ?? ""),
+                        builder: (context,
+                            AsyncSnapshot<List<StaffModel>> snapshot) {
+                          return staffView(
+                            snapshot,
+                            restaurantModel!,
+                          );
                         }),
                   ),
                 ],
@@ -92,7 +93,9 @@ class _StaffPageState extends State<StaffPage> {
   }
 
   Widget staffView(
-      AsyncSnapshot<DatabaseEvent> snapshot, RestaurantModel restaurantModel) {
+    AsyncSnapshot<List<StaffModel>> snapshot,
+    RestaurantModel restaurantModel,
+  ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
@@ -104,7 +107,7 @@ class _StaffPageState extends State<StaffPage> {
         ),
       );
     }
-    if (snapshot.data!.snapshot.children.isEmpty) {
+    if (snapshot.data!.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -112,334 +115,62 @@ class _StaffPageState extends State<StaffPage> {
         ),
       );
     }
-    Map allStaff = snapshot.data!.snapshot.value as Map;
-    List staffList = allStaff.keys.toList();
-    final suggestions = allStaff.keys.toList().where((element) {
-      final categoryTitle = allStaff[element]["name"].toString().toLowerCase();
+    List<StaffModel> allStaff = snapshot.data!;
+    final suggestions = allStaff.where((element) {
+      final categoryTitle = element.name!.toLowerCase();
       final input = controller.text.toLowerCase();
       return categoryTitle.contains(input);
     }).toList();
-    staffList = suggestions;
+    allStaff = suggestions;
     return Column(
-      children: staffList.map((e) {
-        Map person = allStaff[e] as Map;
-        person["key"] = e;
-        final ref = StorageService.storage.ref().child(person["image"]);
+      children: allStaff.map((e) {
         return Row(
           children: [
             Expanded(
               child: ListTile(
-                leading: FutureBuilder(
-                    future: ref.getDownloadURL(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return CircleAvatar(
-                          backgroundColor: kWhite,
-                          foregroundImage: NetworkImage(snapshot.data!),
-                        );
-                      }
-                      return const CircleAvatar(
-                        backgroundColor: kWhite,
-                        child: CircularProgressIndicator.adaptive(),
-                      );
-                    }),
-                title: Text(
-                  person["name"] + " (" + person["role"] + ")",
+                title: CustomText(
+                  text: e.email ?? "",
+                  fontsize: 15,
+                  fontWeight: FontWeight.bold,
                 ),
-                subtitle: Text(person["password"]),
-                trailing: const Icon(Icons.person_outline),
+                subtitle: CustomText(text: e.role ?? ""),
               ),
             ),
-            IconButton(
-              color: primaryColor,
-              icon: const Icon(
-                Icons.edit_outlined,
-              ),
-              onPressed: () {
-                personNameController.text = person["name"];
-                personPhoneController.text = person["phoneNo"];
-                personEmailController.text = person["email"];
-                personPasswordController.text = person["password"];
-                showCustomDialog(context, restaurantModel,
-                    update: true, person: person);
-              },
-            ),
-            IconButton(
-              color: Colors.red,
-              icon: const Icon(
-                Icons.delete_outline,
-              ),
-              onPressed: () async {
-                Alerts.customLoadingAlert(context);
-                await DatabaseService.storage
-                    .ref()
-                    .child(person["image"])
-                    .delete()
-                    .then((value) async {
-                  await DatabaseService.db
-                      .ref()
-                      .child("staff")
-                      .child(person["key"])
-                      .remove()
-                      .then((value) => KRoutes.pop(context));
-                });
-              },
-            ),
+            Row(
+              children: [
+                IconButton(
+                  color: primaryColor,
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                  ),
+                  onPressed: () {
+                    personNameController.text = e.name ?? "";
+                    personPhoneController.text = e.phoneNo ?? "";
+                    personEmailController.text = e.email ?? "";
+                    EssentialFunctions().createStaffDialog(
+                      context,
+                      restaurantModel,
+                      personNameController,
+                      personPhoneController,
+                      personEmailController,
+                      personPasswordController,
+                      update: true,
+                    );
+                  },
+                ),
+                IconButton(
+                  color: Colors.red,
+                  icon: const Icon(
+                    Icons.delete_outline,
+                  ),
+                  onPressed: () async {},
+                ),
+              ],
+            )
           ],
         );
       }).toList(),
     );
-  }
-
-  void showCustomDialog(BuildContext context, RestaurantModel restaurantModel,
-      {bool update = false, Map? person}) {
-    FilePickerResult? image;
-    String selectedValue = "waiter";
-    final formKey = GlobalKey<FormState>();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, refreshState) {
-            return AlertDialog(
-              scrollable: true,
-              content: SizedBox(
-                width: 300,
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CustomText(text: "Upload Image"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      InkWell(
-                          onTap: () async {
-                            image = await FilePicker.platform.pickFiles(
-                              allowMultiple: false,
-                              type: FileType.custom,
-                              allowedExtensions: [
-                                "png",
-                                "jpg",
-                              ],
-                            );
-                            if (image == null) {
-                              Fluttertoast.showToast(msg: "No file selected");
-                            } else {
-                              refreshState(() {});
-                            }
-                          },
-                          child: image != null
-                              ? CircleAvatar(
-                                  radius: 100,
-                                  backgroundColor: kWhite,
-                                  foregroundImage:
-                                      MemoryImage(image!.files.single.bytes!),
-                                )
-                              : const CircleAvatar(
-                                  radius: 100,
-                                  backgroundColor: kWhite,
-                                  foregroundImage: NetworkImage(
-                                      "https://media.istockphoto.com/vectors/cartoon-image-people-avatar-profile-flat-vector-social-media-photo-vector-id1339903732?k=20&m=1339903732&s=612x612&w=0&h=hHtK0ro8X1vLOxUAuHX_AUcbjyTylR9-9Q0OjgJm16E="),
-                                )),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Person's name"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: personNameController,
-                        suffixIcon: const Icon(Icons.person),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Person's phone"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: personPhoneController,
-                        keyboardtype: TextInputType.number,
-                        maxLength: 10,
-                        suffixIcon: const Icon(Icons.phone),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-                          if (value.length < 10) {
-                            return "Number should not be less than 10 digits";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Person's email"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: personEmailController,
-                        suffixIcon: const Icon(Icons.email),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-                          if (!value.contains("@") || !value.contains(".")) {
-                            return "Enter a valid Email";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Person's Password"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: personPasswordController,
-                        isPass: true,
-                        suffixIcon: const Icon(Icons.visibility),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-                          if (value.length < 6) {
-                            return "Password should not be less than 6 characters";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          CustomButton(
-                            buttonColor: selectedValue == "waiter"
-                                ? primaryColor
-                                : kGrey,
-                            text: "Waiter",
-                            textColor: kWhite,
-                            function: () {
-                              refreshState(() {
-                                selectedValue = "waiter";
-                              });
-                            },
-                            width: 130,
-                            height: 40,
-                          ),
-                          CustomButton(
-                            buttonColor:
-                                selectedValue == "cook" ? primaryColor : kGrey,
-                            text: "Cook",
-                            textColor: kWhite,
-                            function: () {
-                              refreshState(() {
-                                selectedValue = "cook";
-                              });
-                            },
-                            width: 130,
-                            height: 40,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      CustomButton(
-                          buttonColor: primaryColor,
-                          text: update ? "Update" : "create",
-                          textColor: kWhite,
-                          function: () async {
-                            if (formKey.currentState!.validate()) {
-                              if (image == null) {
-                                Fluttertoast.showToast(
-                                    msg:
-                                        "Please upload the image of the person");
-                              } else {
-                                final fileBytes = image!.files.single.bytes;
-                                final fileName = image!.files.single.name;
-                                if (update) {
-                                  Map<String, Object?> item = {
-                                    "assigned_restaurant":
-                                        restaurantModel.name ?? "",
-                                    "name": personNameController.text,
-                                    "phoneNo": personPhoneController.text,
-                                    "image":
-                                        "staff/${restaurantModel.name ?? ""}/$fileName",
-                                    "email": personEmailController.text,
-                                    "password": personPasswordController.text,
-                                    "role": selectedValue.toLowerCase(),
-                                  };
-                                  Alerts.customLoadingAlert(context);
-                                  await DatabaseService
-                                          .updateStaffCategoryPerson(
-                                              restaurantModel.name ?? "",
-                                              person!["key"],
-                                              person["image"],
-                                              fileName,
-                                              item,
-                                              fileBytes!)
-                                      .then((value) {
-                                    personNameController.clear();
-                                    personPhoneController.clear();
-                                    personEmailController.clear();
-                                    personPasswordController.clear();
-                                    KRoutes.pop(context);
-                                    return KRoutes.pop(context);
-                                  });
-                                } else {
-                                  Map item = {
-                                    "assigned_restaurant":
-                                        restaurantModel.name ?? "",
-                                    "name": personNameController.text,
-                                    "phoneNo": personPhoneController.text,
-                                    "image":
-                                        "staff/${restaurantModel.name ?? ""}/$fileName",
-                                    "email": personEmailController.text,
-                                    "password": personPasswordController.text,
-                                    "role": selectedValue.toLowerCase(),
-                                  };
-                                  Alerts.customLoadingAlert(context);
-                                  await DatabaseService
-                                          .createStaffCategoryPerson(
-                                              restaurantModel.name ?? "",
-                                              fileName,
-                                              item,
-                                              fileBytes!)
-                                      .then((value) {
-                                    personNameController.clear();
-                                    personPhoneController.clear();
-                                    personEmailController.clear();
-                                    personPasswordController.clear();
-                                    KRoutes.pop(context);
-                                    return KRoutes.pop(context);
-                                  });
-                                }
-                              }
-                            }
-                          }),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          });
-        });
   }
 
   @override

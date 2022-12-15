@@ -1,17 +1,16 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/Utils/app_routes.dart';
-import 'package:restomation/Widgets/custom_alert.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
+import 'package:restomation/MVVM/Repo/Admin%20Service/admin_service.dart';
+import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
+import '../../../Provider/selected_restaurant_provider.dart';
 import '../../../Utils/contants.dart';
-import '../../../Widgets/custom_button.dart';
 import '../../../Widgets/custom_search.dart';
 import '../../../Widgets/custom_text.dart';
-import '../../../Widgets/custom_text_field.dart';
+import '../../Models/Admin Model/admin_model.dart';
 
 class AdminScreen extends StatefulWidget {
   const AdminScreen({
@@ -29,12 +28,18 @@ class _AdminScreenState extends State<AdminScreen> {
   final TextEditingController password = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    RestaurantModel? restaurantModel =
+        context.read<SelectedRestaurantProvider>().restaurantModel;
     return Scaffold(
       appBar: BaseAppBar(
-          title: "", appBar: AppBar(), widgets: const [], appBarHeight: 50),
+          title: restaurantModel?.name ?? "No name",
+          appBar: AppBar(),
+          widgets: const [],
+          appBarHeight: 50),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            showCustomDialog(context);
+            EssentialFunctions().createAdminDialog(
+                context, name, email, password, restaurantModel!);
           },
           label: const CustomText(
             text: "Create Admin",
@@ -60,14 +65,11 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                   Expanded(
                     child: StreamBuilder(
-                        stream: FirebaseDatabase.instance
-                            .ref()
-                            .child("admins")
-                            .orderByChild("assigned_restaurant")
-                            .onValue,
-                        builder:
-                            (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-                          return adminView(snapshot);
+                        stream:
+                            AdminService().getAdmin(restaurantModel?.id ?? ""),
+                        builder: (context,
+                            AsyncSnapshot<List<AdminModel>> snapshot) {
+                          return adminView(snapshot, restaurantModel!);
                         }),
                   ),
                 ],
@@ -75,7 +77,8 @@ class _AdminScreenState extends State<AdminScreen> {
     );
   }
 
-  Widget adminView(AsyncSnapshot<DatabaseEvent> snapshot) {
+  Widget adminView(AsyncSnapshot<List<AdminModel>> snapshot,
+      RestaurantModel restaurantModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
@@ -87,7 +90,7 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
       );
     }
-    if (snapshot.data!.snapshot.children.isEmpty) {
+    if (snapshot.data!.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -95,27 +98,23 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
       );
     }
-    Map allAdmins = snapshot.data!.snapshot.value as Map;
-    List adminsList = allAdmins.keys.toList();
-    final suggestions = allAdmins.keys.toList().where((element) {
-      final categoryTitle =
-          allAdmins[element]["email"].toString().toLowerCase();
+    List<AdminModel> allAdmins = snapshot.data!;
+    final suggestions = allAdmins.where((element) {
+      final categoryTitle = element.email.toString().toLowerCase();
       final input = controller.text.toLowerCase();
       return categoryTitle.contains(input);
     }).toList();
-    adminsList = suggestions;
+    allAdmins = suggestions;
     return Column(
-      children: adminsList.map((e) {
-        Map person = allAdmins[e] as Map;
-        person["key"] = e;
+      children: allAdmins.map((e) {
         return Row(
           children: [
             Expanded(
               child: ListTile(
                 title: Text(
-                  person["email"],
+                  e.email ?? "",
                 ),
-                subtitle: Text(person["password"]),
+                subtitle: Text(e.name ?? ""),
                 trailing: const Icon(Icons.person_outline),
               ),
             ),
@@ -125,10 +124,12 @@ class _AdminScreenState extends State<AdminScreen> {
                 Icons.edit_outlined,
               ),
               onPressed: () async {
-                name.text = person["name"];
-                email.text = person["email"];
-                password.text = person["password"];
-                await showCustomDialog(context, person: person, update: true)
+                name.text = e.name ?? "";
+                email.text = e.email ?? "";
+                await EssentialFunctions()
+                    .createAdminDialog(
+                        context, name, email, password, restaurantModel,
+                        update: true)
                     .then((value) {
                   name.clear();
                   email.clear();
@@ -144,126 +145,11 @@ class _AdminScreenState extends State<AdminScreen> {
               icon: const Icon(
                 Icons.delete_outline,
               ),
-              onPressed: () async {
-                await DatabaseService.db
-                    .ref()
-                    .child("admins")
-                    .child(person["key"])
-                    .remove();
-              },
+              onPressed: () async {},
             ),
           ],
         );
       }).toList(),
     );
-  }
-
-  Future<void> showCustomDialog(BuildContext context,
-      {bool update = false, Map? person}) async {
-    final formKey = GlobalKey<FormState>();
-    await showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, refreshState) {
-            return AlertDialog(
-              scrollable: true,
-              content: SizedBox(
-                width: 300,
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CustomText(text: "Create Admin"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Name"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: name,
-                        suffixIcon: const Icon(Icons.shower_sharp),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Email"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: email,
-                        suffixIcon: const Icon(Icons.email),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-                          if (!value.contains("@") || !value.contains(".")) {
-                            return "Enter a valid Email";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const CustomText(text: "Password"),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      FormTextField(
-                        controller: password,
-                        isPass: true,
-                        keyboardtype: TextInputType.number,
-                        suffixIcon: const Icon(Icons.visibility),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Field cannot be empty";
-                          }
-                          if (value.length < 6) {
-                            return "Password should not be less than 6 characters";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      CustomButton(
-                          buttonColor: primaryColor,
-                          text: update == true ? "Update" : "create",
-                          textColor: kWhite,
-                          function: () async {
-                            if (formKey.currentState!.validate()) {
-                              Alerts.customLoadingAlert(context);
-                              await DatabaseService.createSubAdminRestaurant(
-                                      ",", name.text, email.text, password.text,
-                                      update: update, personKey: person?["key"])
-                                  .then((value) {
-                                KRoutes.pop(context);
-                                KRoutes.pop(context);
-                                return Fluttertoast.showToast(
-                                    msg: update == true
-                                        ? "Admin Updated Successfully"
-                                        : "Admin Created Successfully");
-                              });
-                            }
-                          }),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          });
-        });
   }
 }
