@@ -78,20 +78,8 @@ class _MyAppState extends State<MyApp> {
             title: parameters[0],
             type: BeamPageType.fadeTransition,
             child: parameters.length == 2
-                ? MenuCategoryPage(
-                    restaurantsKey: parameters[0],
-                    addMoreItems: parameters[1],
-                  )
-                : MenuCategoryPage(
-                    restaurantsKey: parameters[0],
-                    tableKey: parameters[1],
-                    name: parameters[2],
-                    phone: parameters[3],
-                    isTableClean: parameters[4],
-                    addMoreItems: parameters[5],
-                    orderItemsKey: parameters[6],
-                    existingItemCount: parameters[7],
-                  ),
+                ? const MenuCategoryPage()
+                : const MenuCategoryPage(),
           );
         },
         "/restaurants-page-decider/:parameters": (p0, p1, p2) {

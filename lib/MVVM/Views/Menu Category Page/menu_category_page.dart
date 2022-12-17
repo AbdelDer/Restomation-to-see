@@ -1,8 +1,13 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Models/Menu%20Category%20Model/menu_category_model.dart';
+import 'package:restomation/MVVM/Models/Menu%20Model/menu_model.dart';
+import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
+import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
+import 'package:restomation/Provider/selected_category_provider.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -11,27 +16,11 @@ import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_button.dart';
-import '../../../Widgets/custom_cart_badge_icon.dart';
+import '../../Repo/Menu Service/menu_service.dart';
 
 class MenuCategoryPage extends StatefulWidget {
-  final String restaurantsKey;
-  final String? tableKey;
-  final String? name;
-  final String? phone;
-  final String? isTableClean;
-  final String? addMoreItems;
-  final String? orderItemsKey;
-  final String? existingItemCount;
   const MenuCategoryPage({
     super.key,
-    required this.restaurantsKey,
-    this.tableKey,
-    this.name,
-    this.phone,
-    this.isTableClean,
-    required this.addMoreItems,
-    this.orderItemsKey,
-    this.existingItemCount,
   });
 
   @override
@@ -43,122 +32,134 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   int indexCheck = 0;
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
-
+  final SelectedCategoryProvider selectedCategoryProvider =
+      SelectedCategoryProvider();
   @override
   Widget build(BuildContext context) {
+    RestaurantModel? restaurantModel =
+        context.read<SelectedRestaurantProvider>().restaurantModel;
+
     return Scaffold(
       appBar: BaseAppBar(
           title: "Menu",
           appBar: AppBar(),
-          widgets: [
-            if (widget.name == null)
-              InkWell(
-                onTap: () {
-                  showCustomDialog(context);
-                },
-                child: Row(
-                  children: const [
-                    Icon(
-                      Icons.add,
-                      size: 30,
-                      color: primaryColor,
-                    ),
-                    CustomText(
-                      text: " Category",
-                      fontsize: 20,
-                      color: primaryColor,
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(
-              width: 20,
-            ),
+          widgets: const [
+            // if (widget.name == null)
+            //   InkWell(
+            //     onTap: () {
+            //       showCustomDialog(context);
+            //     },
+            //     child: Row(
+            //       children: const [
+            //         Icon(
+            //           Icons.add,
+            //           size: 30,
+            //           color: primaryColor,
+            //         ),
+            //         CustomText(
+            //           text: " Category",
+            //           fontsize: 20,
+            //           color: primaryColor,
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // const SizedBox(
+            //   width: 20,
+            // ),
           ],
           appBarHeight: 50),
-      bottomNavigationBar: (widget.name != null)
-          ? CustomCartBadgeIcon(
-              tableKey: widget.tableKey!,
-              restaurantsKey: widget.restaurantsKey,
-              name: widget.name!,
-              phone: widget.phone!,
-              isTableClean: widget.isTableClean!,
-              addMoreItems: widget.addMoreItems,
-              orderItemsKey: widget.orderItemsKey,
-              existingItemCount: widget.existingItemCount,
-            )
-          : null,
+      // bottomNavigationBar: (widget.name != null)
+      //     ? CustomCartBadgeIcon(
+      //         tableKey: widget.tableKey!,
+      //         restaurantsKey: widget.restaurantsKey,
+      //         name: widget.name!,
+      //         phone: widget.phone!,
+      //         isTableClean: widget.isTableClean!,
+      //         addMoreItems: widget.addMoreItems,
+      //         orderItemsKey: widget.orderItemsKey,
+      //         existingItemCount: widget.existingItemCount,
+      //       )
+      //     : null,
       body: StreamBuilder(
-          stream: FirebaseDatabase.instance
-              .ref()
-              .child("menu_categories")
-              .child(widget.restaurantsKey)
-              .onValue,
-          builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+          stream: MenuService().getMenu(restaurantModel?.id ?? ""),
+          builder: (context, AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
             return menuCategoryView(snapshot);
           }),
     );
   }
 
-  Widget menuCategoryView(AsyncSnapshot<DatabaseEvent> snapshot) {
+  Widget menuCategoryView(AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
-    if (snapshot.data!.snapshot.children.isEmpty) {
+    if (snapshot.data!.isEmpty) {
       return const Center(child: Text("No categories Yet !!"));
     }
-    Map allrestaurantsMenuCategories = snapshot.data!.snapshot.value as Map;
-    List categoriesList = allrestaurantsMenuCategories.values.toList();
-    TabController tabController = TabController(
-        length: categoriesList.length, vsync: this, initialIndex: indexCheck);
-    return DefaultTabController(
-        length: categoriesList.length,
-        child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(40),
-                child: TabBar(
-                  isScrollable: true,
-                  controller: tabController,
-                  onTap: (index) {
-                    indexCheck = index;
-                  },
-                  indicatorSize: TabBarIndicatorSize.label,
-                  tabs: categoriesList
-                      .map(
-                        (e) => Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: CustomText(
-                            text: e["categoryName"],
-                            fontsize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: kblack,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
-            body: TabBarView(
-              controller: tabController,
-              children: categoriesList
-                  .map((e) => MenuPage(
-                        restaurantsKey: widget.restaurantsKey,
-                        categoryKey: e["categoryName"],
-                        tableKey: widget.tableKey,
-                        name: widget.name,
-                        phone: widget.phone,
-                        isTableClean: widget.isTableClean,
-                        previousScreenContext: context,
-                        addMoreItems: widget.addMoreItems,
-                        orderItemsKey: widget.orderItemsKey,
-                        existingItemCount: widget.existingItemCount,
+    List<MenuCategoryModel> allrestaurantsMenuCategories = snapshot.data!;
+    selectedCategoryProvider.init(this, allrestaurantsMenuCategories);
+
+    return AnimatedBuilder(
+      animation: selectedCategoryProvider,
+      builder: (context, child) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            color: kGrey.shade100,
+            height: 60,
+            child: TabBar(
+              controller: selectedCategoryProvider.tabController,
+              onTap: (index) {
+                selectedCategoryProvider.onCategorySelected(index);
+              },
+              indicatorWeight: 0.1,
+              isScrollable: true,
+              tabs: selectedCategoryProvider.tabs
+                  .map((e) => CustomTabbarWidget(
+                        menuTabCategory: e,
                       ))
                   .toList(),
-            )));
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: selectedCategoryProvider.items.length,
+              itemBuilder: (context, index) {
+                final item = selectedCategoryProvider.items[index];
+                if (item.isCategory) {
+                  return CustomMenuCategoryWidget(
+                      menuCategoryModel: item.menuCategoryModel!);
+                } else {
+                  return CustomMenuItemsWidget(menuModel: item.menuModel!);
+                }
+              },
+            ),
+            // child: VerticalTabBarView(
+            //   controller: tabController,
+            //   children: allrestaurantsMenuCategories
+            //       .map((e) => Padding(
+            //             padding: const EdgeInsets.all(12),
+            //             child: Column(
+            //               crossAxisAlignment: CrossAxisAlignment.start,
+            //               children: [
+            //                 CustomText(
+            //                   text: e.categoryName ?? "No name",
+            //                   fontsize: 20,
+            //                   fontWeight: FontWeight.bold,
+            //                 ),
+            //                 MenuPage(
+            //                   itemsList: e.menuModel ?? [],
+            //                 ),
+            //               ],
+            //             ),
+            //           ))
+            //       .toList(),
+            // ),
+          ),
+        ],
+      ),
+    );
   }
 
   void showCustomDialog(BuildContext context) {
@@ -202,8 +203,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                           } else {
                             Alerts.customLoadingAlert(context);
                             await DatabaseService.createCategory(
-                                    widget.restaurantsKey,
-                                    categoryController.text)
+                                    "", categoryController.text)
                                 .then((value) {
                               KRoutes.pop(context);
                               return KRoutes.pop(context);
@@ -220,8 +220,55 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
 
   @override
   void dispose() {
+    selectedCategoryProvider.dispose();
     categoryController.dispose();
     controller.dispose();
     super.dispose();
+  }
+}
+
+class CustomTabbarWidget extends StatelessWidget {
+  final MenuTabCategory menuTabCategory;
+  const CustomTabbarWidget({super.key, required this.menuTabCategory});
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = menuTabCategory.selected;
+    return Opacity(
+      opacity: selected ? 1 : 0.5,
+      child: Card(
+        elevation: selected ? 6 : 0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+          child: CustomText(
+              text: menuTabCategory.categoryModel.categoryName ?? "unknown",
+              fontWeight: FontWeight.bold,
+              fontsize: 13),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomMenuCategoryWidget extends StatelessWidget {
+  final MenuCategoryModel menuCategoryModel;
+  const CustomMenuCategoryWidget({super.key, required this.menuCategoryModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomText(
+        text: menuCategoryModel.categoryName ?? "unknown",
+        fontWeight: FontWeight.bold,
+        fontsize: 20);
+  }
+}
+
+class CustomMenuItemsWidget extends StatelessWidget {
+  final MenuModel menuModel;
+  const CustomMenuItemsWidget({super.key, required this.menuModel});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomFoodCard(item: menuModel);
   }
 }

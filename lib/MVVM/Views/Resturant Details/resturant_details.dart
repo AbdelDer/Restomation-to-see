@@ -15,6 +15,7 @@ class RestaurantsDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     RestaurantModel? restaurantModel =
         context.read<SelectedRestaurantProvider>().restaurantModel;
+
     return Scaffold(
       appBar: BaseAppBar(
           title: restaurantModel?.name ?? "No name",

@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
+import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_screen.dart';
 import 'package:restomation/MVVM/Views/Resturant%20Details/resturant_details.dart';
 import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
@@ -27,7 +28,7 @@ final GoRouter goRoute = GoRouter(
     GoRoute(
       name: "menu",
       path: "/menu",
-      builder: (context, state) => const HomePage(),
+      builder: (context, state) => const MenuCategoryPage(),
     ),
     GoRoute(
       name: "tables",
@@ -36,17 +37,17 @@ final GoRouter goRoute = GoRouter(
     ),
     GoRoute(
       name: "staff",
-      path: "/Staff",
+      path: "/staff",
       builder: (context, state) => const StaffPage(),
     ),
     GoRoute(
       name: "orders",
-      path: "/Orders",
+      path: "/orders",
       builder: (context, state) => const OrderScreen(),
     ),
     GoRoute(
       name: "admins",
-      path: "/Admins",
+      path: "/admins",
       builder: (context, state) => const AdminScreen(),
     ),
   ],
