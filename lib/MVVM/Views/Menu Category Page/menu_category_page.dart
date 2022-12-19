@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/Menu%20Category%20Model/menu_category_model.dart';
 import 'package:restomation/MVVM/Models/Menu%20Model/menu_model.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Provider/selected_category_provider.dart';
 import 'package:restomation/Provider/selected_restaurant_provider.dart';
-import 'package:restomation/Utils/app_routes.dart';
-import 'package:restomation/Widgets/custom_alert.dart';
+import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
-import 'package:restomation/Widgets/custom_text_field.dart';
 import '../../../Utils/contants.dart';
-import '../../../Widgets/custom_button.dart';
 import '../../Repo/Menu Service/menu_service.dart';
 
 class MenuCategoryPage extends StatefulWidget {
@@ -43,44 +38,38 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
       appBar: BaseAppBar(
           title: "Menu",
           appBar: AppBar(),
-          widgets: const [
-            // if (widget.name == null)
-            //   InkWell(
-            //     onTap: () {
-            //       showCustomDialog(context);
-            //     },
-            //     child: Row(
-            //       children: const [
-            //         Icon(
-            //           Icons.add,
-            //           size: 30,
-            //           color: primaryColor,
-            //         ),
-            //         CustomText(
-            //           text: " Category",
-            //           fontsize: 20,
-            //           color: primaryColor,
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // const SizedBox(
-            //   width: 20,
-            // ),
+          widgets: [
+            InkWell(
+              onTap: () {
+                EssentialFunctions().createCategoryDialog(
+                    context, categoryController, restaurantModel?.id ?? "");
+              },
+              child: Row(
+                children: const [
+                  Icon(
+                    Icons.add_outlined,
+                    size: 20,
+                    color: primaryColor,
+                  ),
+                  CustomText(
+                    text: " Category",
+                    fontsize: 15,
+                    color: primaryColor,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              width: 20,
+            ),
           ],
           appBarHeight: 50),
-      // bottomNavigationBar: (widget.name != null)
-      //     ? CustomCartBadgeIcon(
-      //         tableKey: widget.tableKey!,
-      //         restaurantsKey: widget.restaurantsKey,
-      //         name: widget.name!,
-      //         phone: widget.phone!,
-      //         isTableClean: widget.isTableClean!,
-      //         addMoreItems: widget.addMoreItems,
-      //         orderItemsKey: widget.orderItemsKey,
-      //         existingItemCount: widget.existingItemCount,
-      //       )
-      //     : null,
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {},
+          label: const CustomText(
+            text: "+ Add Items",
+            color: kWhite,
+          )),
       body: StreamBuilder(
           stream: MenuService().getMenu(restaurantModel?.id ?? ""),
           builder: (context, AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
@@ -92,6 +81,9 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   Widget menuCategoryView(AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
+    }
+    if (snapshot.data == null) {
+      return const Center(child: Text("An Error occured !!"));
     }
     if (snapshot.data!.isEmpty) {
       return const Center(child: Text("No categories Yet !!"));
@@ -123,6 +115,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           ),
           Expanded(
             child: ListView.builder(
+              controller: selectedCategoryProvider.scrollController,
               padding: const EdgeInsets.all(12),
               itemCount: selectedCategoryProvider.items.length,
               itemBuilder: (context, index) {
@@ -160,62 +153,6 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
         ],
       ),
     );
-  }
-
-  void showCustomDialog(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            scrollable: true,
-            content: SizedBox(
-              width: 300,
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomText(text: "Create Category"),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    FormTextField(
-                      controller: categoryController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Fill this field";
-                        }
-                        return null;
-                      },
-                      suffixIcon: const Icon(Icons.shower_sharp),
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    CustomButton(
-                        buttonColor: primaryColor,
-                        text: "create",
-                        textColor: kWhite,
-                        function: () async {
-                          if (!formKey.currentState!.validate()) {
-                            Fluttertoast.showToast(msg: "Field can't be empty");
-                          } else {
-                            Alerts.customLoadingAlert(context);
-                            await DatabaseService.createCategory(
-                                    "", categoryController.text)
-                                .then((value) {
-                              KRoutes.pop(context);
-                              return KRoutes.pop(context);
-                            });
-                          }
-                        })
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
   }
 
   @override

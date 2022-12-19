@@ -6,15 +6,22 @@ class SelectedCategoryProvider with ChangeNotifier {
   List<MenuTabCategory> tabs = [];
   List<MenuTabObject> items = [];
   late TabController tabController;
-  late ScrollController scrollController;
+  ScrollController scrollController = ScrollController();
   void init(TickerProvider ticker,
       List<MenuCategoryModel> allrestaurantsMenuCategories) {
     tabController = TabController(
         length: allrestaurantsMenuCategories.length, vsync: ticker);
     for (var i = 0; i < allrestaurantsMenuCategories.length; i++) {
       MenuCategoryModel menuCategoryModel = allrestaurantsMenuCategories[i];
-      tabs.add(
-          MenuTabCategory(categoryModel: menuCategoryModel, selected: i == 0));
+      double offSetFrom = 0.0;
+      if (i > 0) {
+        offSetFrom +=
+            (allrestaurantsMenuCategories[i - 1].menuModel ?? []).length * 180;
+      }
+      tabs.add(MenuTabCategory(
+          categoryModel: menuCategoryModel,
+          selected: i == 0,
+          offSet: (60 * i) + offSetFrom));
       items.add(MenuTabObject(menuCategoryModel: menuCategoryModel));
       for (var j = 0; j < (menuCategoryModel.menuModel ?? []).length; j++) {
         final product = (menuCategoryModel.menuModel ?? [])[j];
@@ -30,6 +37,11 @@ class SelectedCategoryProvider with ChangeNotifier {
           tabs[i].categoryModel.categoryName);
     }
     notifyListeners();
+    scrollController.animateTo(
+      selected.offSet,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.linear,
+    );
   }
 
   @override
@@ -41,11 +53,15 @@ class SelectedCategoryProvider with ChangeNotifier {
 }
 
 class MenuTabCategory {
-  MenuTabCategory({required this.categoryModel, required this.selected});
-  MenuTabCategory copyWith(bool selected) =>
-      MenuTabCategory(categoryModel: categoryModel, selected: selected);
+  MenuTabCategory(
+      {required this.categoryModel,
+      required this.selected,
+      required this.offSet});
+  MenuTabCategory copyWith(bool selected) => MenuTabCategory(
+      categoryModel: categoryModel, selected: selected, offSet: offSet);
   final MenuCategoryModel categoryModel;
   final bool selected;
+  final double offSet;
 }
 
 class MenuTabObject {

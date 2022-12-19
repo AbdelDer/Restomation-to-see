@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/View%20Model/Category%20View%20Model.dart/category_view_model.dart';
 import 'package:restomation/Utils/app_routes.dart';
 
 import '../../MVVM/Models/RestaurantsModel/restaurants_model.dart';
@@ -495,24 +496,82 @@ class EssentialFunctions {
                                     Fluttertoast.showToast(
                                         msg: "Admin created Successfully");
                                   });
-                                  // await DatabaseService
-                                  //         .createSubAdminRestaurant(
-                                  //             ",",
-                                  //             name.text,
-                                  //             email.text,
-                                  //             password.text,
-                                  //             update: update,
-                                  //             personKey: person?["key"])
-                                  //     .then((value) {
-                                  //   KRoutes.pop(context);
-                                  //   KRoutes.pop(context);
-                                  //   return Fluttertoast.showToast(
-                                  //       msg: update == true
-                                  //           ? "Admin Updated Successfully"
-                                  //           : "Admin Created Successfully");
-                                  // });
                                 }
                               }),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  void createCategoryDialog(BuildContext context,
+      TextEditingController categoryController, String restaurantId) {
+    final formKey = GlobalKey<FormState>();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, refreshState) {
+            MenuCategoryViewModel menuCategoryViewModel =
+                context.watch<MenuCategoryViewModel>();
+            return AlertDialog(
+              scrollable: true,
+              content: SizedBox(
+                width: 300,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomText(text: "Create Category"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: categoryController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Fill this field";
+                          }
+                          return null;
+                        },
+                        suffixIcon: const Icon(Icons.shower_sharp),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      menuCategoryViewModel.loading
+                          ? const CircularProgressIndicator()
+                          : CustomButton(
+                              buttonColor: primaryColor,
+                              text: "create",
+                              textColor: kWhite,
+                              function: () async {
+                                if (!formKey.currentState!.validate()) {
+                                  Fluttertoast.showToast(
+                                      msg: "Field can't be empty");
+                                } else {
+                                  await menuCategoryViewModel
+                                      .createMenuCategory(
+                                          categoryController.text, restaurantId)
+                                      .then((value) {
+                                    if (menuCategoryViewModel.modelError !=
+                                        null) {
+                                      Fluttertoast.showToast(
+                                          msg: menuCategoryViewModel
+                                              .modelError!.errorResponse
+                                              .toString());
+                                      menuCategoryViewModel.setModelError(null);
+                                    } else {
+                                      KRoutes.pop(context);
+                                      Fluttertoast.showToast(
+                                          msg: "Category created successfully");
+                                    }
+                                  });
+                                }
+                              })
                     ],
                   ),
                 ),
