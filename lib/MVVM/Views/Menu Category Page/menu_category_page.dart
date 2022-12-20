@@ -4,6 +4,7 @@ import 'package:restomation/MVVM/Models/Menu%20Category%20Model/menu_category_mo
 import 'package:restomation/MVVM/Models/Menu%20Model/menu_model.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
+import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Provider/selected_category_provider.dart';
 import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
@@ -27,10 +28,14 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   int indexCheck = 0;
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
-  final SelectedCategoryProvider selectedCategoryProvider =
-      SelectedCategoryProvider();
+  final ScrollController scrollController = ScrollController();
+
+  late TabController tabController;
+
+  void scrollListener() {}
   @override
   Widget build(BuildContext context) {
+    scrollController.addListener(scrollListener);
     RestaurantModel? restaurantModel =
         context.read<SelectedRestaurantProvider>().restaurantModel;
 
@@ -89,75 +94,158 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
       return const Center(child: Text("No categories Yet !!"));
     }
     List<MenuCategoryModel> allrestaurantsMenuCategories = snapshot.data!;
-    selectedCategoryProvider.init(this, allrestaurantsMenuCategories);
-
-    return AnimatedBuilder(
-      animation: selectedCategoryProvider,
-      builder: (context, child) => Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            color: kGrey.shade100,
-            height: 60,
-            child: TabBar(
-              controller: selectedCategoryProvider.tabController,
-              onTap: (index) {
-                selectedCategoryProvider.onCategorySelected(index);
-              },
-              indicatorWeight: 0.1,
-              isScrollable: true,
-              tabs: selectedCategoryProvider.tabs
-                  .map((e) => CustomTabbarWidget(
-                        menuTabCategory: e,
-                      ))
-                  .toList(),
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              controller: selectedCategoryProvider.scrollController,
-              padding: const EdgeInsets.all(12),
-              itemCount: selectedCategoryProvider.items.length,
-              itemBuilder: (context, index) {
-                final item = selectedCategoryProvider.items[index];
-                if (item.isCategory) {
-                  return CustomMenuCategoryWidget(
-                      menuCategoryModel: item.menuCategoryModel!);
-                } else {
-                  return CustomMenuItemsWidget(menuModel: item.menuModel!);
+    // selectedCategoryProvider.init(this, allrestaurantsMenuCategories);
+    tabController =
+        TabController(length: allrestaurantsMenuCategories.length, vsync: this);
+    return Column(
+      children: [
+        TabBar(
+          controller: tabController,
+          onTap: (value) {
+            double offset = 0;
+            for (var i = 0; i < allrestaurantsMenuCategories.length; i++) {
+              if (allrestaurantsMenuCategories[i].categoryName ==
+                  allrestaurantsMenuCategories[value].categoryName) {
+                int j = i - 1;
+                for (j; j >= 0; j--) {
+                  offset += 60 +
+                      ((allrestaurantsMenuCategories[j].menuModel ?? [])
+                              .length *
+                          190);
                 }
-              },
-            ),
-            // child: VerticalTabBarView(
-            //   controller: tabController,
-            //   children: allrestaurantsMenuCategories
-            //       .map((e) => Padding(
-            //             padding: const EdgeInsets.all(12),
-            //             child: Column(
-            //               crossAxisAlignment: CrossAxisAlignment.start,
-            //               children: [
-            //                 CustomText(
-            //                   text: e.categoryName ?? "No name",
-            //                   fontsize: 20,
-            //                   fontWeight: FontWeight.bold,
-            //                 ),
-            //                 MenuPage(
-            //                   itemsList: e.menuModel ?? [],
-            //                 ),
-            //               ],
-            //             ),
-            //           ))
-            //       .toList(),
-            // ),
+                tabController.animateTo(value);
+                scrollController.animateTo(offset,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.ease);
+                break;
+              }
+            }
+          },
+          isScrollable: true,
+          tabs: allrestaurantsMenuCategories
+              .map((e) => Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 20),
+                    child: Text(
+                      e.categoryName ?? "",
+                      style: const TextStyle(
+                        color: kblack,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ))
+              .toList(),
+        ),
+        Expanded(
+          child: ListView.builder(
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            itemCount: allrestaurantsMenuCategories.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 60,
+                    child: Row(
+                      children: [
+                        CustomText(
+                          text: allrestaurantsMenuCategories[index]
+                                  .categoryName ??
+                              "",
+                          fontsize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        const Expanded(
+                            child: Divider(
+                          endIndent: 20,
+                          indent: 20,
+                          thickness: 1,
+                          color: kGrey,
+                        ))
+                      ],
+                    ),
+                  ),
+                  MenuPage(
+                      itemsList:
+                          allrestaurantsMenuCategories[index].menuModel ?? [])
+                ],
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
+    // return AnimatedBuilder(
+    //   animation: selectedCategoryProvider,
+    //   builder: (context, child) => Column(
+    //     crossAxisAlignment: CrossAxisAlignment.stretch,
+    //     children: [
+    //       Container(
+    //         color: kGrey.shade100,
+    //         height: 60,
+    //         child: TabBar(
+    //           controller: selectedCategoryProvider.tabController,
+    //           onTap: (index) {
+    //             selectedCategoryProvider.onCategorySelected(index);
+    //           },
+    //           indicatorWeight: 0.1,
+    //           isScrollable: true,
+    //           tabs: selectedCategoryProvider.tabs
+    //               .map((e) => CustomTabbarWidget(
+    //                     menuTabCategory: e,
+    //                   ))
+    //               .toList(),
+    //         ),
+    //       ),
+    //       Expanded(
+    //         child: ListView.builder(
+    //           controller: selectedCategoryProvider.scrollController,
+    //           padding: const EdgeInsets.all(12),
+    //           itemCount: selectedCategoryProvider.items.length,
+    //           itemBuilder: (context, index) {
+    //             final item = selectedCategoryProvider.items[index];
+    //             if (item.isCategory) {
+    //               return CustomMenuCategoryWidget(
+    //                   menuCategoryModel: item.menuCategoryModel!);
+    //             } else {
+    //               return CustomMenuItemsWidget(menuModel: item.menuModel!);
+    //             }
+    //           },
+    //         ),
+    //         // child: VerticalTabBarView(
+    //         //   controller: tabController,
+    //         //   children: allrestaurantsMenuCategories
+    //         //       .map((e) => Padding(
+    //         //             padding: const EdgeInsets.all(12),
+    //         //             child: Column(
+    //         //               crossAxisAlignment: CrossAxisAlignment.start,
+    //         //               children: [
+    //         //                 CustomText(
+    //         //                   text: e.categoryName ?? "No name",
+    //         //                   fontsize: 20,
+    //         //                   fontWeight: FontWeight.bold,
+    //         //                 ),
+    //         //                 MenuPage(
+    //         //                   itemsList: e.menuModel ?? [],
+    //         //                 ),
+    //         //               ],
+    //         //             ),
+    //         //           ))
+    //         //       .toList(),
+    //         // ),
+    //       ),
+    //     ],
+    //   ),
+    // );
   }
 
   @override
   void dispose() {
-    selectedCategoryProvider.dispose();
+    scrollController.removeListener(scrollListener);
+    scrollController.dispose();
+    tabController.dispose();
     categoryController.dispose();
     controller.dispose();
     super.dispose();
@@ -193,10 +281,13 @@ class CustomMenuCategoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomText(
-        text: menuCategoryModel.categoryName ?? "unknown",
-        fontWeight: FontWeight.bold,
-        fontsize: 20);
+    return SizedBox(
+      height: 50,
+      child: CustomText(
+          text: menuCategoryModel.categoryName ?? "unknown",
+          fontWeight: FontWeight.bold,
+          fontsize: 20),
+    );
   }
 }
 
