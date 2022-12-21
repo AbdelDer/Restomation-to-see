@@ -25,14 +25,12 @@ class _StaffPageState extends State<StaffPage> {
   final TextEditingController personNameController = TextEditingController();
   final TextEditingController personPhoneController = TextEditingController();
   final TextEditingController personEmailController = TextEditingController();
-  final TextEditingController personPasswordController =
-      TextEditingController();
+  final TextEditingController personPasswordController = TextEditingController();
   final TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    RestaurantModel? restaurantModel =
-        context.read<SelectedRestaurantProvider>().restaurantModel;
+    RestaurantModel? restaurantModel = context.read<SelectedRestaurantProvider>().restaurantModel;
 
     return Scaffold(
       appBar: BaseAppBar(
@@ -77,10 +75,8 @@ class _StaffPageState extends State<StaffPage> {
                   ),
                   Expanded(
                     child: StreamBuilder(
-                        stream:
-                            StaffService().getStaff(restaurantModel?.id ?? ""),
-                        builder: (context,
-                            AsyncSnapshot<List<StaffModel>> snapshot) {
+                        stream: StaffService().getStaff(restaurantModel?.id ?? " "),
+                        builder: (context, AsyncSnapshot<List<StaffModel>> snapshot) {
                           return staffView(
                             snapshot,
                             restaurantModel!,

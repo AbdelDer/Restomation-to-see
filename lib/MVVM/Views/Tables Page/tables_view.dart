@@ -31,8 +31,7 @@ class _TablesPageState extends State<TablesPage> {
 
   @override
   Widget build(BuildContext context) {
-    RestaurantModel? restaurantModel =
-        context.read<SelectedRestaurantProvider>().restaurantModel;
+    RestaurantModel? restaurantModel = context.read<SelectedRestaurantProvider>().restaurantModel;
     TablesViewModel tablesViewModel = context.watch<TablesViewModel>();
     return Scaffold(
       appBar: BaseAppBar(
@@ -44,8 +43,7 @@ class _TablesPageState extends State<TablesPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            EssentialFunctions().createUpdateTable(
-                context, restaurantModel, tableController, tablesViewModel);
+            EssentialFunctions().createUpdateTable(context, restaurantModel, tableController, tablesViewModel);
           },
           label: const CustomText(
             text: "Create table",
@@ -70,20 +68,16 @@ class _TablesPageState extends State<TablesPage> {
                     },
                   ),
                   StreamBuilder(
-                      stream:
-                          TablesService().getTables(restaurantModel?.id ?? ""),
-                      builder:
-                          (context, AsyncSnapshot<List<TablesModel>> snapshot) {
-                        return tableView(
-                            snapshot, restaurantModel, tablesViewModel);
+                      stream: TablesService().getTables(restaurantModel?.id ?? " "),
+                      builder: (context, AsyncSnapshot<List<TablesModel>> snapshot) {
+                        return tableView(snapshot, restaurantModel, tablesViewModel);
                       }),
                 ],
               ))),
     );
   }
 
-  Widget tableView(AsyncSnapshot<List<TablesModel>> snapshot,
-      RestaurantModel? restaurantModel, TablesViewModel tablesViewModel) {
+  Widget tableView(AsyncSnapshot<List<TablesModel>> snapshot, RestaurantModel? restaurantModel, TablesViewModel tablesViewModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Expanded(child: CustomLoader());
     }
@@ -157,9 +151,7 @@ class _TablesPageState extends State<TablesPage> {
                       onPressed: () {
                         tableController.text = e.name ?? "";
 
-                        EssentialFunctions().createUpdateTable(context,
-                            restaurantModel, tableController, tablesViewModel,
-                            table: e, update: true);
+                        EssentialFunctions().createUpdateTable(context, restaurantModel, tableController, tablesViewModel, table: e, update: true);
                       },
                     ),
                     const SizedBox(
@@ -171,12 +163,7 @@ class _TablesPageState extends State<TablesPage> {
                         Icons.delete_outline,
                       ),
                       onPressed: () {
-                        DatabaseService.db
-                            .ref()
-                            .child("tables")
-                            .child(restaurantModel?.id ?? "")
-                            .child(e.id ?? "")
-                            .remove();
+                        DatabaseService.db.ref().child("tables").child(restaurantModel?.id ?? "").child(e.id ?? "").remove();
                       },
                     ),
                   ],

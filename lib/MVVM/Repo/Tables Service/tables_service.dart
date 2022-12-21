@@ -8,8 +8,10 @@ class TablesService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   Stream<List<TablesModel>> getTables(String restaurantId) {
     return _db
-        .collection("/tables")
-        .where("restaurant_id", isEqualTo: restaurantId)
+        .collection("/restaurants")
+        .doc(restaurantId)
+        .collection("tables")
+        // .where("restaurant_id", isEqualTo: restaurantId)
         .snapshots()
         .map((list) {
       return list.docs.map((e) {
@@ -18,11 +20,12 @@ class TablesService {
     });
   }
 
-  Future<Object> createTables(
-      String name, String qrLink, String restaurantId) async {
+  Future<Object> createTables(String name, String qrLink, String restaurantId) async {
     try {
       _db
-          .collection("/tables")
+          .collection("/restaurants")
+          .doc(restaurantId)
+          .collection("tables")
           .doc()
           .set({"name": name, "qrLink": qrLink, "restaurant_id": restaurantId});
       return Success(200, "Tables created successfully !!");

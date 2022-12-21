@@ -7,15 +7,24 @@ class MenuService {
   // final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   Stream<List<MenuCategoryModel>> getMenu(String restaurantId) {
-    return _db
-        .collection("/menu")
-        // .where("restaurant_id", isEqualTo: restaurantId)
-        .snapshots()
-        .map((list) {
-      return list.docs.map((e) {
-        return MenuCategoryModel.fromFirestore(e);
-      }).toList();
-    });
+    return restaurantId.isEmpty
+        ? _db.collection("/menu").snapshots().map((list) {
+            return list.docs.map((e) {
+              return MenuCategoryModel.fromFirestore(e);
+            }).toList();
+          })
+        : _db
+            .collection("/menu")
+            .where(
+              "restaurant_id",
+              isEqualTo: restaurantId,
+            )
+            .snapshots()
+            .map((list) {
+            return list.docs.map((e) {
+              return MenuCategoryModel.fromFirestore(e);
+            }).toList();
+          });
   }
 
   // Future<Object> createMenu(String name, String email, String password,

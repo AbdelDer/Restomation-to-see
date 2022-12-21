@@ -24,22 +24,23 @@ class _LoginState extends State<Login> {
   final TextEditingController password = TextEditingController();
 
   @override
+  void initState() {
+    email.text = 'naqeeb9a@gmail.com';
+    password.text = 'naqeeb123';
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     LoginViewModel loginViewModel = context.watch<LoginViewModel>();
     return Scaffold(
-      appBar: BaseAppBar(
-          title: "Login",
-          appBar: AppBar(),
-          widgets: const [],
-          appBarHeight: 50),
+      appBar: BaseAppBar(title: "Login", appBar: AppBar(), widgets: const [], appBarHeight: 50),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SizedBox(
-                    width: 500, child: loginView(context, loginViewModel))),
+            child:
+                Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: SizedBox(width: 500, child: loginView(context, loginViewModel))),
           ),
         ),
       ),
@@ -57,7 +58,7 @@ class _LoginState extends State<Login> {
           ),
           Center(
             child: Image.network(
-              "http://cdn.onlinewebfonts.com/svg/img_59062.png",
+              "https://cdn.onlinewebfonts.com/svg/img_59062.png",
               width: 200,
               height: 200,
             ),
@@ -132,13 +133,9 @@ class _LoginState extends State<Login> {
                       text: "login",
                       function: () async {
                         if (_formKey.currentState!.validate()) {
-                          await loginViewModel
-                              .loginUser(email.text, password.text)
-                              .then((value) {
+                          await loginViewModel.loginUser(email.text, password.text).then((value) {
                             if (loginViewModel.modelError != null) {
-                              Fluttertoast.showToast(
-                                  msg: loginViewModel.modelError!.errorResponse
-                                      .toString());
+                              Fluttertoast.showToast(msg: loginViewModel.modelError!.errorResponse.toString());
                               return;
                             }
                             pushScreen(loginViewModel.loggedInUser!);

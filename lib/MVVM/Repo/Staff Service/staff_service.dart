@@ -11,7 +11,9 @@ class StaffService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   Stream<List<StaffModel>> getStaff(String restaurantId) {
     return _db
-        .collection("/staff")
+        .collection("/restaurants")
+        .doc(restaurantId)
+        .collection("staff")
         .where("restaurant_id", isEqualTo: restaurantId)
         .snapshots()
         .map((list) {
@@ -22,17 +24,10 @@ class StaffService {
   }
 
   Future<Object> createStaff(
-      String name,
-      String email,
-      String phoneNo,
-      String restaurantId,
-      String restaurantName,
-      String role,
-      String password) async {
+      String name, String email, String phoneNo, String restaurantId, String restaurantName, String role, String password) async {
     try {
-      UserCredential cred = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      await _db.collection("/staff").doc().set({
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      await _db.collection("/restaurants").doc(restaurantId).collection("staff").doc().set({
         "uid": cred.user?.uid ?? "",
         "name": name,
         "email": email,
