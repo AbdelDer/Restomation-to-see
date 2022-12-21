@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/View%20Model/Admin%20View%20Model.dart/admin_view_model.dart';
+import 'package:restomation/MVVM/View%20Model/Category%20View%20Model.dart/category_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/View%20Model/Staff%20View%20Model/staff_view_model.dart';
@@ -210,6 +211,9 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider(
           create: (context) => AdminViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MenuCategoryViewModel(),
         ),
         ChangeNotifierProvider(
           create: (context) => StaffViewModel(),

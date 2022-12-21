@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:restomation/MVVM/Models/Menu%20Category%20Model/menu_category_model.dart';
+import 'package:restomation/MVVM/Repo/api_status.dart';
 
 class MenuService {
   // final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -27,6 +28,19 @@ class MenuService {
           });
   }
 
+  Future<Object> createCategory(
+      String categoryName, String restaurantId) async {
+    try {
+      await _db.collection("/menu").doc().set({
+        "categoryName": categoryName,
+        "menuItems": [],
+        "restaurant_id": restaurantId,
+      });
+      return Success(200, "Category created Succesfully");
+    } on FirebaseException catch (e) {
+      return Failure(404, e.code);
+    }
+  }
   // Future<Object> createMenu(String name, String email, String password,
   //     String restaurantName, String restaurantId) async {
   //   try {

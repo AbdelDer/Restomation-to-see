@@ -22,14 +22,8 @@ class _MenuPageState extends State<MenuPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: widget.itemsList.length,
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        MenuModel menuItem = widget.itemsList[index];
-
-        return CustomFoodCard(item: menuItem);
-      },
+    return Column(
+      children: widget.itemsList.map((e) => CustomFoodCard(item: e)).toList(),
     );
     // return Scaffold(
     //   // floatingActionButton: widget.name != null
