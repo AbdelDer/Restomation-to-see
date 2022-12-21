@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/Menu%20Category%20Model/menu_category_model.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
@@ -9,6 +10,9 @@ import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import '../../../Utils/contants.dart';
+import '../../../Widgets/custom_alert.dart';
+import '../../../Widgets/custom_button.dart';
+import '../../../Widgets/custom_text_field.dart';
 import '../../Repo/Menu Service/menu_service.dart';
 
 class MenuCategoryPage extends StatefulWidget {
@@ -20,8 +24,7 @@ class MenuCategoryPage extends StatefulWidget {
   State<MenuCategoryPage> createState() => _MenuCategoryPageState();
 }
 
-class _MenuCategoryPageState extends State<MenuCategoryPage>
-    with TickerProviderStateMixin {
+class _MenuCategoryPageState extends State<MenuCategoryPage> with TickerProviderStateMixin {
   int indexCheck = 0;
 
   final TextEditingController categoryController = TextEditingController();
@@ -33,8 +36,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   void scrollListener() {
     for (var i = 0; i < offsetList.length; i++) {
       if (i < offsetList.length - 1) {
-        if (scrollController.offset > offsetList[i] &&
-            scrollController.offset < offsetList[i + 1]) {
+        if (scrollController.offset > offsetList[i] && scrollController.offset < offsetList[i + 1]) {
           tabController.animateTo(i);
           break;
         }
@@ -45,8 +47,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   @override
   Widget build(BuildContext context) {
     scrollController.addListener(scrollListener);
-    RestaurantModel? restaurantModel =
-        context.read<SelectedRestaurantProvider>().restaurantModel;
+    RestaurantModel? restaurantModel = context.read<SelectedRestaurantProvider>().restaurantModel;
 
     return Scaffold(
       appBar: BaseAppBar(
@@ -55,8 +56,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           widgets: [
             InkWell(
               onTap: () {
-                EssentialFunctions().createCategoryDialog(
-                    context, categoryController, restaurantModel?.id ?? "");
+                EssentialFunctions().createCategoryDialog(context, categoryController, restaurantModel?.id ?? "");
               },
               child: Row(
                 children: const [
@@ -79,7 +79,9 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           ],
           appBarHeight: 50),
       floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {},
+          onPressed: () async {
+            // EssentialFunctions().createMenuItemDialog(context, categoryController, restaurantModel!.id!);
+          },
           label: const CustomText(
             text: "+ Add Items",
             color: kWhite,
@@ -105,8 +107,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
     List<MenuCategoryModel> allrestaurantsMenuCategories = snapshot.data!;
 
     offsetList = getListOffsets(allrestaurantsMenuCategories);
-    tabController =
-        TabController(length: allrestaurantsMenuCategories.length, vsync: this);
+    tabController = TabController(length: allrestaurantsMenuCategories.length, vsync: this);
 
     return Column(
       children: [
@@ -115,20 +116,14 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           onTap: (value) async {
             double offset = 0;
             for (var i = 0; i < allrestaurantsMenuCategories.length; i++) {
-              if (allrestaurantsMenuCategories[i].categoryName ==
-                  allrestaurantsMenuCategories[value].categoryName) {
+              if (allrestaurantsMenuCategories[i].categoryName == allrestaurantsMenuCategories[value].categoryName) {
                 int j = i - 1;
                 for (j; j >= 0; j--) {
-                  offset += 60 +
-                      ((allrestaurantsMenuCategories[j].menuModel ?? [])
-                              .length *
-                          190);
+                  offset += 60 + ((allrestaurantsMenuCategories[j].menuModel ?? []).length * 190);
                 }
                 tabController.animateTo(value);
                 scrollController.removeListener(scrollListener);
-                await scrollController.animateTo(offset,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.ease);
+                await scrollController.animateTo(offset, duration: const Duration(milliseconds: 500), curve: Curves.ease);
                 scrollController.addListener(scrollListener);
                 break;
               }
@@ -137,8 +132,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           isScrollable: true,
           tabs: allrestaurantsMenuCategories
               .map((e) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     child: Text(
                       e.categoryName ?? "",
                       style: const TextStyle(
@@ -164,9 +158,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                     child: Row(
                       children: [
                         CustomText(
-                          text: allrestaurantsMenuCategories[index]
-                                  .categoryName ??
-                              "",
+                          text: allrestaurantsMenuCategories[index].categoryName ?? "",
                           fontsize: 25,
                           fontWeight: FontWeight.bold,
                         ),
@@ -180,9 +172,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                       ],
                     ),
                   ),
-                  MenuPage(
-                      itemsList:
-                          allrestaurantsMenuCategories[index].menuModel ?? [])
+                  MenuPage(itemsList: allrestaurantsMenuCategories[index].menuModel ?? [])
                 ],
               );
             },
@@ -192,8 +182,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
     );
   }
 
-  List<double> getListOffsets(
-      List<MenuCategoryModel> allrestaurantsMenuCategories) {
+  List<double> getListOffsets(List<MenuCategoryModel> allrestaurantsMenuCategories) {
     List<double> offsetListDuplicate = [];
 
     for (var i = 0; i < allrestaurantsMenuCategories.length; i++) {
@@ -201,8 +190,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
       if (i > 0) {
         int j = i - 1;
         for (j; j >= 0; j--) {
-          localOffSet += 60 +
-              ((allrestaurantsMenuCategories[j].menuModel ?? []).length * 190);
+          localOffSet += 60 + ((allrestaurantsMenuCategories[j].menuModel ?? []).length * 190);
         }
       }
       offsetListDuplicate.add(localOffSet);

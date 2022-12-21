@@ -17,14 +17,12 @@ import '../../Widgets/custom_text_field.dart';
 import '../contants.dart';
 
 class EssentialFunctions {
-  void createRestaurantDialogue(
-      BuildContext context, TextEditingController restaurantsController) {
+  void createRestaurantDialogue(BuildContext context, TextEditingController restaurantsController) {
     FilePickerResult? image;
     showDialog(
         context: context,
         builder: (context) {
-          RestaurantsViewModel restaurantsViewModel =
-              context.watch<RestaurantsViewModel>();
+          RestaurantsViewModel restaurantsViewModel = context.watch<RestaurantsViewModel>();
           return StatefulBuilder(builder: (context, refreshState) {
             return AlertDialog(
               scrollable: true,
@@ -57,8 +55,7 @@ class EssentialFunctions {
                             ? CircleAvatar(
                                 radius: 100,
                                 backgroundColor: kWhite,
-                                foregroundImage:
-                                    MemoryImage(image!.files.single.bytes!),
+                                foregroundImage: MemoryImage(image!.files.single.bytes!),
                               )
                             : const CircleAvatar(
                                 radius: 100,
@@ -86,30 +83,20 @@ class EssentialFunctions {
                             text: "create",
                             textColor: kWhite,
                             function: () async {
-                              if (restaurantsController.text.isEmpty ||
-                                  image == null) {
-                                Fluttertoast.showToast(
-                                    msg:
-                                        "Make sure to upload a restaurants Logo and a Valid name");
+                              if (restaurantsController.text.isEmpty || image == null) {
+                                Fluttertoast.showToast(msg: "Make sure to upload a restaurants Logo and a Valid name");
                               } else {
                                 final fileBytes = image!.files.single.bytes;
 
                                 final fileName = image!.files.single.name;
-                                await restaurantsViewModel
-                                    .createrestaurants(
-                                        restaurantsController.text,
-                                        fileName,
-                                        fileBytes!)
-                                    .then((value) {
+                                await restaurantsViewModel.createrestaurants(restaurantsController.text, fileName, fileBytes!).then((value) {
                                   restaurantsController.clear();
                                   if (restaurantsViewModel.modelError == null) {
                                     KRoutes.pop(context);
-                                    Fluttertoast.showToast(
-                                        msg: "restaurants created");
+                                    Fluttertoast.showToast(msg: "restaurants created");
                                     restaurantsViewModel.setModelError(null);
                                   } else {
-                                    Fluttertoast.showToast(
-                                        msg: "Unable to create restaurants");
+                                    Fluttertoast.showToast(msg: "Unable to create restaurants");
                                     restaurantsViewModel.setModelError(null);
                                   }
                                 });
@@ -124,8 +111,8 @@ class EssentialFunctions {
         });
   }
 
-  void createUpdateTable(BuildContext context, RestaurantModel? restaurantModel,
-      TextEditingController tableController, TablesViewModel tablesViewModel,
+  void createUpdateTable(
+      BuildContext context, RestaurantModel? restaurantModel, TextEditingController tableController, TablesViewModel tablesViewModel,
       {bool update = false, TablesModel? table}) {
     final formKey = GlobalKey<FormState>();
     showDialog(
@@ -162,22 +149,16 @@ class EssentialFunctions {
                         textColor: kWhite,
                         function: () async {
                           if (tableController.text.isEmpty) {
-                            Fluttertoast.showToast(
-                                msg: "Make sure to fill all fields");
+                            Fluttertoast.showToast(msg: "Make sure to fill all fields");
                           } else {
-                            await tablesViewModel
-                                .createTables(tableController.text, "yaayyy",
-                                    restaurantModel?.id ?? "")
-                                .then((value) {
+                            await tablesViewModel.createTables(tableController.text, "yaayyy", restaurantModel?.id ?? "").then((value) {
                               tableController.clear();
                               if (tablesViewModel.modelError == null) {
                                 KRoutes.pop(context);
-                                Fluttertoast.showToast(
-                                    msg: "restaurants created");
+                                Fluttertoast.showToast(msg: "restaurants created");
                                 tablesViewModel.setModelError(null);
                               } else {
-                                Fluttertoast.showToast(
-                                    msg: "Unable to create restaurants");
+                                Fluttertoast.showToast(msg: "Unable to create restaurants");
                                 tablesViewModel.setModelError(null);
                               }
                             });
@@ -303,9 +284,7 @@ class EssentialFunctions {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CustomButton(
-                            buttonColor: selectedValue == "waiter"
-                                ? primaryColor
-                                : kGrey,
+                            buttonColor: selectedValue == "waiter" ? primaryColor : kGrey,
                             text: "Waiter",
                             textColor: kWhite,
                             function: () {
@@ -317,8 +296,7 @@ class EssentialFunctions {
                             height: 40,
                           ),
                           CustomButton(
-                            buttonColor:
-                                selectedValue == "cook" ? primaryColor : kGrey,
+                            buttonColor: selectedValue == "cook" ? primaryColor : kGrey,
                             text: "Cook",
                             textColor: kWhite,
                             function: () {
@@ -356,18 +334,14 @@ class EssentialFunctions {
                                             personPasswordController.text)
                                         .then((value) {
                                       if (staffViewModel.modelError != null) {
-                                        Fluttertoast.showToast(
-                                            msg: staffViewModel
-                                                .modelError!.errorResponse
-                                                .toString());
+                                        Fluttertoast.showToast(msg: staffViewModel.modelError!.errorResponse.toString());
                                         return;
                                       }
                                       personNameController.clear();
                                       personEmailController.clear();
                                       personPasswordController.clear();
                                       personPhoneController.clear();
-                                      Fluttertoast.showToast(
-                                          msg: "Staff created successfully !!");
+                                      Fluttertoast.showToast(msg: "Staff created successfully !!");
                                       KRoutes.pop(context);
                                     });
                                   }
@@ -478,23 +452,14 @@ class EssentialFunctions {
                               function: () async {
                                 if (formKey.currentState!.validate()) {
                                   await adminViewModel
-                                      .createAdmin(
-                                          name.text,
-                                          email.text,
-                                          password.text,
-                                          restaurantModel.name ?? "",
-                                          restaurantModel.id ?? "")
+                                      .createAdmin(name.text, email.text, password.text, restaurantModel.name ?? "", restaurantModel.id ?? "")
                                       .then((value) {
                                     if (adminViewModel.modelError != null) {
-                                      Fluttertoast.showToast(
-                                          msg: adminViewModel
-                                              .modelError!.errorResponse
-                                              .toString());
+                                      Fluttertoast.showToast(msg: adminViewModel.modelError!.errorResponse.toString());
                                       return;
                                     }
                                     KRoutes.pop(context);
-                                    Fluttertoast.showToast(
-                                        msg: "Admin created Successfully");
+                                    Fluttertoast.showToast(msg: "Admin created Successfully");
                                   });
                                 }
                               }),
@@ -507,15 +472,13 @@ class EssentialFunctions {
         });
   }
 
-  void createCategoryDialog(BuildContext context,
-      TextEditingController categoryController, String restaurantId) {
+  void createCategoryDialog(BuildContext context, TextEditingController categoryController, String restaurantId) {
     final formKey = GlobalKey<FormState>();
     showDialog(
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, refreshState) {
-            MenuCategoryViewModel menuCategoryViewModel =
-                context.watch<MenuCategoryViewModel>();
+            MenuCategoryViewModel menuCategoryViewModel = context.watch<MenuCategoryViewModel>();
             return AlertDialog(
               scrollable: true,
               content: SizedBox(
@@ -550,24 +513,78 @@ class EssentialFunctions {
                               textColor: kWhite,
                               function: () async {
                                 if (!formKey.currentState!.validate()) {
-                                  Fluttertoast.showToast(
-                                      msg: "Field can't be empty");
+                                  Fluttertoast.showToast(msg: "Field can't be empty");
                                 } else {
-                                  await menuCategoryViewModel
-                                      .createMenuCategory(
-                                          categoryController.text, restaurantId)
-                                      .then((value) {
-                                    if (menuCategoryViewModel.modelError !=
-                                        null) {
-                                      Fluttertoast.showToast(
-                                          msg: menuCategoryViewModel
-                                              .modelError!.errorResponse
-                                              .toString());
+                                  await menuCategoryViewModel.createMenuCategory(categoryController.text, restaurantId).then((value) {
+                                    if (menuCategoryViewModel.modelError != null) {
+                                      Fluttertoast.showToast(msg: menuCategoryViewModel.modelError!.errorResponse.toString());
                                       menuCategoryViewModel.setModelError(null);
                                     } else {
                                       KRoutes.pop(context);
-                                      Fluttertoast.showToast(
-                                          msg: "Category created successfully");
+                                      Fluttertoast.showToast(msg: "Category created successfully");
+                                    }
+                                  });
+                                }
+                              })
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+        });
+  }
+
+  void createMenuItemDialog(BuildContext context, TextEditingController categoryController, String restaurantId) {
+    final formKey = GlobalKey<FormState>();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, refreshState) {
+            MenuCategoryViewModel menuCategoryViewModel = context.watch<MenuCategoryViewModel>();
+            return AlertDialog(
+              scrollable: true,
+              content: SizedBox(
+                width: 300,
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomText(text: "Create Category"),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      FormTextField(
+                        controller: categoryController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Fill this field";
+                          }
+                          return null;
+                        },
+                        suffixIcon: const Icon(Icons.shower_sharp),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      menuCategoryViewModel.loading
+                          ? const CircularProgressIndicator()
+                          : CustomButton(
+                              buttonColor: primaryColor,
+                              text: "create",
+                              textColor: kWhite,
+                              function: () async {
+                                if (!formKey.currentState!.validate()) {
+                                  Fluttertoast.showToast(msg: "Field can't be empty");
+                                } else {
+                                  await menuCategoryViewModel.createMenuCategory(categoryController.text, restaurantId).then((value) {
+                                    if (menuCategoryViewModel.modelError != null) {
+                                      Fluttertoast.showToast(msg: menuCategoryViewModel.modelError!.errorResponse.toString());
+                                      menuCategoryViewModel.setModelError(null);
+                                    } else {
+                                      KRoutes.pop(context);
+                                      Fluttertoast.showToast(msg: "Category created successfully");
                                     }
                                   });
                                 }
