@@ -40,6 +40,9 @@ class OrderItemDisplay extends StatelessWidget {
             scrollDirection: Axis.vertical,
             itemCount: items.length,
             itemBuilder: (context, itemIndex) {
+              if (items[itemIndex] == null) {
+                return Container();
+              }
               return orderItemDisplay(context, items[itemIndex]);
             },
           );
