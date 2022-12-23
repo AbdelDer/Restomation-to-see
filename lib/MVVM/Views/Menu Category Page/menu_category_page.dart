@@ -118,7 +118,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
               backgroundColor: Colors.transparent,
               elevation: 0,
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(40),
+                preferredSize: const Size.fromHeight(10),
                 child: TabBar(
                   isScrollable: true,
                   controller: tabController,

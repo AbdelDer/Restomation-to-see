@@ -7,6 +7,7 @@ class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
   final bool automaticallyImplyLeading, centerTitle;
   final List<Widget> widgets;
   final double appBarHeight;
+  final Widget? leading;
 
   /// you can add more fields that meet your needs
 
@@ -18,7 +19,8 @@ class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
       this.automaticallyImplyLeading = false,
       this.backgroundColor = Colors.transparent,
       this.centerTitle = true,
-      required this.appBarHeight})
+      required this.appBarHeight,
+      this.leading})
       : super(key: key);
 
   @override
@@ -33,6 +35,7 @@ class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
           style: const TextStyle(color: Colors.black),
         ),
         automaticallyImplyLeading: automaticallyImplyLeading,
+        leading: leading,
         centerTitle: true,
         actions: widgets,
       ),

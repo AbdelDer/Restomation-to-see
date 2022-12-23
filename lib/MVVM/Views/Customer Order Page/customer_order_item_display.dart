@@ -119,11 +119,9 @@ class CustomerOrderItemsView extends StatelessWidget {
                     CoolAlert.show(
                         context: context,
                         type: CoolAlertType.confirm,
-                        showCancelBtn: true,
                         width: 300,
-                        text: "How do You want to pay?",
-                        cancelBtnText: "Cash",
-                        confirmBtnText: "Card");
+                        text: "Please go to the counter to pay",
+                        confirmBtnText: "ok");
                   })
             ],
           ),

@@ -40,37 +40,40 @@ class CustomCartBadgeIcon extends StatelessWidget {
           Beamer.of(context).beamToNamed(
               "/customer-cart/$restaurantsKey,$tableKey,$name,$phone,$isTableClean,$addMoreItems,$orderItemsKey,$existingItemCount");
         },
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          margin: const EdgeInsets.all(10),
-          height: 80,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20), color: primaryColor),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    text: "${cart.cartItems.length} Items | ₹$price",
-                    color: kWhite,
-                    fontsize: 16,
-                  ),
-                  const CustomText(
-                    text: "Extra charges may apply",
-                    fontsize: 10,
-                    color: kWhite,
-                  )
-                ],
-              ),
-              const CustomText(
-                text: "View Cart",
-                color: kWhite,
-                fontsize: 16,
-              )
-            ],
+        child: Visibility(
+          visible: cart.cartItems.isNotEmpty ? true : false,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.all(10),
+            height: 80,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20), color: primaryColor),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      text: "${cart.cartItems.length} Items | ₹$price",
+                      color: kWhite,
+                      fontsize: 16,
+                    ),
+                    const CustomText(
+                      text: "Extra charges may apply",
+                      fontsize: 10,
+                      color: kWhite,
+                    )
+                  ],
+                ),
+                const CustomText(
+                  text: "View Cart",
+                  color: kWhite,
+                  fontsize: 16,
+                )
+              ],
+            ),
           ),
         ),
       ),
