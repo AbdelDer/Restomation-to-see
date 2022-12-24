@@ -43,7 +43,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
     if (widget.data["status"] == "available") {
       isActive = true;
     }
-
+    widget.data["cookingStatus"] = "pending";
     return Column(
       children: [
         Row(

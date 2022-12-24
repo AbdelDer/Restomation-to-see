@@ -179,14 +179,31 @@ class DatabaseService extends StorageService {
         .set(cartItems);
   }
 
-  Future updateOrderItems(String restaurantsKey, List cartItems, String name,
-      String orderItemsKey, int itemCount) async {
+  Future updateOrderItems(String restaurantsKey, List cartItems, String phone,
+      String orderItemsKey, int itemCount,String name) async {
+    DatabaseEvent databaseEvent = await DatabaseService.db
+        .ref()
+        .child("orders")
+        .child(restaurantsKey)
+        .orderByChild("name")
+        .equalTo(name)
+        .limitToLast(1)
+        .once();
+    Map? order = databaseEvent.snapshot.value as Map;
+    List orderKeys = order.keys.toList();
+    String orderKey = orderKeys[0];
+    await db
+        .ref()
+        .child("orders")
+        .child(restaurantsKey)
+        .child(orderKey)
+        .update({"order_status": "accepting", "hasNewItems": true});
     for (var i = 0; i < cartItems.length; i++) {
       await db
           .ref()
           .child("order_items")
           .child(restaurantsKey)
-          .child(name)
+          .child(phone)
           .child(orderItemsKey)
           .update({(i + (itemCount)).toString(): cartItems[i]});
     }

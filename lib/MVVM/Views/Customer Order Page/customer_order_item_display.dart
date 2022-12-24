@@ -140,9 +140,28 @@ class CustomerOrderItemsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.adjust_rounded,
-                color: Colors.green,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.adjust_rounded,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  CustomText(
+                    text: data["cookingStatus"],
+                    color: data["cookingStatus"] == "pending"
+                        ? Colors.red
+                        : data["cookingStatus"] == "cooking"
+                            ? primaryColor
+                            : data["cookingStatus"] == "ready"
+                                ? Colors.amber
+                                : data["cookingStatus"] == "delivered"
+                                    ? Colors.green
+                                    : Colors.red,
+                  )
+                ],
               ),
               const SizedBox(
                 height: 10,
@@ -224,7 +243,9 @@ class CustomerOrderItemsView extends StatelessWidget {
   String getTotalPrice(List items) {
     double total = 0;
     for (var element in items) {
-      total += double.parse(element["price"]) * element["quantity"];
+      if (element["cookingStatus"] != "cancelled") {
+        total += double.parse(element["price"]) * element["quantity"];
+      }
     }
     return total.toString();
   }

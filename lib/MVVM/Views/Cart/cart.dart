@@ -88,7 +88,7 @@ class CartPage extends StatelessWidget {
 
                   await DatabaseService()
                       .updateOrderItems(restaurantsKey, cart.cartItems, phone,
-                          orderItemsKey!, int.parse(existingItemCount!))
+                          orderItemsKey!, int.parse(existingItemCount!), name)
                       .then((value) {
                     KRoutes.pop(context);
                     Fluttertoast.showToast(msg: "Ordered Successfully");
@@ -104,6 +104,7 @@ class CartPage extends StatelessWidget {
                     "table_name": tableKey,
                     "order_status": "pending",
                     "isTableClean": isTableClean,
+                    "hasNewItems": false,
                     "waiter": "none"
                   };
                   await DatabaseService()
