@@ -44,6 +44,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

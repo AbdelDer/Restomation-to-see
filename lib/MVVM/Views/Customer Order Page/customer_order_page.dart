@@ -162,6 +162,7 @@ class CustomerOrderPage extends StatelessWidget {
                   name: name,
                   tableKey: tableKey,
                   isTableClean: order[orderKey]["isTableClean"],
+                  order: order[orderKey] as Map,
                 )),
                 if (order["order_status"].toString().toLowerCase() == "done")
                   Column(

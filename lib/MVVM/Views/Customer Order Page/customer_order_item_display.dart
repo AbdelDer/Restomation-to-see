@@ -8,6 +8,7 @@ import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 import '../../../Widgets/custom_button.dart';
+import '../../Repo/FCM Service/fcm_service.dart';
 
 class CustomerOrderItemsView extends StatelessWidget {
   final String restaurantName;
@@ -15,13 +16,15 @@ class CustomerOrderItemsView extends StatelessWidget {
   final String tableKey;
   final String name;
   final String isTableClean;
+  final Map order;
   const CustomerOrderItemsView(
       {super.key,
       required this.restaurantName,
       required this.phone,
       required this.tableKey,
       required this.name,
-      required this.isTableClean});
+      required this.isTableClean,
+      required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +43,7 @@ class CustomerOrderItemsView extends StatelessWidget {
 
   Widget orderItemView(
       BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
+    FirebaseDatabase db = FirebaseDatabase.instance;
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -59,74 +63,105 @@ class CustomerOrderItemsView extends StatelessWidget {
     List orderItemsKeys = orderItems.keys.toList();
     List items = orderItems[orderItemsKeys[0]];
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Scaffold(
+      floatingActionButton: (order["waiter"] != "none")
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                DatabaseEvent staff = await db
+                    .ref("staff")
+                    .orderByChild("name")
+                    .equalTo(order["waiter"])
+                    .once();
+                Map staffData = (staff.snapshot.value as Map);
+                String staffKey = (staffData.keys.toList())[0];
+                String token = staffData[staffKey]["token"];
+                FCMServices.sendFCM(token, token, order["table_name"],
+                    "Go to the table quick !!");
+              },
+              label: Row(
+                children: const [
+                  Icon(Icons.notifications),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  CustomText(
+                    text: "Call waiter",
+                    color: kWhite,
+                  ),
+                ],
+              ))
+          : null,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const CustomText(
-              text: "Total Bill",
-              fontWeight: FontWeight.bold,
-              fontsize: 20,
-            ),
-            CustomText(
-              text: getTotalPrice(items),
-              fontsize: 20,
-            ),
+            CustomButton(
+                buttonColor: primaryColor,
+                text: "Add more items",
+                textColor: kWhite,
+                function: () {
+                  Beamer.of(context).beamToNamed(
+                      "/restaurants-menu-category/$restaurantName,$tableKey,$name,$phone,$isTableClean,yes,${orderItemsKeys[0]},${items.length}");
+                }),
+            CustomButton(
+                buttonColor: primaryColor,
+                text: "Pay",
+                textColor: kWhite,
+                function: () {
+                  CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.confirm,
+                      width: 300,
+                      title: "",
+                      showCancelBtn: false,
+                      text: "Please go to the counter to pay",
+                      confirmBtnText: "ok");
+                })
           ],
         ),
-        const SizedBox(
-          height: 10,
-        ),
-        const Divider(
-          thickness: 1,
-          indent: 100,
-          endIndent: 100,
-          color: kblack,
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, itemIndex) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: myOrderedItems(context, items[itemIndex]),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      ),
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CustomButton(
-                  buttonColor: primaryColor,
-                  text: "Add more items",
-                  textColor: kWhite,
-                  function: () {
-                    Beamer.of(context).beamToNamed(
-                        "/restaurants-menu-category/$restaurantName,$tableKey,$name,$phone,$isTableClean,yes,${orderItemsKeys[0]},${items.length}");
-                  }),
-              CustomButton(
-                  buttonColor: primaryColor,
-                  text: "Pay",
-                  textColor: kWhite,
-                  function: () {
-                    CoolAlert.show(
-                        context: context,
-                        type: CoolAlertType.confirm,
-                        width: 300,
-                        text: "Please go to the counter to pay",
-                        confirmBtnText: "ok");
-                  })
+              const CustomText(
+                text: "Total Bill",
+                fontWeight: FontWeight.bold,
+                fontsize: 20,
+              ),
+              CustomText(
+                text: getTotalPrice(items),
+                fontsize: 20,
+              ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(
+            height: 10,
+          ),
+          const Divider(
+            thickness: 1,
+            indent: 100,
+            endIndent: 100,
+            color: kblack,
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, itemIndex) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: myOrderedItems(context, items[itemIndex]),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

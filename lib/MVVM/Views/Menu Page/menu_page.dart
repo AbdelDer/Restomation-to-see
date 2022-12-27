@@ -133,14 +133,22 @@ class _MenuPageState extends State<MenuPage> {
         Map foodItem = allrestaurantsMenuItems[key] as Map;
         foodItem["key"] = key;
 
-        return CustomFoodCard(
-          data: foodItem,
-          name: widget.name,
-          phone: widget.phone,
-          categoryKey: widget.categoryKey,
-          restaurantsKey: widget.restaurantsKey,
-          delete: deleteItem(foodItem),
-          edit: editItem(foodItem),
+        return Column(
+          children: [
+            CustomFoodCard(
+              data: foodItem,
+              name: widget.name,
+              phone: widget.phone,
+              categoryKey: widget.categoryKey,
+              restaurantsKey: widget.restaurantsKey,
+              delete: deleteItem(foodItem),
+              edit: editItem(foodItem),
+            ),
+            if ((index + 1) == categoriesListItems.length)
+              const SizedBox(
+                height: 100,
+              )
+          ],
         );
       },
     );

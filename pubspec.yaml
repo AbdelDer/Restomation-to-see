@@ -52,6 +52,7 @@ dependencies:
   cloud_functions: ^3.3.9
   intl: ^0.17.0
   font_awesome_flutter: ^10.3.0
+  http: ^0.13.5
 
 
 dev_dependencies:
