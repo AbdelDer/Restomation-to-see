@@ -1,10 +1,12 @@
 import 'package:beamer/beamer.dart';
 import 'package:cool_alert/cool_alert.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
+import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -12,6 +14,7 @@ import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 import '../../../Provider/cart_provider.dart';
+import '../../../Widgets/custom_loader.dart';
 
 class CartPage extends StatelessWidget {
   final String restaurantsKey;
@@ -54,8 +57,29 @@ class CartPage extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(
-            height: 20,
+          const Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CustomText(
+                  text: "Upselling Items",
+                  fontWeight: FontWeight.bold,
+                  fontsize: 15,
+                ),
+              )),
+          SizedBox(
+            height: 250,
+            child: StreamBuilder(
+                stream: FirebaseDatabase.instance
+                    .ref()
+                    .child("menu_items")
+                    .child(restaurantsKey)
+                    .orderByChild("upselling")
+                    .equalTo(true)
+                    .onValue,
+                builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                  return menuItemsView(snapshot);
+                }),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -238,6 +262,51 @@ class CartPage extends StatelessWidget {
             },
             child: const Icon(Icons.delete))
       ],
+    );
+  }
+
+  Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CustomLoader());
+    }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return const Center(
+          child: CustomText(text: "No upselling items added yet !!"));
+    }
+    Map allrestaurantsMenuItems = snapshot.data!.snapshot.value as Map;
+    List categoriesListItems = allrestaurantsMenuItems.keys.toList();
+
+    categoriesListItems =
+        allrestaurantsMenuItems.keys.toList().where((element) {
+      final categoryTitle =
+          allrestaurantsMenuItems[element]["status"].toString().toLowerCase();
+      const status = "available";
+      return categoryTitle == status;
+    }).toList();
+
+    return ListView.builder(
+      itemCount: categoriesListItems.length,
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        String key = categoriesListItems[index];
+        Map foodItem = allrestaurantsMenuItems[key] as Map;
+        foodItem["key"] = key;
+
+        return SizedBox(
+          width: 650,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: CustomFoodCard(
+              data: foodItem,
+              name: name,
+              phone: phone,
+              restaurantsKey: restaurantsKey,
+              delete: () {},
+              edit: () {},
+            ),
+          ),
+        );
+      },
     );
   }
 }

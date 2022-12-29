@@ -15,7 +15,6 @@ class CustomFoodCard extends StatefulWidget {
   final String? name;
   final String? phone;
   final String restaurantsKey;
-  final String categoryKey;
   final VoidCallback edit;
   final VoidCallback delete;
   const CustomFoodCard({
@@ -24,7 +23,6 @@ class CustomFoodCard extends StatefulWidget {
     required this.name,
     required this.phone,
     required this.restaurantsKey,
-    required this.categoryKey,
     required this.edit,
     required this.delete,
   });
@@ -54,9 +52,20 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.adjust_rounded,
-                    color: Colors.green,
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.adjust_rounded,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      CustomText(
+                          text: widget.data["upselling"]
+                              ? "🌟 Upselling item"
+                              : "")
+                    ],
                   ),
                   const SizedBox(
                     height: 10,
@@ -68,9 +77,24 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                   const SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    "₹${widget.data["price"]}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      Text(
+                        "₹${widget.data["price"]}",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration: widget.data["upselling"]
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      if (widget.data["upselling"])
+                        Text(
+                            "₹${getDiscountedPrice(widget.data["price"])} ( You save ₹${double.parse(widget.data["price"]) * 0.1} )")
+                    ],
                   ),
                   const SizedBox(
                     height: 10,
@@ -317,5 +341,11 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  String getDiscountedPrice(String price) {
+    double totalPrice = double.parse(price);
+    totalPrice = totalPrice - (totalPrice * 0.1);
+    return "$totalPrice";
   }
 }
