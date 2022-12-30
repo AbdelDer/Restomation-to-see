@@ -4,7 +4,12 @@ import 'package:restomation/Provider/cart_provider.dart';
 
 class AddToCart extends StatefulWidget {
   final Map foodData;
-  const AddToCart({super.key, required this.foodData,});
+  final bool isCart;
+  const AddToCart({
+    super.key,
+    required this.foodData,
+    required this.isCart,
+  });
 
   @override
   State<AddToCart> createState() => _AddToCartState();
@@ -28,6 +33,10 @@ class _AddToCartState extends State<AddToCart> {
             initialValue++;
           });
           widget.foodData["quantity"] = initialValue;
+          if (widget.isCart) {
+            widget.foodData["price"] =
+                getDiscountedPrice(widget.foodData["price"]);
+          }
           context.read<Cart>().addCartItem(widget.foodData);
         }
       },
@@ -76,6 +85,7 @@ class _AddToCartState extends State<AddToCart> {
                         setState(() {
                           initialValue++;
                           cart.cartItems[index]["quantity"] = initialValue;
+
                           cart.updateState();
                         });
                       },
@@ -87,5 +97,11 @@ class _AddToCartState extends State<AddToCart> {
               ),
       ),
     );
+  }
+
+  String getDiscountedPrice(String price) {
+    double totalPrice = double.parse(price);
+    totalPrice = totalPrice - (totalPrice * 0.1);
+    return "$totalPrice";
   }
 }

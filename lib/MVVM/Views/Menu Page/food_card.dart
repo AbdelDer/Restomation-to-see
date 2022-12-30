@@ -17,6 +17,7 @@ class CustomFoodCard extends StatefulWidget {
   final String restaurantsKey;
   final VoidCallback edit;
   final VoidCallback delete;
+  final bool isCart;
   const CustomFoodCard({
     super.key,
     required this.data,
@@ -25,6 +26,7 @@ class CustomFoodCard extends StatefulWidget {
     required this.restaurantsKey,
     required this.edit,
     required this.delete,
+    required this.isCart,
   });
 
   @override
@@ -47,74 +49,62 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width / 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.adjust_rounded,
-                        color: Colors.green,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.adjust_rounded,
+                  color: Colors.green,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  widget.data["name"],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: [
+                    Text(
+                      "₹${widget.data["price"]}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        decoration: widget.data["upselling"] && widget.isCart
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
+                    ),
+                    if (widget.isCart)
                       const SizedBox(
                         width: 10,
                       ),
-                      CustomText(
-                          text: widget.data["upselling"]
-                              ? "🌟 Upselling item"
-                              : "")
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    widget.data["name"],
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        "₹${widget.data["price"]}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          decoration: widget.data["upselling"]
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                    if (widget.isCart)
                       if (widget.data["upselling"])
                         Text(
                             "₹${getDiscountedPrice(widget.data["price"])} ( You save ₹${double.parse(widget.data["price"]) * 0.1} )")
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "${widget.data["type"]}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  CustomText(
-                    text: widget.data["description"],
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "${widget.data["type"]}",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
                     color: Colors.grey.shade600,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                CustomText(
+                  text: widget.data["description"],
+                  color: Colors.grey.shade600,
+                ),
+              ],
             ),
             SizedBox(
               height: 180,
@@ -162,6 +152,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                         bottom: 5,
                         child: AddToCart(
                           foodData: widget.data,
+                          isCart: widget.isCart,
                         )),
                   if (widget.name == null)
                     Positioned(

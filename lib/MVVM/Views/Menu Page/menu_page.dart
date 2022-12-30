@@ -142,6 +142,7 @@ class _MenuPageState extends State<MenuPage> {
               restaurantsKey: widget.restaurantsKey,
               delete: deleteItem(foodItem),
               edit: editItem(foodItem),
+              isCart: false,
             ),
             if ((index + 1) == categoriesListItems.length)
               const SizedBox(

@@ -57,30 +57,17 @@ class CartPage extends StatelessWidget {
               },
             ),
           ),
-          const Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: CustomText(
-                  text: "Upselling Items",
-                  fontWeight: FontWeight.bold,
-                  fontsize: 15,
-                ),
-              )),
-          SizedBox(
-            height: 250,
-            child: StreamBuilder(
-                stream: FirebaseDatabase.instance
-                    .ref()
-                    .child("menu_items")
-                    .child(restaurantsKey)
-                    .orderByChild("upselling")
-                    .equalTo(true)
-                    .onValue,
-                builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-                  return menuItemsView(snapshot);
-                }),
-          ),
+          StreamBuilder(
+              stream: FirebaseDatabase.instance
+                  .ref()
+                  .child("menu_items")
+                  .child(restaurantsKey)
+                  .orderByChild("upselling")
+                  .equalTo(true)
+                  .onValue,
+              builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                return menuItemsView(snapshot, cart);
+              }),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -161,12 +148,12 @@ class CartPage extends StatelessWidget {
 
   Widget cartItemDisplay(BuildContext context, Map data, Cart cart) {
     final ref = StorageService.storage.ref().child(data["image"]);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        SizedBox(
-          width: MediaQuery.of(context).size.width / 2,
-          child: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Icon(
@@ -211,61 +198,70 @@ class CartPage extends StatelessWidget {
               ),
             ],
           ),
-        ),
-        SizedBox(
-          height: 180,
-          child: Stack(
-            alignment: Alignment.center,
+          Row(
             children: [
-              FutureBuilder(
-                  future: ref.getDownloadURL(),
-                  builder: (BuildContext context, AsyncSnapshot snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return Container(
-                        width: 170,
-                        height: 150,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: const [
-                              BoxShadow(
-                                  offset: Offset(0, 0),
-                                  spreadRadius: 2,
-                                  blurRadius: 2,
-                                  color: Colors.black12)
-                            ],
-                            image: DecorationImage(
-                                image: NetworkImage(snapshot.data!),
-                                fit: BoxFit.cover)),
-                      );
-                    }
-                    return Container(
-                      width: 170,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: const [
-                          BoxShadow(
-                              offset: Offset(0, 0),
-                              spreadRadius: 2,
-                              blurRadius: 2,
-                              color: Colors.black12)
-                        ],
-                      ),
-                    );
-                  }),
+              SizedBox(
+                height: 180,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    FutureBuilder(
+                        future: ref.getDownloadURL(),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            return Container(
+                              width: 170,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        offset: Offset(0, 0),
+                                        spreadRadius: 2,
+                                        blurRadius: 2,
+                                        color: Colors.black12)
+                                  ],
+                                  image: DecorationImage(
+                                      image: NetworkImage(snapshot.data!),
+                                      fit: BoxFit.cover)),
+                            );
+                          }
+                          return Container(
+                            width: 170,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: const [
+                                BoxShadow(
+                                    offset: Offset(0, 0),
+                                    spreadRadius: 2,
+                                    blurRadius: 2,
+                                    color: Colors.black12)
+                              ],
+                            ),
+                          );
+                        }),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                width: 20,
+              ),
+              InkWell(
+                  onTap: () {
+                    cart.removeCartItem(data);
+                  },
+                  child: const Icon(Icons.delete)),
             ],
-          ),
-        ),
-        InkWell(
-            onTap: () {
-              cart.removeCartItem(data);
-            },
-            child: const Icon(Icons.delete))
-      ],
+          )
+        ],
+      ),
     );
   }
 
-  Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot) {
+  Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot, Cart cart) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(child: CustomLoader());
     }
@@ -283,30 +279,60 @@ class CartPage extends StatelessWidget {
       const status = "available";
       return categoryTitle == status;
     }).toList();
+    List filteredList = [];
+    for (var i = 0; i < categoriesListItems.length; i++) {
+      String key = categoriesListItems[i];
+      Map foodItem = allrestaurantsMenuItems[key] as Map;
+      if (cart.cartItems
+              .indexWhere((element) => element["name"] == foodItem["name"]) ==
+          -1) {
+        filteredList.add(categoriesListItems[i]);
+      }
+    }
+    if (filteredList.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      children: [
+        const Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CustomText(
+                text: "Special discounts only for you :",
+                fontWeight: FontWeight.bold,
+                fontsize: 15,
+              ),
+            )),
+        SizedBox(
+          height: 250,
+          child: ListView.builder(
+            itemCount: filteredList.length,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              String key = filteredList[index];
+              Map foodItem = allrestaurantsMenuItems[key] as Map;
+              foodItem["key"] = key;
 
-    return ListView.builder(
-      itemCount: categoriesListItems.length,
-      scrollDirection: Axis.horizontal,
-      itemBuilder: (context, index) {
-        String key = categoriesListItems[index];
-        Map foodItem = allrestaurantsMenuItems[key] as Map;
-        foodItem["key"] = key;
-
-        return SizedBox(
-          width: 650,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: CustomFoodCard(
-              data: foodItem,
-              name: name,
-              phone: phone,
-              restaurantsKey: restaurantsKey,
-              delete: () {},
-              edit: () {},
-            ),
+              return SizedBox(
+                width: 450,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: CustomFoodCard(
+                    data: foodItem,
+                    name: name,
+                    phone: phone,
+                    restaurantsKey: restaurantsKey,
+                    delete: () {},
+                    edit: () {},
+                    isCart: true,
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
