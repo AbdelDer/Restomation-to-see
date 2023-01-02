@@ -56,8 +56,8 @@ class _LoginState extends State<Login> {
             height: 20,
           ),
           Center(
-            child: Image.network(
-              "http://cdn.onlinewebfonts.com/svg/img_59062.png",
+            child: Image.asset(
+              "assets/splash.png",
               width: 200,
               height: 200,
             ),
