@@ -305,8 +305,8 @@ class CartPage extends StatelessWidget {
               ),
             )),
         SizedBox(
-          height: 250,
-          child: ListView.builder(
+          height: 180,
+          child: ListView.separated(
             itemCount: filteredList.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) {
@@ -328,6 +328,14 @@ class CartPage extends StatelessWidget {
                     isCart: true,
                   ),
                 ),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return const VerticalDivider(
+                color: kGrey,
+                thickness: 1,
+                endIndent: 20,
+                indent: 20,
               );
             },
           ),
