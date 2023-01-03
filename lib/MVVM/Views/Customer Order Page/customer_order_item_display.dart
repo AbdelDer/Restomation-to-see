@@ -1,7 +1,10 @@
 import 'package:beamer/beamer.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:razorpay_web/razorpay_web.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/Utils/contants.dart';
@@ -10,7 +13,7 @@ import 'package:restomation/Widgets/custom_text.dart';
 import '../../../Widgets/custom_button.dart';
 import '../../Repo/FCM Service/fcm_service.dart';
 
-class CustomerOrderItemsView extends StatelessWidget {
+class CustomerOrderItemsView extends StatefulWidget {
   final String restaurantName;
   final String phone;
   final String tableKey;
@@ -27,13 +30,84 @@ class CustomerOrderItemsView extends StatelessWidget {
       required this.order});
 
   @override
+  State<CustomerOrderItemsView> createState() => _CustomerOrderItemsViewState();
+}
+
+class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
+  final Razorpay _razorpay = Razorpay();
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    // Do something when payment succeeds
+    if (kDebugMode) {
+      print("Success Mode");
+      print("Payement ID: ${response.paymentId}");
+      Fluttertoast.showToast(msg: "Payment was a Success");
+      Navigator.pop(context);
+      Future.delayed(const Duration(milliseconds: 300), () {
+        CoolAlert.show(
+            context: context,
+            type: CoolAlertType.success,
+            title: "Done",
+            text: "Payment was successfully transferred",
+            confirmBtnText: "OKAY",
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+            });
+      });
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    // Do something when payment fails
+    if (kDebugMode) {
+      print("Failure Mode");
+      print("Failure Code: ${response.code}");
+      print("Message: ${response.message}");
+      Fluttertoast.showToast(msg: response.message.toString());
+      Future.delayed(const Duration(milliseconds: 300), () {
+        CoolAlert.show(
+            context: context,
+            type: CoolAlertType.error,
+            title: "Try Again",
+            text: "Payment was Failed to transfer",
+            confirmBtnText: "OKAY",
+            onConfirmBtnTap: () {
+              Navigator.pop(context);
+            });
+      });
+    }
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    // Do something when an external wallet was selected
+    if (kDebugMode) {
+      print("External Wallet Mode");
+      print("Wallet Name: ${response.walletName}");
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _razorpay.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: DatabaseService.db
           .ref()
           .child("order_items")
-          .child(restaurantName)
-          .child(phone)
+          .child(widget.restaurantName)
+          .child(widget.phone)
           .limitToLast(1)
           .onValue,
       builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) =>
@@ -64,18 +138,18 @@ class CustomerOrderItemsView extends StatelessWidget {
     List items = orderItems[orderItemsKeys[0]];
 
     return Scaffold(
-      floatingActionButton: (order["waiter"] != "none")
+      floatingActionButton: (widget.order["waiter"] != "none")
           ? FloatingActionButton.extended(
               onPressed: () async {
                 DatabaseEvent staff = await db
                     .ref("staff")
                     .orderByChild("name")
-                    .equalTo(order["waiter"])
+                    .equalTo(widget.order["waiter"])
                     .once();
                 Map staffData = (staff.snapshot.value as Map);
                 String staffKey = (staffData.keys.toList())[0];
                 String token = staffData[staffKey]["token"];
-                FCMServices.sendFCM(token, token, order["table_name"],
+                FCMServices.sendFCM(token, token, widget.order["table_name"],
                     "Go to the table quick !!");
               },
               label: Row(
@@ -102,21 +176,31 @@ class CustomerOrderItemsView extends StatelessWidget {
                 textColor: kWhite,
                 function: () {
                   Beamer.of(context).beamToNamed(
-                      "/restaurants-menu-category/$restaurantName,$tableKey,$name,$phone,$isTableClean,yes,${orderItemsKeys[0]},${items.length}");
+                      "/restaurants-menu-category/${widget.restaurantName},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},yes,${orderItemsKeys[0]},${items.length}");
                 }),
+            // if (widget.order["order_status"].toString().toLowerCase() == "done")
             CustomButton(
                 buttonColor: primaryColor,
                 text: "Pay",
                 textColor: kWhite,
                 function: () {
                   CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.confirm,
-                      width: 300,
-                      title: "",
-                      showCancelBtn: false,
-                      text: "Please go to the counter to pay",
-                      confirmBtnText: "ok");
+                    context: context,
+                    type: CoolAlertType.confirm,
+                    width: 300,
+                    title: "",
+                    text: "Please go to the counter to pay",
+
+                    // onConfirmBtnTap: () async {
+                    //   Navigator.pop(context);
+                    //   Fluttertoast.showToast(msg: "Pay Now Clicked");
+                    //   await payment(
+                    //       widget.order["name"],
+                    //       widget.order["name"],
+                    //       widget.order["phone"],
+                    //       getTotalPrice(items));
+                    // }
+                  );
                 })
           ],
         ),
@@ -273,6 +357,32 @@ class CustomerOrderItemsView extends StatelessWidget {
         )
       ],
     );
+  }
+
+  payment(String name, String email, String phone, String amount) async {
+    var options = {
+      "key":
+          "rzp_test_XYujmoenCLI42U", // Enter the Key ID generated from the Dashboard
+      "amount": int.tryParse(amount)! *
+          100, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+      "currency": "INR",
+      "name": "Restomation",
+      "description": "Test Transaction",
+      "image": "assets/splash.png",
+      // "order_id": "order_9A33XWu170gUtm", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+      "callback_url": "https://eneqd3r9zrjok.x.pipedream.net/",
+      "prefill": {
+        "name": name.toString(),
+        "email": email.toString(),
+        "contact": phone.toString()
+      },
+      // "notes": {
+      //   "address": "Razorpay Corporate Office"
+      // },
+      "theme": {"color": "#e1679c"}
+    };
+
+    _razorpay.open(options);
   }
 
   String getTotalPrice(List items) {

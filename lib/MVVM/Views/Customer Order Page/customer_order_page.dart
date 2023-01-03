@@ -5,7 +5,6 @@ import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Customer%20Order%20Page/customer_order_item_display.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
-import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 class CustomerOrderPage extends StatelessWidget {
@@ -164,19 +163,6 @@ class CustomerOrderPage extends StatelessWidget {
                   isTableClean: order[orderKey]["isTableClean"],
                   order: order[orderKey] as Map,
                 )),
-                if (order["order_status"].toString().toLowerCase() == "done")
-                  Column(
-                    children: [
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      CustomButton(
-                          buttonColor: primaryColor,
-                          text: "Pay",
-                          textColor: kWhite,
-                          function: () {}),
-                    ],
-                  )
               ],
             ),
           );

@@ -54,6 +54,7 @@ dependencies:
   font_awesome_flutter: ^10.3.0
   http: ^0.13.5
   readmore: ^2.2.0
+  razorpay_web: ^1.3.5
 
 
 dev_dependencies:

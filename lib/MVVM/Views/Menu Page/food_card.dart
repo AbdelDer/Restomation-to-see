@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import 'package:restomation/Widgets/add_to_cart.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
+import '../../../Widgets/custom_loader.dart';
 import '../../Repo/Storage Service/storage_service.dart';
 
 class CustomFoodCard extends StatefulWidget {
@@ -160,11 +162,164 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                       }),
                   if (widget.name != null)
                     Positioned(
-                        bottom: 5,
-                        child: AddToCart(
-                          foodData: widget.data,
-                          isCart: widget.isCart,
-                        )),
+                      bottom: 5,
+                      child: InkWell(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return Container(
+                                color: kGrey.shade200,
+                                height: 700,
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      color: kWhite,
+                                      child: Row(
+                                        children: [
+                                          FutureBuilder(
+                                              future: ref.getDownloadURL(),
+                                              builder: (BuildContext context,
+                                                  AsyncSnapshot snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.done) {
+                                                  return Container(
+                                                    width: 70,
+                                                    height: 70,
+                                                    decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(15),
+                                                        boxShadow: const [
+                                                          BoxShadow(
+                                                              offset:
+                                                                  Offset(0, 0),
+                                                              spreadRadius: 2,
+                                                              blurRadius: 2,
+                                                              color: Colors
+                                                                  .black12)
+                                                        ],
+                                                        image: DecorationImage(
+                                                            image: NetworkImage(
+                                                                snapshot.data!),
+                                                            fit: BoxFit.cover)),
+                                                  );
+                                                }
+                                                return Container(
+                                                  width: 70,
+                                                  height: 70,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                    boxShadow: const [
+                                                      BoxShadow(
+                                                          offset: Offset(0, 0),
+                                                          spreadRadius: 2,
+                                                          blurRadius: 2,
+                                                          color: Colors.black12)
+                                                    ],
+                                                  ),
+                                                );
+                                              }),
+                                          const SizedBox(
+                                            width: 20,
+                                          ),
+                                          CustomText(
+                                            text: widget.data["name"],
+                                            fontWeight: FontWeight.bold,
+                                            fontsize: 25,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: StreamBuilder(
+                                          stream: FirebaseDatabase.instance
+                                              .ref()
+                                              .child("menu_items")
+                                              .child(widget.restaurantsKey)
+                                              .orderByChild("upselling")
+                                              .equalTo(true)
+                                              .onValue,
+                                          builder: (context,
+                                              AsyncSnapshot<DatabaseEvent?>
+                                                  snapshot) {
+                                            return Builder(builder: (context) {
+                                              Cart cart = context.watch<Cart>();
+                                              return menuItemsView(
+                                                  snapshot, cart);
+                                            });
+                                          }),
+                                    ),
+                                    AddToCart(
+                                        foodData: widget.data, isCart: false),
+                                    const SizedBox(
+                                      height: 10,
+                                    )
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: Builder(builder: (context) {
+                          Cart cart = context.watch<Cart>();
+                          int initialValue = 0;
+                          int index = cart.cartItems.indexWhere((element) =>
+                              element["name"].toString().toLowerCase() ==
+                              widget.data["name"].toString().toLowerCase());
+                          if (index != -1) {
+                            initialValue = cart.cartItems[index]["quantity"];
+                          }
+                          return Container(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            width: 100,
+                            height: 30,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: const [
+                                  BoxShadow(
+                                      offset: Offset(0, 0),
+                                      spreadRadius: 2,
+                                      blurRadius: 2,
+                                      color: Colors.black12)
+                                ],
+                                color: Colors.white),
+                            child: initialValue == 0
+                                ? const Text(
+                                    "ADD",
+                                    style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold),
+                                  )
+                                : Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      const Icon(
+                                        Icons.remove,
+                                        size: 15,
+                                      ),
+                                      Text(initialValue.toString()),
+                                      const Icon(
+                                        Icons.add,
+                                        size: 15,
+                                      )
+                                    ],
+                                  ),
+                          );
+                        }),
+                      ),
+                    ),
+                  // Positioned(
+                  //     bottom: 5,
+                  //     child: AddToCart(
+                  //       foodData: widget.data,
+                  //       isCart: widget.isCart,
+                  //     )),
                   if (widget.name == null)
                     Positioned(
                         top: 20,
@@ -345,9 +500,122 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
     super.dispose();
   }
 
+  Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot, Cart cart) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CustomLoader());
+    }
+    if (snapshot.data!.snapshot.children.isEmpty) {
+      return const Center(
+          child: CustomText(text: "No upselling items added yet !!"));
+    }
+    Map allrestaurantsMenuItems = snapshot.data!.snapshot.value as Map;
+    List categoriesListItems = allrestaurantsMenuItems.keys.toList();
+
+    categoriesListItems =
+        allrestaurantsMenuItems.keys.toList().where((element) {
+      final categoryTitle =
+          allrestaurantsMenuItems[element]["status"].toString().toLowerCase();
+      const status = "available";
+      return categoryTitle == status;
+    }).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
+      decoration:
+          BoxDecoration(color: kWhite, borderRadius: BorderRadius.circular(15)),
+      child: Column(
+        children: [
+          const Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CustomText(
+                  text: "Special offers only for you :",
+                  fontWeight: FontWeight.bold,
+                  fontsize: 15,
+                ),
+              )),
+          Expanded(
+            child: ListView.builder(
+              itemCount: categoriesListItems.length,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              itemBuilder: (context, index) {
+                String key = categoriesListItems[index];
+                Map foodItem = allrestaurantsMenuItems[key] as Map;
+                foodItem["key"] = key;
+                int index2 = cart.cartItems.indexWhere((element) =>
+                    element["name"].toString().toLowerCase() ==
+                    foodItem["name"].toString().toLowerCase());
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.adjust_rounded,
+                          color:
+                              foodItem["type"].toString().toLowerCase() == "veg"
+                                  ? Colors.green
+                                  : Colors.red,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        CustomText(
+                          text: foodItem["name"],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          "₹${foodItem["price"]}  ",
+                          style: const TextStyle(
+                            color: kGrey,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        CustomText(
+                          text: "₹${getDiscountedPrice(foodItem["price"])}  ",
+                          fontWeight: FontWeight.bold,
+                        ),
+                        CustomText(
+                          text:
+                              "( You save ₹${(double.parse(foodItem["price"]) * 0.1).toStringAsFixed(0)} )",
+                        ),
+                        const SizedBox(
+                          width: 5,
+                        ),
+                        Checkbox(
+                            value: index2 != -1 ? true : false,
+                            onChanged: (value) {
+                              if (index2 == -1) {
+                                foodItem["quantity"] = 1;
+                                foodItem["price"] =
+                                    getDiscountedPrice(foodItem["price"]);
+                                cart.addCartItem(foodItem);
+                              } else {
+                                cart.removeCartItem(foodItem);
+                              }
+                            }),
+                      ],
+                    )
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String getDiscountedPrice(String price) {
     double totalPrice = double.parse(price);
     totalPrice = totalPrice - (totalPrice * 0.1);
-    return "$totalPrice";
+    return totalPrice.toStringAsFixed(0);
   }
 }

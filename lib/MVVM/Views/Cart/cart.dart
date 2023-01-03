@@ -6,7 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
-import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -38,7 +37,6 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Cart cart = context.watch<Cart>();
     return Scaffold(
       appBar: BaseAppBar(
         title: "Cart",
@@ -50,12 +48,15 @@ class CartPage extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: cart.cartItems.length,
-              itemBuilder: (context, index) {
-                return cartItemDisplay(context, cart.cartItems[index], cart);
-              },
-            ),
+            child: Builder(builder: (context) {
+              Cart cart = context.watch<Cart>();
+              return ListView.builder(
+                itemCount: cart.cartItems.length,
+                itemBuilder: (context, index) {
+                  return cartItemDisplay(context, cart.cartItems[index], cart);
+                },
+              );
+            }),
           ),
           StreamBuilder(
               stream: FirebaseDatabase.instance
@@ -66,7 +67,10 @@ class CartPage extends StatelessWidget {
                   .equalTo(true)
                   .onValue,
               builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-                return menuItemsView(snapshot, cart);
+                return Builder(builder: (context) {
+                  Cart cart = context.watch<Cart>();
+                  return menuItemsView(snapshot, cart);
+                });
               }),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -78,58 +82,66 @@ class CartPage extends StatelessWidget {
                   fontsize: 25,
                   fontWeight: FontWeight.bold,
                 ),
-                CustomText(
-                  text: getTotalPrice(cart),
-                  fontsize: 25,
-                  fontWeight: FontWeight.bold,
-                )
+                Builder(builder: (context) {
+                  Cart cart = context.watch<Cart>();
+                  return CustomText(
+                    text: "₹ ${getTotalPrice(cart)}",
+                    fontsize: 25,
+                    fontWeight: FontWeight.bold,
+                  );
+                })
               ],
             ),
           ),
           const SizedBox(
             height: 20,
           ),
-          CustomButton(
-              buttonColor: primaryColor,
-              text: addMoreItems == "yes" ? "Update Order" : "Order",
-              textColor: kWhite,
-              function: () async {
-                if (addMoreItems == "yes") {
-                  CoolAlert.show(context: context, type: CoolAlertType.loading);
+          Builder(builder: (context) {
+            Cart cart = context.watch<Cart>();
+            return CustomButton(
+                buttonColor: primaryColor,
+                text: addMoreItems == "yes" ? "Update Order" : "Order",
+                textColor: kWhite,
+                function: () async {
+                  if (addMoreItems == "yes") {
+                    CoolAlert.show(
+                        context: context, type: CoolAlertType.loading);
 
-                  await DatabaseService()
-                      .updateOrderItems(restaurantsKey, cart.cartItems, phone,
-                          orderItemsKey!, int.parse(existingItemCount!), name)
-                      .then((value) {
-                    KRoutes.pop(context);
-                    Fluttertoast.showToast(msg: "Ordered Successfully");
-                    cart.clearCart();
-                    Beamer.of(context).beamToReplacementNamed(
-                        "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                  });
-                } else {
-                  CoolAlert.show(context: context, type: CoolAlertType.loading);
-                  Map data = {
-                    "name": name,
-                    "phone": phone,
-                    "table_name": tableKey,
-                    "order_status": "pending",
-                    "isTableClean": isTableClean,
-                    "hasNewItems": false,
-                    "waiter": "none"
-                  };
-                  await DatabaseService()
-                      .createOrder(
-                          restaurantsKey, tableKey, data, cart.cartItems, phone)
-                      .then((value) {
-                    KRoutes.pop(context);
-                    Fluttertoast.showToast(msg: "Ordered Successfully");
-                    cart.clearCart();
-                    Beamer.of(context).beamToReplacementNamed(
-                        "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                  });
-                }
-              }),
+                    await DatabaseService()
+                        .updateOrderItems(restaurantsKey, cart.cartItems, phone,
+                            orderItemsKey!, int.parse(existingItemCount!), name)
+                        .then((value) {
+                      KRoutes.pop(context);
+                      Fluttertoast.showToast(msg: "Ordered Successfully");
+                      cart.clearCart();
+                      Beamer.of(context).beamToReplacementNamed(
+                          "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
+                    });
+                  } else {
+                    CoolAlert.show(
+                        context: context, type: CoolAlertType.loading);
+                    Map data = {
+                      "name": name,
+                      "phone": phone,
+                      "table_name": tableKey,
+                      "order_status": "pending",
+                      "isTableClean": isTableClean,
+                      "hasNewItems": false,
+                      "waiter": "none"
+                    };
+                    await DatabaseService()
+                        .createOrder(restaurantsKey, tableKey, data,
+                            cart.cartItems, phone)
+                        .then((value) {
+                      KRoutes.pop(context);
+                      Fluttertoast.showToast(msg: "Ordered Successfully");
+                      cart.clearCart();
+                      Beamer.of(context).beamToReplacementNamed(
+                          "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
+                    });
+                  }
+                });
+          }),
           const SizedBox(
             height: 20,
           ),
@@ -279,19 +291,7 @@ class CartPage extends StatelessWidget {
       const status = "available";
       return categoryTitle == status;
     }).toList();
-    List filteredList = [];
-    for (var i = 0; i < categoriesListItems.length; i++) {
-      String key = categoriesListItems[i];
-      Map foodItem = allrestaurantsMenuItems[key] as Map;
-      if (cart.cartItems
-              .indexWhere((element) => element["name"] == foodItem["name"]) ==
-          -1) {
-        filteredList.add(categoriesListItems[i]);
-      }
-    }
-    if (filteredList.isEmpty) {
-      return const SizedBox.shrink();
-    }
+
     return Column(
       children: [
         const Align(
@@ -299,48 +299,91 @@ class CartPage extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(8.0),
               child: CustomText(
-                text: "Special discounts only for you :",
+                text: "Special offers only for you :",
                 fontWeight: FontWeight.bold,
                 fontsize: 15,
               ),
             )),
         SizedBox(
-          height: 180,
-          child: ListView.separated(
-            itemCount: filteredList.length,
-            scrollDirection: Axis.horizontal,
+          height: 130,
+          child: ListView.builder(
+            itemCount: categoriesListItems.length,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             itemBuilder: (context, index) {
-              String key = filteredList[index];
+              String key = categoriesListItems[index];
               Map foodItem = allrestaurantsMenuItems[key] as Map;
               foodItem["key"] = key;
+              int index2 = cart.cartItems.indexWhere((element) =>
+                  element["name"].toString().toLowerCase() ==
+                  foodItem["name"].toString().toLowerCase());
 
-              return SizedBox(
-                width: 450,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: CustomFoodCard(
-                    data: foodItem,
-                    name: name,
-                    phone: phone,
-                    restaurantsKey: restaurantsKey,
-                    delete: () {},
-                    edit: () {},
-                    isCart: true,
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.adjust_rounded,
+                        color:
+                            foodItem["type"].toString().toLowerCase() == "veg"
+                                ? Colors.green
+                                : Colors.red,
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      CustomText(
+                        text: foodItem["name"],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ],
                   ),
-                ),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return const VerticalDivider(
-                color: kGrey,
-                thickness: 1,
-                endIndent: 20,
-                indent: 20,
+                  Row(
+                    children: [
+                      Text(
+                        "₹${foodItem["price"]}  ",
+                        style: const TextStyle(
+                          color: kGrey,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      CustomText(
+                        text: "₹${getDiscountedPrice(foodItem["price"])}  ",
+                        fontWeight: FontWeight.bold,
+                      ),
+                      CustomText(
+                        text:
+                            "( You save ₹${double.parse(foodItem["price"]) * 0.1} )",
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Checkbox(
+                          value: index2 != -1 ? true : false,
+                          onChanged: (value) {
+                            if (index2 == -1) {
+                              foodItem["quantity"] = 1;
+                              foodItem["price"] =
+                                  getDiscountedPrice(foodItem["price"]);
+                              cart.addCartItem(foodItem);
+                            } else {
+                              cart.removeCartItem(foodItem);
+                            }
+                          }),
+                    ],
+                  )
+                ],
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  String getDiscountedPrice(String price) {
+    double totalPrice = double.parse(price);
+    totalPrice = totalPrice - (totalPrice * 0.1);
+    return "$totalPrice";
   }
 }
