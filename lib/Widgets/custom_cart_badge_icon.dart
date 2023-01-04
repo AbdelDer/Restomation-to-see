@@ -45,7 +45,7 @@ class CustomCartBadgeIcon extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(20),
             margin: const EdgeInsets.all(10),
-            height: 80,
+            height: 85,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20), color: primaryColor),
             child: Row(

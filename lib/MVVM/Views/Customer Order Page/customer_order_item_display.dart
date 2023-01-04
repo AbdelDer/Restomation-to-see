@@ -293,7 +293,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                 height: 10,
               ),
               Text(
-                "₹${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
+                "Rs. ${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(

@@ -1,8 +1,8 @@
+import 'package:expandable_text/expandable_text.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:readmore/readmore.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/Provider/cart_provider.dart';
 import 'package:restomation/Utils/contants.dart';
@@ -20,7 +20,6 @@ class CustomFoodCard extends StatefulWidget {
   final String restaurantsKey;
   final VoidCallback edit;
   final VoidCallback delete;
-  final bool isCart;
   const CustomFoodCard({
     super.key,
     required this.data,
@@ -29,7 +28,6 @@ class CustomFoodCard extends StatefulWidget {
     required this.restaurantsKey,
     required this.edit,
     required this.delete,
-    required this.isCart,
   });
 
   @override
@@ -72,47 +70,22 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                   const SizedBox(
                     height: 10,
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        "₹${widget.data["price"]}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          decoration: widget.data["upselling"] && widget.isCart
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
-                      ),
-                      if (widget.isCart)
-                        const SizedBox(
-                          width: 10,
-                        ),
-                      if (widget.isCart)
-                        if (widget.data["upselling"])
-                          Text(
-                              "₹${getDiscountedPrice(widget.data["price"])} ( You save ₹${double.parse(widget.data["price"]) * 0.1} )")
-                    ],
+                  Text(
+                    "Rs. ${widget.data["price"]}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  if (!widget.isCart)
-                    ReadMoreText(
-                      widget.data["description"] + "  ",
-                      trimLines: 2,
-                      colorClickableText: primaryColor,
-                      trimMode: TrimMode.Line,
-                      trimCollapsedText: 'Show more',
-                      trimExpandedText: 'Show less',
-                      lessStyle: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold),
-                      moreStyle: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold),
-                    )
+                  ExpandableText(
+                    widget.data["description"] + "  ",
+                    expandText: 'show more',
+                    collapseText: 'show less',
+                    maxLines: 2,
+                    linkColor: primaryColor,
+                  )
                 ],
               ),
             ),
@@ -248,8 +221,8 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                                                   snapshot) {
                                             return Builder(builder: (context) {
                                               Cart cart = context.watch<Cart>();
-                                              return menuItemsView(
-                                                  snapshot, cart);
+                                              return menuItemsView(snapshot,
+                                                  cart, widget.data["name"]);
                                             });
                                           }),
                                     ),
@@ -314,12 +287,6 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                         }),
                       ),
                     ),
-                  // Positioned(
-                  //     bottom: 5,
-                  //     child: AddToCart(
-                  //       foodData: widget.data,
-                  //       isCart: widget.isCart,
-                  //     )),
                   if (widget.name == null)
                     Positioned(
                         top: 20,
@@ -416,7 +383,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
               ],
             );
           }),
-        if (widget.name != null && !widget.isCart)
+        if (widget.name != null)
           StatefulBuilder(
             builder: (BuildContext context, refreshState) {
               Cart cart = context.watch<Cart>();
@@ -500,7 +467,8 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
     super.dispose();
   }
 
-  Widget menuItemsView(AsyncSnapshot<DatabaseEvent?> snapshot, Cart cart) {
+  Widget menuItemsView(
+      AsyncSnapshot<DatabaseEvent?> snapshot, Cart cart, String name) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(child: CustomLoader());
     }
@@ -519,6 +487,13 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
       return categoryTitle == status;
     }).toList();
 
+    categoriesListItems =
+        allrestaurantsMenuItems.keys.toList().where((element) {
+      final categoryTitle =
+          allrestaurantsMenuItems[element]["name"].toString().toLowerCase();
+
+      return categoryTitle != name.toLowerCase();
+    }).toList();
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.all(10),
@@ -537,7 +512,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                 ),
               )),
           Expanded(
-            child: ListView.builder(
+            child: ListView.separated(
               itemCount: categoriesListItems.length,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               itemBuilder: (context, index) {
@@ -563,49 +538,57 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                         const SizedBox(
                           width: 10,
                         ),
-                        CustomText(
-                          text: foodItem["name"],
-                          fontWeight: FontWeight.bold,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomText(
+                              text: foodItem["name"],
+                              fontWeight: FontWeight.bold,
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Rs. ${foodItem["price"]}  ",
+                                  style: const TextStyle(
+                                    color: kGrey,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                                CustomText(
+                                  text:
+                                      "Rs. ${getDiscountedPrice(foodItem["price"])}  ",
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                const CustomText(
+                                  text: "( You save Rs. 20 )",
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          "₹${foodItem["price"]}  ",
-                          style: const TextStyle(
-                            color: kGrey,
-                            decoration: TextDecoration.lineThrough,
-                          ),
-                        ),
-                        CustomText(
-                          text: "₹${getDiscountedPrice(foodItem["price"])}  ",
-                          fontWeight: FontWeight.bold,
-                        ),
-                        CustomText(
-                          text:
-                              "( You save ₹${(double.parse(foodItem["price"]) * 0.1).toStringAsFixed(0)} )",
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Checkbox(
-                            value: index2 != -1 ? true : false,
-                            onChanged: (value) {
-                              if (index2 == -1) {
-                                foodItem["quantity"] = 1;
-                                foodItem["price"] =
-                                    getDiscountedPrice(foodItem["price"]);
-                                cart.addCartItem(foodItem);
-                              } else {
-                                cart.removeCartItem(foodItem);
-                              }
-                            }),
-                      ],
-                    )
+                    Checkbox(
+                        value: index2 != -1 ? true : false,
+                        onChanged: (value) {
+                          if (index2 == -1) {
+                            foodItem["quantity"] = 1;
+                            foodItem["price"] =
+                                getDiscountedPrice(foodItem["price"]);
+                            cart.addCartItem(foodItem);
+                          } else {
+                            cart.removeCartItem(foodItem);
+                          }
+                        })
                   ],
                 );
               },
+              separatorBuilder: (context, index) => const Divider(
+                color: kGrey,
+                // indent: 100,
+                // endIndent: 100,
+                thickness: 1,
+              ),
             ),
           ),
         ],
@@ -615,7 +598,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
 
   String getDiscountedPrice(String price) {
     double totalPrice = double.parse(price);
-    totalPrice = totalPrice - (totalPrice * 0.1);
+    totalPrice = totalPrice - 20;
     return totalPrice.toStringAsFixed(0);
   }
 }

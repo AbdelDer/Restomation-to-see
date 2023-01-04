@@ -85,7 +85,7 @@ class CartPage extends StatelessWidget {
                 Builder(builder: (context) {
                   Cart cart = context.watch<Cart>();
                   return CustomText(
-                    text: "₹ ${getTotalPrice(cart)}",
+                    text: "Rs.  ${getTotalPrice(cart)}",
                     fontsize: 25,
                     fontWeight: FontWeight.bold,
                   );
@@ -183,7 +183,7 @@ class CartPage extends StatelessWidget {
                 height: 10,
               ),
               Text(
-                "₹${data["price"]} x ${data["quantity"]}",
+                "Rs. ${data["price"]} x ${data["quantity"]}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
@@ -306,7 +306,7 @@ class CartPage extends StatelessWidget {
             )),
         SizedBox(
           height: 130,
-          child: ListView.builder(
+          child: ListView.separated(
             itemCount: categoriesListItems.length,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             itemBuilder: (context, index) {
@@ -332,49 +332,57 @@ class CartPage extends StatelessWidget {
                       const SizedBox(
                         width: 10,
                       ),
-                      CustomText(
-                        text: foodItem["name"],
-                        fontWeight: FontWeight.bold,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomText(
+                            text: foodItem["name"],
+                            fontWeight: FontWeight.bold,
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                "Rs. ${foodItem["price"]}  ",
+                                style: const TextStyle(
+                                  color: kGrey,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                              CustomText(
+                                text:
+                                    "Rs. ${getDiscountedPrice(foodItem["price"])}  ",
+                                fontWeight: FontWeight.bold,
+                              ),
+                              const CustomText(
+                                text: "( You save Rs. 20 )",
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        "₹${foodItem["price"]}  ",
-                        style: const TextStyle(
-                          color: kGrey,
-                          decoration: TextDecoration.lineThrough,
-                        ),
-                      ),
-                      CustomText(
-                        text: "₹${getDiscountedPrice(foodItem["price"])}  ",
-                        fontWeight: FontWeight.bold,
-                      ),
-                      CustomText(
-                        text:
-                            "( You save ₹${double.parse(foodItem["price"]) * 0.1} )",
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      Checkbox(
-                          value: index2 != -1 ? true : false,
-                          onChanged: (value) {
-                            if (index2 == -1) {
-                              foodItem["quantity"] = 1;
-                              foodItem["price"] =
-                                  getDiscountedPrice(foodItem["price"]);
-                              cart.addCartItem(foodItem);
-                            } else {
-                              cart.removeCartItem(foodItem);
-                            }
-                          }),
-                    ],
-                  )
+                  Checkbox(
+                      value: index2 != -1 ? true : false,
+                      onChanged: (value) {
+                        if (index2 == -1) {
+                          foodItem["quantity"] = 1;
+                          foodItem["price"] =
+                              getDiscountedPrice(foodItem["price"]);
+                          cart.addCartItem(foodItem);
+                        } else {
+                          cart.removeCartItem(foodItem);
+                        }
+                      })
                 ],
               );
             },
+            separatorBuilder: (context, index) => const Divider(
+              color: kGrey,
+              // indent: 100,
+              // endIndent: 100,
+              thickness: 1,
+            ),
           ),
         ),
       ],
@@ -383,7 +391,7 @@ class CartPage extends StatelessWidget {
 
   String getDiscountedPrice(String price) {
     double totalPrice = double.parse(price);
-    totalPrice = totalPrice - (totalPrice * 0.1);
+    totalPrice = totalPrice - 20;
     return "$totalPrice";
   }
 }
