@@ -124,6 +124,15 @@ class _MenuPageState extends State<MenuPage> {
         return categoryTitle == status;
       }).toList();
     }
+    if (widget.name != null) {
+      suggestions = allrestaurantsMenuItems.keys.toList().where((element) {
+        final categoryTitle = allrestaurantsMenuItems[element]["upselling"]
+            .toString()
+            .toLowerCase();
+        const status = "false";
+        return categoryTitle == status;
+      }).toList();
+    }
     categoriesListItems = suggestions;
 
     return ListView.builder(

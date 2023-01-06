@@ -1,4 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/Provider/cart_provider.dart';
@@ -35,166 +36,10 @@ class _AddToCartState extends State<AddToCart> {
     if (index != -1) {
       initialValue = cart.cartItems[index]["quantity"];
     }
+
     return InkWell(
       onTap: () {
-        showModalBottomSheet(
-          context: context,
-          builder: (context) {
-            int quantity = 1;
-
-            return Container(
-              color: kGrey.shade200,
-              height: 700,
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    color: kWhite,
-                    child: Row(
-                      children: [
-                        FutureBuilder(
-                            future: ref.getDownloadURL(),
-                            builder:
-                                (BuildContext context, AsyncSnapshot snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.done) {
-                                return Container(
-                                  width: 70,
-                                  height: 70,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            offset: Offset(0, 0),
-                                            spreadRadius: 2,
-                                            blurRadius: 2,
-                                            color: Colors.black12)
-                                      ],
-                                      image: DecorationImage(
-                                          image: NetworkImage(snapshot.data!),
-                                          fit: BoxFit.cover)),
-                                );
-                              }
-                              return Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(15),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                        offset: Offset(0, 0),
-                                        spreadRadius: 2,
-                                        blurRadius: 2,
-                                        color: Colors.black12)
-                                  ],
-                                ),
-                              );
-                            }),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Expanded(
-                          child: Text(
-                            widget.foodData["name"],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 25,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        StatefulBuilder(builder: (context, setState) {
-                          return Container(
-                            padding: const EdgeInsets.all(10),
-                            margin: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                                color: primaryColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(10),
-                                border:
-                                    Border.all(color: primaryColor, width: 1)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                InkWell(
-                                    onTap: () {
-                                      if (quantity > 1) {
-                                        setState(() {
-                                          quantity--;
-                                        });
-                                      }
-                                    },
-                                    child: const Icon(
-                                      Icons.remove,
-                                      color: primaryColor,
-                                      size: 15,
-                                    )),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  quantity.toString(),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        quantity++;
-                                      });
-                                    },
-                                    child: const Icon(
-                                      Icons.add,
-                                      color: primaryColor,
-                                      size: 15,
-                                    ))
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: StreamBuilder(
-                        stream: FirebaseDatabase.instance
-                            .ref()
-                            .child("menu_items")
-                            .child(widget.restaurantsKey)
-                            .orderByChild("upselling")
-                            .equalTo(true)
-                            .onValue,
-                        builder:
-                            (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-                          return Builder(builder: (context) {
-                            Cart cart = context.watch<Cart>();
-                            return menuItemsView(
-                                snapshot, cart, widget.foodData["name"]);
-                          });
-                        }),
-                  ),
-                  CustomButton(
-                      buttonColor: primaryColor,
-                      text: "Add Item",
-                      textColor: kWhite,
-                      function: () {
-                        Cart cart = context.read<Cart>();
-                        widget.foodData["quantity"] = quantity;
-                        cart.addCartItem(widget.foodData);
-                        KRoutes.pop(context);
-                      }),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+        showCustomDialogue(ref);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5),
@@ -255,6 +100,165 @@ class _AddToCartState extends State<AddToCart> {
     );
   }
 
+  void showCustomDialogue(Reference ref) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        int quantity = 1;
+
+        return Container(
+          color: kGrey.shade200,
+          height: 700,
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                color: kWhite,
+                child: Row(
+                  children: [
+                    FutureBuilder(
+                        future: ref.getDownloadURL(),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            return Container(
+                              width: 70,
+                              height: 70,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        offset: Offset(0, 0),
+                                        spreadRadius: 2,
+                                        blurRadius: 2,
+                                        color: Colors.black12)
+                                  ],
+                                  image: DecorationImage(
+                                      image: NetworkImage(snapshot.data!),
+                                      fit: BoxFit.cover)),
+                            );
+                          }
+                          return Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: const [
+                                BoxShadow(
+                                    offset: Offset(0, 0),
+                                    spreadRadius: 2,
+                                    blurRadius: 2,
+                                    color: Colors.black12)
+                              ],
+                            ),
+                          );
+                        }),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Text(
+                        widget.foodData["name"],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 25,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    StatefulBuilder(builder: (context, setState) {
+                      return Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                            color: primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: primaryColor, width: 1)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            InkWell(
+                                onTap: () {
+                                  if (quantity > 1) {
+                                    setState(() {
+                                      quantity--;
+                                    });
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.remove,
+                                  color: primaryColor,
+                                  size: 15,
+                                )),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Text(
+                              quantity.toString(),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    quantity++;
+                                  });
+                                },
+                                child: const Icon(
+                                  Icons.add,
+                                  color: primaryColor,
+                                  size: 15,
+                                ))
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: StreamBuilder(
+                    stream: FirebaseDatabase.instance
+                        .ref()
+                        .child("menu_items")
+                        .child(widget.restaurantsKey)
+                        .orderByChild("upselling")
+                        .equalTo(true)
+                        .onValue,
+                    builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
+                      return Builder(builder: (context) {
+                        Cart cart = context.watch<Cart>();
+                        return menuItemsView(
+                            snapshot, cart, widget.foodData["name"]);
+                      });
+                    }),
+              ),
+              CustomButton(
+                  buttonColor: primaryColor,
+                  text: "Add Item",
+                  textColor: kWhite,
+                  function: () {
+                    Cart cart = context.read<Cart>();
+                    widget.foodData["quantity"] = quantity;
+                    cart.addCartItem(widget.foodData);
+                    KRoutes.pop(context);
+                  }),
+              const SizedBox(
+                height: 10,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget menuItemsView(
       AsyncSnapshot<DatabaseEvent?> snapshot, Cart cart, String name) {
     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -310,7 +314,7 @@ class _AddToCartState extends State<AddToCart> {
                 int index2 = cart.cartItems.indexWhere((element) =>
                     element["name"].toString().toLowerCase() ==
                     foodItem["name"].toString().toLowerCase());
-
+                foodItem["cookingStatus"] = "pending";
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -375,8 +379,6 @@ class _AddToCartState extends State<AddToCart> {
               },
               separatorBuilder: (context, index) => const Divider(
                 color: kGrey,
-                // indent: 100,
-                // endIndent: 100,
                 thickness: 1,
               ),
             ),

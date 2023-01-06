@@ -26,7 +26,11 @@ class CustomerPage extends StatefulWidget {
 class _CustomerPageState extends State<CustomerPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  bool loading = false;
   Future<void> checkExistingOrder() async {
+    setState(() {
+      loading = true;
+    });
     await DatabaseService.db
         .ref("orders")
         .child(widget.restaurantsKey)
@@ -43,6 +47,9 @@ class _CustomerPageState extends State<CustomerPage> {
           }
         }
       }
+    });
+    setState(() {
+      loading = false;
     });
   }
 
@@ -69,153 +76,158 @@ class _CustomerPageState extends State<CustomerPage> {
           widgets: const [],
           appBarHeight: 50),
       body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  CustomText(
-                    text: "Welcome to ${widget.restaurantsKey}",
-                    fontsize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: FutureBuilder(
-                      future: ref.getDownloadURL(),
-                      builder: (context, AsyncSnapshot<String> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          return CircleAvatar(
-                            radius: 100,
-                            backgroundColor: kWhite,
-                            foregroundImage: NetworkImage(snapshot.data!),
-                          );
-                        }
-                        return const CircleAvatar(
-                            radius: 100,
-                            child: CircularProgressIndicator.adaptive());
-                      },
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const CustomText(text: "Name :"),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  FormTextField(
-                    controller: nameController,
-                    suffixIcon: const Icon(Icons.email_outlined),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Field cannot be empty";
-                      }
-
-                      return null;
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const CustomText(text: "Phone no :"),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  FormTextField(
-                    controller: phoneController,
-                    maxLength: 10,
-                    keyboardtype: TextInputType.number,
-                    suffixIcon: const Icon(Icons.numbers),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Field cannot be empty";
-                      }
-                      if (value.length < 10) {
-                        return "Number cannot be less than 10 digits";
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  const Align(
-                      alignment: Alignment.center,
-                      child: CustomText(text: "Is your Table clean ?")),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  StatefulBuilder(builder: (context, refreshState) {
-                    return Row(
+        child: loading
+            ? const CircularProgressIndicator()
+            : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomButton(
-                          buttonColor:
-                              selectedValue == "yes" ? primaryColor : kGrey,
-                          text: "Yes",
-                          textColor: kWhite,
-                          function: () {
-                            refreshState(() {
-                              selectedValue = "yes";
-                            });
-                          },
-                          width: 130,
-                          height: 40,
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        CustomText(
+                          text: "Welcome to ${widget.restaurantsKey}",
+                          fontsize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                         const SizedBox(
-                          width: 20,
+                          height: 20,
                         ),
-                        CustomButton(
-                          buttonColor:
-                              selectedValue == "no" ? primaryColor : kGrey,
-                          text: "No",
-                          textColor: kWhite,
-                          function: () {
-                            refreshState(() {
-                              selectedValue = "no";
-                            });
+                        Align(
+                          alignment: Alignment.center,
+                          child: FutureBuilder(
+                            future: ref.getDownloadURL(),
+                            builder: (context, AsyncSnapshot<String> snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return CircleAvatar(
+                                  radius: 100,
+                                  backgroundColor: kWhite,
+                                  foregroundImage: NetworkImage(snapshot.data!),
+                                );
+                              }
+                              return const CircleAvatar(
+                                  radius: 100,
+                                  child: CircularProgressIndicator.adaptive());
+                            },
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const CustomText(text: "Name :"),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        FormTextField(
+                          controller: nameController,
+                          suffixIcon: const Icon(Icons.email_outlined),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Field cannot be empty";
+                            }
+
+                            return null;
                           },
-                          width: 130,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const CustomText(text: "Phone no :"),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        FormTextField(
+                          controller: phoneController,
+                          maxLength: 10,
+                          keyboardtype: TextInputType.number,
+                          suffixIcon: const Icon(Icons.numbers),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Field cannot be empty";
+                            }
+                            if (value.length < 10) {
+                              return "Number cannot be less than 10 digits";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        const Align(
+                            alignment: Alignment.center,
+                            child: CustomText(text: "Is your Table clean ?")),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        StatefulBuilder(builder: (context, refreshState) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CustomButton(
+                                buttonColor: selectedValue == "yes"
+                                    ? primaryColor
+                                    : kGrey,
+                                text: "Yes",
+                                textColor: kWhite,
+                                function: () {
+                                  refreshState(() {
+                                    selectedValue = "yes";
+                                  });
+                                },
+                                width: 130,
+                                height: 40,
+                              ),
+                              const SizedBox(
+                                width: 20,
+                              ),
+                              CustomButton(
+                                buttonColor: selectedValue == "no"
+                                    ? primaryColor
+                                    : kGrey,
+                                text: "No",
+                                textColor: kWhite,
+                                function: () {
+                                  refreshState(() {
+                                    selectedValue = "no";
+                                  });
+                                },
+                                width: 130,
+                                height: 40,
+                              ),
+                            ],
+                          );
+                        }),
+                        const SizedBox(
                           height: 40,
                         ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: CustomButton(
+                              buttonColor: primaryColor,
+                              text: "Enter",
+                              textColor: kWhite,
+                              function: () {
+                                if (formKey.currentState!.validate()) {
+                                  Beamer.of(context).beamToNamed(
+                                      "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue,no,0,0");
+                                }
+                              }),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
                       ],
-                    );
-                  }),
-                  const SizedBox(
-                    height: 40,
+                    ),
                   ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: CustomButton(
-                        buttonColor: primaryColor,
-                        text: "Enter",
-                        textColor: kWhite,
-                        function: () {
-                          if (formKey.currentState!.validate()) {
-                            Beamer.of(context).beamToNamed(
-                                "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${nameController.text},${phoneController.text},$selectedValue,no,0,0");
-                          }
-                        }),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
