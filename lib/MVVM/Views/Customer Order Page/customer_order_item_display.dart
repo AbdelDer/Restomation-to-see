@@ -4,11 +4,13 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:razorpay_web/razorpay_web.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
+import 'package:restomation/Widgets/custom_text_field.dart';
 
 import '../../../Widgets/custom_button.dart';
 import '../../Repo/FCM Service/fcm_service.dart';
@@ -35,6 +37,8 @@ class CustomerOrderItemsView extends StatefulWidget {
 
 class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
   final Razorpay _razorpay = Razorpay();
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
+  TextEditingController controllerEmail = TextEditingController();
 
   @override
   void initState() {
@@ -44,46 +48,48 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+  Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
     // Do something when payment succeeds
-    if (kDebugMode) {
-      print("Success Mode");
-      print("Payement ID: ${response.paymentId}");
-      Fluttertoast.showToast(msg: "Payment was a Success");
-      Navigator.pop(context);
-      Future.delayed(const Duration(milliseconds: 300), () {
-        CoolAlert.show(
-            context: context,
-            type: CoolAlertType.success,
-            title: "Done",
-            text: "Payment was successfully transferred",
-            confirmBtnText: "OKAY",
-            onConfirmBtnTap: () {
-              Navigator.pop(context);
-            });
-      });
-    }
+    await FirebaseDatabase.instance
+        .ref()
+        .child("orders")
+        .child(widget.restaurantName)
+        .child(widget.order["key"] ?? "")
+        .remove();
+    await FirebaseDatabase.instance
+        .ref()
+        .child("completed-orders")
+        .child(widget.restaurantName)
+        .child(formatter.format(DateTime.now()))
+        .child(widget.order["phone"] ?? "")
+        .push()
+        .update({
+      "name": widget.order["name"],
+      "phone": widget.order["phone"],
+      "table_name": widget.order["table_name"],
+      "order_status": "completed",
+      "isTableClean": widget.order["isTableClean"],
+      "waiter": widget.order["waiter"],
+      "hasNewItems": widget.order["hasNewItems"]
+    }).then((value) {
+      Fluttertoast.showToast(msg: "Payment successful");
+    });
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
     // Do something when payment fails
-    if (kDebugMode) {
-      print("Failure Mode");
-      print("Failure Code: ${response.code}");
-      print("Message: ${response.message}");
-      Fluttertoast.showToast(msg: response.message.toString());
-      Future.delayed(const Duration(milliseconds: 300), () {
-        CoolAlert.show(
-            context: context,
-            type: CoolAlertType.error,
-            title: "Try Again",
-            text: "Payment was Failed to transfer",
-            confirmBtnText: "OKAY",
-            onConfirmBtnTap: () {
-              Navigator.pop(context);
-            });
-      });
-    }
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      CoolAlert.show(
+          context: context,
+          type: CoolAlertType.error,
+          title: "Try Again",
+          text: response.message.toString(),
+          confirmBtnText: "ok",
+          onConfirmBtnTap: () {
+            Navigator.pop(context);
+          });
+    });
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
@@ -97,6 +103,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
   @override
   void dispose() {
     super.dispose();
+    controllerEmail.dispose();
     _razorpay.clear();
   }
 
@@ -130,7 +137,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
     }
     if (snapshot.data!.snapshot.children.isEmpty) {
       return const Center(
-        child: CustomText(text: "No Orders Yet !!"),
+        child: CustomText(text: "Order has been completed, please go back"),
       );
     }
     Map orderItems = snapshot.data!.snapshot.value as Map;
@@ -207,36 +214,10 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                 buttonColor: primaryColor,
                 text: "Pay",
                 textColor: kWhite,
-                function: () {
-                  CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.confirm,
-                      width: 300,
-                      title: "How would like to Pay",
-                      cancelBtnText: "Cash",
-                      onCancelBtnTap: () {
-                        Navigator.pop(context);
-                        Future.delayed(const Duration(milliseconds: 300), () {
-                          CoolAlert.show(
-                            context: context,
-                            type: CoolAlertType.info,
-                            width: 300,
-                            title: "Please visit the counter to pay",
-                            onConfirmBtnTap: () {
-                              Navigator.pop(context);
-                            },
-                          );
-                        });
-                      },
-                      onConfirmBtnTap: () {
-                        Navigator.pop(context);
-                        Future.delayed(const Duration(milliseconds: 300), () {
-                          gettingPaymentDetails(context);
-                        });
-                      },
-                      confirmBtnText: "E-Transfer");
+                function: () async {
+                  await gettingPaymentDetails(
+                      context, widget.name, widget.phone, getTotalPrice(items));
                 })
-
           ],
         ),
       ),
@@ -394,16 +375,11 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
     );
   }
 
-
-  Future gettingPaymentDetails(BuildContext context) {
-    TextEditingController controllerName = TextEditingController();
-    TextEditingController controllerEmail = TextEditingController();
-    TextEditingController controllerPhone = TextEditingController();
-    TextEditingController controllerAmount = TextEditingController();
-
+  Future gettingPaymentDetails(
+      BuildContext context, String name, String phone, String price) {
     final formKey = GlobalKey<FormState>();
-    RegExp  emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-    RegExp phoneValid = RegExp(r'(^(?:[+0]9)?[0-9]{10,12}$)');
+    RegExp emailValid = RegExp(
+        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
     return showModalBottomSheet<void>(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -413,7 +389,8 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
         return Form(
           key: formKey,
           child: Container(
-            height: MediaQuery.of(context).size.height,
+            height: 400,
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Colors.white,
@@ -435,128 +412,43 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                     ),
                     const Text(
                       'Please enter your detail',
-                      style: TextStyle(color: Colors.black, fontSize: 20,fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(
                       height: 10,
                     ),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        controller: controllerName,
-                        validator: (controllerName){
-                          if(controllerName!.isEmpty||controllerName=="")
-                          {
-                            return "Please fill the field";
-                          }
-                        },
-                        decoration: InputDecoration(
-                            label: const Text("Name"),
-                            counterText: "",
-                            isDense: true,
-                            fillColor: Colors.grey.withOpacity(0.2),
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            )),
-                      ),
+                    FormTextField(
+                      controller: controllerEmail,
+                      suffixIcon: const Icon(Icons.email),
+                      validator: (controllerEmail) {
+                        if (controllerEmail!.isEmpty || controllerEmail == "") {
+                          return "Please enter email";
+                        } else if (!emailValid.hasMatch(controllerEmail)) {
+                          return "Please write valid format";
+                        }
+                        return null;
+                      },
                     ),
-                    const SizedBox(height: 10,),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        controller: controllerEmail,
-                        validator: (controllerEmail){
-                          if(controllerEmail!.isEmpty||controllerEmail=="")
-                          {
-                            return "Please enter email";
-
-                          }else if(!emailValid.hasMatch(controllerEmail))
-                          {
-                            return "Please write valid format";
-                          }
-                        },
-                        decoration: InputDecoration(
-                            label: const Text("Email"),
-                            counterText: "",
-                            isDense: true,
-                            fillColor: Colors.grey.withOpacity(0.2),
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            )),
-                      ),
+                    const SizedBox(
+                      height: 20,
                     ),
-                    const SizedBox(height: 10,),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        controller: controllerPhone,
-                        validator: (controllerPhone){
-                          if(controllerPhone!.isEmpty||controllerPhone=="")
-                          {
-                            return "Please enter your phone Number";
-                          }else if(!phoneValid.hasMatch(controllerPhone)){
-                            {
-                              return "Please enter valid number";
-                            }
-                          }
-                        },
-                        decoration: InputDecoration(
-                            label: const Text("Phone number"),
-                            counterText: "",
-                            isDense: true,
-                            fillColor: Colors.grey.withOpacity(0.2),
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            )),
-                      ),
-                    ),
-                    const SizedBox(height: 10,),
-                    Container(
-                      width: 100,
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      child: TextFormField(
-                        controller: controllerAmount,
-                        keyboardType: TextInputType.phone,
-                        textAlign: TextAlign.center,
-                        validator: (controllerAmount){
-                          if(controllerAmount!.isEmpty||controllerAmount=="")
-                          {
-                            return "Please enter some amount";
-                          }
-                          else if(controllerAmount==0)
-                          {
-                            return "Please enter some transferable amount";
-                          }
-                        },
-                        decoration: InputDecoration(
-                            label: const Text("Amount"),
-                            counterText: "",
-                            isDense: true,
-                            fillColor: Colors.grey.withOpacity(0.2),
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20.0),
-                            )),
-                      ),
-                    ),
-                    const SizedBox(height: 20,),
                     CustomButton(
                         buttonColor: Colors.blue,
                         text: "Pay Now",
                         textColor: Colors.white,
-                        function: () async{
-                          if(formKey.currentState!.validate())
-                          {
+                        function: () async {
+                          if (formKey.currentState!.validate()) {
                             Fluttertoast.showToast(msg: "Pay Now Clicked");
-                            await payment(controllerName.text.trim(),controllerEmail.text.trim(),controllerPhone.text.trim(),controllerAmount.text.trim());
+                            await payment(name, controllerEmail.text.trim(),
+                                phone, price);
                           }
-
                         }),
-                    const SizedBox(height: 20,),
-
+                    const SizedBox(
+                      height: 20,
+                    ),
                   ],
                 ),
               ),
@@ -569,9 +461,8 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
 
   payment(String name, String email, String phone, String amount) async {
     var options = {
-      "key":
-          "rzp_live_lYQbu0nR86sa1C",
-      "amount": int.tryParse(amount)!*100,
+      "key": "rzp_live_lYQbu0nR86sa1C",
+      "amount": int.tryParse(amount)! * 100,
       "currency": "INR",
       "name": "Restomation",
       "description": "Test Transaction",

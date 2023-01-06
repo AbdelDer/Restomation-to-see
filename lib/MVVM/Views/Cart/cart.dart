@@ -316,7 +316,7 @@ class CartPage extends StatelessWidget {
               int index2 = cart.cartItems.indexWhere((element) =>
                   element["name"].toString().toLowerCase() ==
                   foodItem["name"].toString().toLowerCase());
-
+              foodItem["cookingStatus"] = "pending";
               return Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
