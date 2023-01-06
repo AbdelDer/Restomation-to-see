@@ -179,29 +179,64 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                       "/restaurants-menu-category/${widget.restaurantName},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},yes,${orderItemsKeys[0]},${items.length}");
                 }),
             // if (widget.order["order_status"].toString().toLowerCase() == "done")
+            // CustomButton(
+            //     buttonColor: primaryColor,
+            //     text: "Pay",
+            //     textColor: kWhite,
+            //     function: () {
+            //       CoolAlert.show(
+            //         context: context,
+            //         type: CoolAlertType.confirm,
+            //         width: 300,
+            //         title: "",
+            //         text: "Please go to the counter to pay",
+            //
+            //         // onConfirmBtnTap: () async {
+            //         //   Navigator.pop(context);
+            //         //   Fluttertoast.showToast(msg: "Pay Now Clicked");
+            //         //   await payment(
+            //         //       widget.order["name"],
+            //         //       widget.order["name"],
+            //         //       widget.order["phone"],
+            //         //       getTotalPrice(items));
+            //         // }
+            //       );
+            //     })
+
             CustomButton(
                 buttonColor: primaryColor,
                 text: "Pay",
                 textColor: kWhite,
                 function: () {
                   CoolAlert.show(
-                    context: context,
-                    type: CoolAlertType.confirm,
-                    width: 300,
-                    title: "",
-                    text: "Please go to the counter to pay",
-
-                    // onConfirmBtnTap: () async {
-                    //   Navigator.pop(context);
-                    //   Fluttertoast.showToast(msg: "Pay Now Clicked");
-                    //   await payment(
-                    //       widget.order["name"],
-                    //       widget.order["name"],
-                    //       widget.order["phone"],
-                    //       getTotalPrice(items));
-                    // }
-                  );
+                      context: context,
+                      type: CoolAlertType.confirm,
+                      width: 300,
+                      title: "How would like to Pay",
+                      cancelBtnText: "Cash",
+                      onCancelBtnTap: () {
+                        Navigator.pop(context);
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          CoolAlert.show(
+                            context: context,
+                            type: CoolAlertType.info,
+                            width: 300,
+                            title: "Please visit the counter to pay",
+                            onConfirmBtnTap: () {
+                              Navigator.pop(context);
+                            },
+                          );
+                        });
+                      },
+                      onConfirmBtnTap: () {
+                        Navigator.pop(context);
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          gettingPaymentDetails(context);
+                        });
+                      },
+                      confirmBtnText: "E-Transfer");
                 })
+
           ],
         ),
       ),
@@ -359,26 +394,195 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
     );
   }
 
+
+  Future gettingPaymentDetails(BuildContext context) {
+    TextEditingController controllerName = TextEditingController();
+    TextEditingController controllerEmail = TextEditingController();
+    TextEditingController controllerPhone = TextEditingController();
+    TextEditingController controllerAmount = TextEditingController();
+
+    final formKey = GlobalKey<FormState>();
+    RegExp  emailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+    RegExp phoneValid = RegExp(r'(^(?:[+0]9)?[0-9]{10,12}$)');
+    return showModalBottomSheet<void>(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      context: context,
+      builder: (BuildContext context) {
+        return Form(
+          key: formKey,
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+            ),
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                        alignment: Alignment.center,
+                        width: 100,
+                        height: 100,
+                        child: Image.asset("assets/splash.png")),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Text(
+                      'Please enter your detail',
+                      style: TextStyle(color: Colors.black, fontSize: 20,fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: TextFormField(
+                        controller: controllerName,
+                        validator: (controllerName){
+                          if(controllerName!.isEmpty||controllerName=="")
+                          {
+                            return "Please fill the field";
+                          }
+                        },
+                        decoration: InputDecoration(
+                            label: const Text("Name"),
+                            counterText: "",
+                            isDense: true,
+                            fillColor: Colors.grey.withOpacity(0.2),
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            )),
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: TextFormField(
+                        controller: controllerEmail,
+                        validator: (controllerEmail){
+                          if(controllerEmail!.isEmpty||controllerEmail=="")
+                          {
+                            return "Please enter email";
+
+                          }else if(!emailValid.hasMatch(controllerEmail))
+                          {
+                            return "Please write valid format";
+                          }
+                        },
+                        decoration: InputDecoration(
+                            label: const Text("Email"),
+                            counterText: "",
+                            isDense: true,
+                            fillColor: Colors.grey.withOpacity(0.2),
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            )),
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: TextFormField(
+                        controller: controllerPhone,
+                        validator: (controllerPhone){
+                          if(controllerPhone!.isEmpty||controllerPhone=="")
+                          {
+                            return "Please enter your phone Number";
+                          }else if(!phoneValid.hasMatch(controllerPhone)){
+                            {
+                              return "Please enter valid number";
+                            }
+                          }
+                        },
+                        decoration: InputDecoration(
+                            label: const Text("Phone number"),
+                            counterText: "",
+                            isDense: true,
+                            fillColor: Colors.grey.withOpacity(0.2),
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            )),
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+                    Container(
+                      width: 100,
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      child: TextFormField(
+                        controller: controllerAmount,
+                        keyboardType: TextInputType.phone,
+                        textAlign: TextAlign.center,
+                        validator: (controllerAmount){
+                          if(controllerAmount!.isEmpty||controllerAmount=="")
+                          {
+                            return "Please enter some amount";
+                          }
+                          else if(controllerAmount==0)
+                          {
+                            return "Please enter some transferable amount";
+                          }
+                        },
+                        decoration: InputDecoration(
+                            label: const Text("Amount"),
+                            counterText: "",
+                            isDense: true,
+                            fillColor: Colors.grey.withOpacity(0.2),
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                            )),
+                      ),
+                    ),
+                    const SizedBox(height: 20,),
+                    CustomButton(
+                        buttonColor: Colors.blue,
+                        text: "Pay Now",
+                        textColor: Colors.white,
+                        function: () async{
+                          if(formKey.currentState!.validate())
+                          {
+                            Fluttertoast.showToast(msg: "Pay Now Clicked");
+                            await payment(controllerName.text.trim(),controllerEmail.text.trim(),controllerPhone.text.trim(),controllerAmount.text.trim());
+                          }
+
+                        }),
+                    const SizedBox(height: 20,),
+
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   payment(String name, String email, String phone, String amount) async {
     var options = {
       "key":
-          "rzp_test_XYujmoenCLI42U", // Enter the Key ID generated from the Dashboard
-      "amount": int.tryParse(amount)! *
-          100, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+          "rzp_live_lYQbu0nR86sa1C",
+      "amount": int.tryParse(amount)!*100,
       "currency": "INR",
       "name": "Restomation",
       "description": "Test Transaction",
       "image": "assets/splash.png",
-      // "order_id": "order_9A33XWu170gUtm", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+      // "order_id": "order_9A33XWu170gUtm",
       "callback_url": "https://eneqd3r9zrjok.x.pipedream.net/",
       "prefill": {
         "name": name.toString(),
         "email": email.toString(),
         "contact": phone.toString()
       },
-      // "notes": {
-      //   "address": "Razorpay Corporate Office"
-      // },
       "theme": {"color": "#e1679c"}
     };
 
