@@ -215,8 +215,21 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                 text: "Pay",
                 textColor: kWhite,
                 function: () async {
-                  await gettingPaymentDetails(
-                      context, widget.name, widget.phone, getTotalPrice(items));
+                  CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.info,
+                      text: "Why not take something delicious home with you",
+                      title: "Take Away",
+                      cancelBtnText: "Pay Online",
+                      confirmBtnText: "Take away",
+                      onConfirmBtnTap: () {
+                        Beamer.of(context).beamToNamed(
+                            "/restaurants-menu-category/${widget.restaurantName},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},yes,${orderItemsKeys[0]},${items.length}");
+                      },
+                      onCancelBtnTap: () async {
+                        await gettingPaymentDetails(context, widget.name,
+                            widget.phone, getTotalPrice(items));
+                      });
                 })
           ],
         ),

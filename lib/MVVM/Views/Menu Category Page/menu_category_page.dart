@@ -1,3 +1,4 @@
+import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -44,6 +45,19 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
 
+  @override
+  void initState() {
+    if (widget.name != null) {
+      CoolAlert.show(
+        context: context,
+        type: CoolAlertType.info,
+        title: "ABC Juice",
+        text:
+            "As a part of a healthy diet, ABC juice is nutritious and can aid weight loss as it promotes feelings of satiety and fullness. Since ABC juice is high in antioxidants and fibre, it is good for your heart.",
+      );
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
