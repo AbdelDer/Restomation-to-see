@@ -44,18 +44,23 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   int indexCheck = 0;
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
+  showInfoDialogue() {
+    if (widget.name != null) {
+      Future.delayed(const Duration(seconds: 10), () {
+        CoolAlert.show(
+          context: context,
+          type: CoolAlertType.info,
+          title: "ABC Juice",
+          text:
+              "As a part of a healthy diet, ABC juice is nutritious and can aid weight loss as it promotes feelings of satiety and fullness. Since ABC juice is high in antioxidants and fibre, it is good for your heart.",
+        );
+      });
+    }
+  }
 
   @override
   void initState() {
-    if (widget.name != null) {
-      CoolAlert.show(
-        context: context,
-        type: CoolAlertType.info,
-        title: "ABC Juice",
-        text:
-            "As a part of a healthy diet, ABC juice is nutritious and can aid weight loss as it promotes feelings of satiety and fullness. Since ABC juice is high in antioxidants and fibre, it is good for your heart.",
-      );
-    }
+    showInfoDialogue();
     super.initState();
   }
 

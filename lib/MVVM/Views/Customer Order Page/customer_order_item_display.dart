@@ -220,11 +220,12 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                       type: CoolAlertType.info,
                       text: "Why not take something delicious home with you",
                       title: "Take Away",
+                      showCancelBtn: true,
                       cancelBtnText: "Pay Online",
                       confirmBtnText: "Take away",
                       onConfirmBtnTap: () {
                         Beamer.of(context).beamToNamed(
-                            "/restaurants-menu-category/${widget.restaurantName},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},yes,${orderItemsKeys[0]},${items.length}");
+                            "/restaurants-menu-category/${widget.restaurantName},Take away,${widget.name},${widget.phone},${widget.isTableClean},no,0,0");
                       },
                       onCancelBtnTap: () async {
                         await gettingPaymentDetails(context, widget.name,
