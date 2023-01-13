@@ -2,8 +2,10 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
+import 'package:restomation/Provider/cart_provider.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -41,19 +43,46 @@ class MenuCategoryPage extends StatefulWidget {
 
 class _MenuCategoryPageState extends State<MenuCategoryPage>
     with TickerProviderStateMixin {
+  bool isMounted = true;
   int indexCheck = 0;
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
   showInfoDialogue() {
     if (widget.name != null) {
       Future.delayed(const Duration(seconds: 10), () {
-        CoolAlert.show(
-          context: context,
-          type: CoolAlertType.info,
-          title: "ABC Juice",
-          text:
-              "As a part of a healthy diet, ABC juice is nutritious and can aid weight loss as it promotes feelings of satiety and fullness. Since ABC juice is high in antioxidants and fibre, it is good for your heart.",
-        );
+        if (isMounted) {
+          CoolAlert.show(
+              context: context,
+              type: CoolAlertType.info,
+              title: "ABC Juice",
+              text:
+                  "As a part of a healthy diet, ABC juice is nutritious and can aid weight loss as it promotes feelings of satiety and fullness. Since ABC juice is high in antioxidants and fibre, it is good for your heart.",
+              confirmBtnText: "Add to cart",
+              cancelBtnText: "Ignore",
+              onConfirmBtnTap: () {
+                context.read<Cart>().addCartItem({
+                  "category": "Best Seller",
+                  "cookingStatus": "pending",
+                  "description":
+                      "Packed with a lot of nutrients and antioxidants , ABC juice helps to boost your immunity. It also helps in detoxifying your skin and making it more healthy",
+                  "image": "food_images/abcdrink1.jpg",
+                  "key": "-NJyANFAiCkN4rsIy0zT",
+                  "name": "ABC Juice",
+                  "price": "80",
+                  "quantity": 1,
+                  "rating": "0",
+                  "reviews": "0",
+                  "status": "available",
+                  "type": "Veg",
+                  "upselling": false
+                });
+                KRoutes.pop(context);
+              },
+              showCancelBtn: true,
+              onCancelBtnTap: () {
+                KRoutes.pop(context);
+              });
+        }
       });
     }
   }
@@ -240,6 +269,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
 
   @override
   void dispose() {
+    isMounted = false;
     categoryController.dispose();
     controller.dispose();
     super.dispose();

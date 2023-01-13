@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:razorpay_web/razorpay_web.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
@@ -12,6 +13,8 @@ import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
 
+import '../../../Provider/cart_provider.dart';
+import '../../../Utils/app_routes.dart';
 import '../../../Widgets/custom_button.dart';
 import '../../Repo/FCM Service/fcm_service.dart';
 
@@ -218,18 +221,58 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                   CoolAlert.show(
                       context: context,
                       type: CoolAlertType.info,
-                      text: "Why not take something delicious home with you",
-                      title: "Take Away",
+                      text:
+                          "People says Cheese Toast tastes good at CoffeeHouse, Take a parcel and give it to your family",
+                      title: "",
                       showCancelBtn: true,
-                      cancelBtnText: "Pay Online",
-                      confirmBtnText: "Take away",
-                      onConfirmBtnTap: () {
-                        Beamer.of(context).beamToNamed(
-                            "/restaurants-menu-category/${widget.restaurantName},Take away,${widget.name},${widget.phone},${widget.isTableClean},no,0,0");
+                      cancelBtnText: "Ignore",
+                      confirmBtnText: "Add to cart and Pay",
+                      onConfirmBtnTap: () async {
+                        final Cart cart = context.read<Cart>();
+                        cart.addCartItem(
+                          {
+                            "category": "Chat",
+                            "cookingStatus": "pending",
+                            "description":
+                                "a hot sandwich typically prepared by heating one or more slices of cheese",
+                            "image":
+                                "food_images/Veggie-Chilli-Cheese-Sandwich.jpg",
+                            "key": "-NJyANFAiCkN4rsIy0zT",
+                            "name": "Cheese Toast",
+                            "price": "70",
+                            "quantity": 1,
+                            "rating": "0",
+                            "reviews": "0",
+                            "status": "available",
+                            "type": "Veg",
+                            "upselling": false
+                          },
+                        );
+                        CoolAlert.show(
+                            context: context, type: CoolAlertType.loading);
+                        await DatabaseService()
+                            .updateOrderItems(
+                                widget.restaurantName,
+                                cart.cartItems,
+                                widget.phone,
+                                orderItemsKeys[0],
+                                items.length,
+                                widget.name)
+                            .then((value) {
+                          KRoutes.pop(context);
+                          KRoutes.pop(context);
+                          cart.clearCart();
+                          Fluttertoast.showToast(msg: "Added item to cart");
+                          CoolAlert.show(
+                            context: context,
+                            type: CoolAlertType.success,
+                            title: "Payment",
+                            text: "Please go to the counter and pay !!",
+                          );
+                        });
                       },
-                      onCancelBtnTap: () async {
-                        await gettingPaymentDetails(context, widget.name,
-                            widget.phone, getTotalPrice(items));
+                      onCancelBtnTap: () {
+                        KRoutes.pop(context);
                       });
                 })
           ],
