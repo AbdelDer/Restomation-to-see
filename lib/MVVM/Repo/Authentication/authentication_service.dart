@@ -9,6 +9,7 @@ class AuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   Future<Object> loginUser(String email, String password) async {
+
     try {
       Map<String, dynamic> data = {};
       UserCredential cred = await _auth.signInWithEmailAndPassword(

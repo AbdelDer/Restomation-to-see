@@ -36,15 +36,7 @@ class StaffViewModel extends ChangeNotifier {
     String password,
   ) async {
     setLoading(true);
-    var response = await StaffService().createStaff(
-      name,
-      email,
-      phoneNo,
-      restaurantId,
-      restaurantName,
-      role,
-      password,
-    );
+    var response = await StaffService().createStaff(name, email, phoneNo, restaurantId, restaurantName, role, password,);
     if (response is Success) {
       setStaffsResponse(response.response as String);
     }
@@ -54,4 +46,6 @@ class StaffViewModel extends ChangeNotifier {
     }
     setLoading(false);
   }
+
+
 }

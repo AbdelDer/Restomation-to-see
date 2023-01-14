@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/View%20Model/Order%20View%20Model/order_view_model.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/all_waiters_display.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_item_display.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -14,8 +16,10 @@ import '../../../Utils/app_routes.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_alert.dart';
 import '../../../Widgets/custom_button.dart';
+import '../../Models/Order Model/order_model.dart';
 import '../../Models/RestaurantsModel/restaurants_model.dart';
 import '../../Repo/Database Service/database_service.dart';
+import '../../Repo/Order Service/order_service.dart';
 
 class OrderScreen extends StatefulWidget {
   const OrderScreen({
@@ -26,13 +30,19 @@ class OrderScreen extends StatefulWidget {
   State<OrderScreen> createState() => _OrderScreenState();
 }
 
+
 class _OrderScreenState extends State<OrderScreen> {
+  List<OrderModel> list = [];
+  int count=0;
   final DateFormat formatter = DateFormat('yyyy-MM-dd');
   @override
+  void initState() {
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
-    RestaurantModel? restaurantModel =
-        context.read<SelectedRestaurantProvider>().restaurantModel;
-    return Scaffold(
+    RestaurantModel? restaurantModel = context.read<SelectedRestaurantProvider>().restaurantModel;
+        return Scaffold(
         appBar: BaseAppBar(
           title: restaurantModel?.name ?? "",
           appBar: AppBar(),
@@ -41,64 +51,209 @@ class _OrderScreenState extends State<OrderScreen> {
           automaticallyImplyLeading: true,
         ),
         body: Center(
-            child: StreamBuilder(
-          stream: DatabaseService.db
-              .ref()
-              .child("orders")
-              .child(restaurantModel?.name ?? "")
-              .onValue,
-          builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
-            return orderDisplayView(snapshot, restaurantModel!);
-          },
-        )));
+            child: FutureBuilder(
+              future: FirebaseFirestore.instance.collection("/restaurants").doc(restaurantModel?.id??"").collection("orders")
+                .snapshots().forEach((element) async{
+              for (var elements in element.docs) {
+                await FirebaseFirestore.instance.collection("/restaurants").doc(restaurantModel?.id??"").collection("orders").doc(elements.id.toString()).collection("order_items").snapshots()
+                    .forEach((elemen) async{
+                  for(var i in elemen.docs){
+                    String name = i['name'].toString();
+                    String category = i['category']??"No Provided".toString();
+                    String description = i['description'].toString();
+                    String price = i['price'].toString();
+                    String quantity = i['quantity'].toString();
+                    String rating = i['rating'].toString();
+                    String reviews = i['reviews'].toString();
+                    String status = i['status'].toString();
+                    String type = i['type'].toString();
+                    String upselling = i['upselling'].toString();
+                    String order = i['order'].toString();
+                    OrderModel orderModel = OrderModel(
+                        name: name,
+                        status: status,
+                        price: price,
+                        description: description,
+                        category: category,
+                        quantity: quantity,
+                        rating: rating,
+                        reviews: reviews,
+                        type: type,
+                        upselling: upselling,
+                        order: order
+                    );
+                    list.add(orderModel);
+                    if(count==0){
+                      setState(() {
+                        count++;
+                      });
+
+                    }
+                  }
+                });
+              }
+            }),
+              builder: (context,  snapshot) {
+                return list.length==0?Container(
+                  child: Text("NO LIST FOUND"),
+                ): Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const CustomText(
+                        text: "All Orders :",
+                        fontWeight: FontWeight.bold,
+                        fontsize: 25,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      const Divider(
+                        thickness: 1,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: list.length,
+                          itemBuilder: (context, index) {
+                            // String key = snapshot.data![index] as String;
+                            // bool isOpened = false;
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              elevation: 5,
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Table Name: "+list[index].name.toString()),
+                                        Text("Price: "+list[index].price.toString()),
+                                      ],
+                                    ),
+                                    SizedBox(height: 30,),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                      Text("Rating: "+list[index].rating.toString()),
+                                        Text("Status: "+list[index].status.toString()),
+                                    ],),
+                                    SizedBox(height: 30,),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                      Text("Type: "+list[index].type.toString()),
+                                      Text("Reviews: "+list[index].reviews.toString()),
+                                    ],),
+                                    SizedBox(height: 30,),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Description: "+list[index].description.toString()),
+                                        Text("Quantity: "+list[index].quantity.toString()),
+                                    ],),
+                                    SizedBox(height: 30,),
+
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Category: "+list[index].category.toString()),
+                                        Text("Order: "+list[index].order.toString()),
+                                      ],
+                                    ),
+
+                                  ],
+                                ),
+                              ),
+                            );
+                            // return listExpansionView(isOpened, snapshot.data!, index,
+                            //     (snapshot.data! as Map), restaurantModel);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+               // return orderDisplayView( list, restaurantModel!);
+                }
+                ),
+        ));
   }
 
   Widget orderDisplayView(
-      AsyncSnapshot<DatabaseEvent> snapshot, RestaurantModel restaurantModel) {
+       snapshot, RestaurantModel restaurantModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
-    if (snapshot.data!.snapshot.children.isEmpty) {
+    if (snapshot.data!.isEmpty) {
       return const Center(
         child: CustomText(text: "No Orders Yet !!"),
       );
     }
-    Map? order = (snapshot.data as DatabaseEvent).snapshot.value as Map;
-    List orderKeys = order.keys.toList();
+    if(snapshot.data!.hasError){
+      return Center(child: Text("ERROR"),);
+    }
+    // Map? order = (snapshot.data as DatabaseEvent).snapshot.value as Map;
+    // List orderKeys = order.keys.toList();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const CustomText(
-            text: "All Orders :",
-            fontWeight: FontWeight.bold,
-            fontsize: 25,
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          const Divider(
-            thickness: 1,
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: orderKeys.length,
-              itemBuilder: (context, index) {
-                String key = orderKeys[index];
-                bool isOpened = false;
-                return listExpansionView(isOpened, orderKeys, index,
-                    (order[key] as Map), restaurantModel);
-              },
+    // List<OrderModel> order = snapshot.data!;
+    // final suggestions = order.where((element) {
+    //   final category = element.category!;
+    //   final name = element.name!;
+    //   final type = element.type!;
+    //   final upselling = element.upselling!;
+    //   final status = element.status!;
+    //   final quantity = element.quantity!;
+    //   final description = element.description!;
+    //   final price = element.price!;
+    //   final rating = element.rating!;
+    //   return true;
+    // }).toList();
+    // order = suggestions;
+          return  Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CustomText(
+                  text: "All Orders :",
+                  fontWeight: FontWeight.bold,
+                  fontsize: 25,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const Divider(
+                  thickness: 1,
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      String key = snapshot.data![index] as String;
+                      bool isOpened = false;
+                      return Container(
+                        child: Text(list[index].name.toString()),
+                      );
+                      // return listExpansionView(isOpened, snapshot.data!, index,
+                      //     (snapshot.data! as Map), restaurantModel);
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
+
+
   }
 
   Widget listExpansionView(bool isOpened, List orderKeys, int index,
@@ -317,7 +472,9 @@ class _OrderScreenState extends State<OrderScreen> {
                 ],
               ),
             ],
-          ));
+          )
+      );
     });
   }
+
 }

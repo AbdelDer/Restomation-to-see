@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Models/Staff%20Model/staff_model.dart';
@@ -77,9 +80,7 @@ class _StaffPageState extends State<StaffPage> {
                     child: StreamBuilder(
                         stream: StaffService().getStaff(restaurantModel?.id ?? " "),
                         builder: (context, AsyncSnapshot<List<StaffModel>> snapshot) {
-                          return staffView(
-                            snapshot,
-                            restaurantModel!,
+                          return staffView(snapshot, restaurantModel!,
                           );
                         }),
                   ),
@@ -159,7 +160,17 @@ class _StaffPageState extends State<StaffPage> {
                   icon: const Icon(
                     Icons.delete_outline,
                   ),
-                  onPressed: () async {},
+                  onPressed: () async {
+                    final test= await FirebaseFirestore.instance.collection(
+                        "/restaurants")
+                        .doc(restaurantModel?.id ?? "")
+                        .collection("staff").where("email",isEqualTo:e.email ).get();
+                    for(var v in test.docs){
+                      await v.reference.delete();
+                      await FirebaseAuth.instance.currentUser!.delete();
+
+                    }
+                  },
                 ),
               ],
             )

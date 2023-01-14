@@ -98,7 +98,7 @@ class CartPage extends StatelessWidget {
                   });
                 } else {
                   CoolAlert.show(context: context, type: CoolAlertType.loading);
-                  Map data = {
+                  Map<String,Object> data = {
                     "name": name,
                     "phone": phone,
                     "table_name": tableKey,

@@ -25,8 +25,7 @@ class AdminModel {
       email: doc["email"] ?? "No email provided",
       role: doc["role"] ?? "No role provided",
       uid: doc["uid"] ?? "No uid provided",
-      assignedRestaurant:
-          doc["assigned_restaurant"] ?? "No restaurant provided",
+      assignedRestaurant: doc["assigned_restaurant"] ?? "No restaurant provided",
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -43,7 +44,8 @@ class _TablesPageState extends State<TablesPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            EssentialFunctions().createUpdateTable(context, restaurantModel, tableController, tablesViewModel);
+            EssentialFunctions().createUpdateTable(
+                context, restaurantModel, tableController, tablesViewModel);
           },
           label: const CustomText(
             text: "Create table",
@@ -68,16 +70,20 @@ class _TablesPageState extends State<TablesPage> {
                     },
                   ),
                   StreamBuilder(
-                      stream: TablesService().getTables(restaurantModel?.id ?? " "),
-                      builder: (context, AsyncSnapshot<List<TablesModel>> snapshot) {
-                        return tableView(snapshot, restaurantModel, tablesViewModel);
+                      stream: TablesService().getTables(
+                          restaurantModel?.id ?? " "),
+                      builder: (context,
+                          AsyncSnapshot<List<TablesModel>> snapshot) {
+                        return tableView(
+                            snapshot, restaurantModel, tablesViewModel);
                       }),
                 ],
               ))),
     );
   }
 
-  Widget tableView(AsyncSnapshot<List<TablesModel>> snapshot, RestaurantModel? restaurantModel, TablesViewModel tablesViewModel) {
+  Widget tableView(AsyncSnapshot<List<TablesModel>> snapshot,
+      RestaurantModel? restaurantModel, TablesViewModel tablesViewModel) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Expanded(child: CustomLoader());
     }
@@ -121,15 +127,19 @@ class _TablesPageState extends State<TablesPage> {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            content: SizedBox(
-                              width: MediaQuery.of(context).size.width / 2,
-                              child: QrImage(
-                                data: e.qrLink ?? "",
-                                version: QrVersions.auto,
+                          builder: (context) =>
+                              AlertDialog(
+                                content: SizedBox(
+                                  width: MediaQuery
+                                      .of(context)
+                                      .size
+                                      .width / 2,
+                                  child: QrImage(
+                                    data: e.qrLink ?? "",
+                                    version: QrVersions.auto,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
                         );
                       },
                       child: QrImage(
@@ -151,7 +161,9 @@ class _TablesPageState extends State<TablesPage> {
                       onPressed: () {
                         tableController.text = e.name ?? "";
 
-                        EssentialFunctions().createUpdateTable(context, restaurantModel, tableController, tablesViewModel, table: e, update: true);
+                        EssentialFunctions().createUpdateTable(
+                            context, restaurantModel, tableController,
+                            tablesViewModel, table: e, update: true);
                       },
                     ),
                     const SizedBox(
@@ -162,8 +174,20 @@ class _TablesPageState extends State<TablesPage> {
                       icon: const Icon(
                         Icons.delete_outline,
                       ),
-                      onPressed: () {
-                        DatabaseService.db.ref().child("tables").child(restaurantModel?.id ?? "").child(e.id ?? "").remove();
+                      onPressed: () async {
+                        // DatabaseService.db.ref().child("tables").child(
+                        //     restaurantModel?.id ?? "")
+                        //     .child(e.id ?? "")
+                        //     .remove();
+                        final test= await FirebaseFirestore.instance.collection(
+                            "/restaurants")
+                            .doc(restaurantModel?.id ?? "")
+                            .collection("tables").where("name",isEqualTo:e.name ).get();
+
+                        for(var v in test.docs){
+                          await v.reference.delete();
+                        }
+
                       },
                     ),
                   ],

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class StaffModel {
+class
+StaffModel {
   StaffModel({
     required this.id,
     required this.uid,
@@ -31,7 +32,6 @@ class StaffModel {
         phoneNo: doc["phone_no"],
         role: doc["role"] ?? "No role provided",
         restaurantId: doc["restaurant_id"] ?? "No restaurant ID provided",
-        restaurantName:
-            doc["assigned_restaurant"] ?? "No restaurant Name provided");
+        restaurantName: doc["assigned_restaurant"] ?? "No restaurant Name provided");
   }
 }

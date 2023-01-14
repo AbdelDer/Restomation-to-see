@@ -7,6 +7,7 @@ import 'package:restomation/MVVM/Repo/api_status.dart';
 class MenuService {
   // final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
   Stream<List<MenuCategoryModel>> getMenu(String restaurantId) {
     return restaurantId.isEmpty
         ? _db.collection("/menu").snapshots().map((list) {
@@ -14,14 +15,8 @@ class MenuService {
               return MenuCategoryModel.fromFirestore(e);
             }).toList();
           })
-        : _db
-            .collection("/menu")
-            .where(
-              "restaurant_id",
-              isEqualTo: restaurantId,
-            )
-            .snapshots()
-            .map((list) {
+        : _db.collection("/restaurants").doc(restaurantId).collection("menu").where("restaurant_id", isEqualTo: restaurantId,).snapshots()
+        .map((list) {
             return list.docs.map((e) {
               return MenuCategoryModel.fromFirestore(e);
             }).toList();
@@ -31,7 +26,7 @@ class MenuService {
   Future<Object> createCategory(
       String categoryName, String restaurantId) async {
     try {
-      await _db.collection("/menu").doc().set({
+      await _db.collection("/restaurants").doc(restaurantId).collection("menu").doc().set({
         "categoryName": categoryName,
         "menuItems": [],
         "restaurant_id": restaurantId,
