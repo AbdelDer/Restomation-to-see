@@ -16,6 +16,7 @@ class CustomFoodCard extends StatefulWidget {
   final String? name;
   final String? phone;
   final String restaurantsKey;
+  final String categoryName;
   final VoidCallback edit;
   final VoidCallback delete;
   const CustomFoodCard({
@@ -24,6 +25,7 @@ class CustomFoodCard extends StatefulWidget {
     required this.name,
     required this.phone,
     required this.restaurantsKey,
+    required this.categoryName,
     required this.edit,
     required this.delete,
   });
@@ -137,6 +139,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                       child: AddToCart(
                         foodData: widget.data,
                         restaurantsKey: widget.restaurantsKey,
+                        categoryName: widget.categoryName,
                       ),
                     ),
                   if (widget.name == null)

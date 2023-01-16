@@ -63,8 +63,8 @@ class CartPage extends StatelessWidget {
                   .ref()
                   .child("menu_items")
                   .child(restaurantsKey)
-                  .orderByChild("upselling")
-                  .equalTo(true)
+                  .orderByChild("category")
+                  .equalTo("Water")
                   .onValue,
               builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
                 return Builder(builder: (context) {
@@ -299,7 +299,7 @@ class CartPage extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(8.0),
               child: CustomText(
-                text: "Special offers only for you :",
+                text: "frequently bought together :",
                 fontWeight: FontWeight.bold,
                 fontsize: 15,
               ),

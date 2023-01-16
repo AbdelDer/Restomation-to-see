@@ -149,6 +149,7 @@ class _MenuPageState extends State<MenuPage> {
               name: widget.name,
               phone: widget.phone,
               restaurantsKey: widget.restaurantsKey,
+              categoryName: widget.categoryKey,
               delete: deleteItem(foodItem),
               edit: editItem(foodItem),
             ),

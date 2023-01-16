@@ -13,10 +13,12 @@ import 'custom_button.dart';
 
 class AddToCart extends StatefulWidget {
   final Map foodData;
+  final String categoryName;
   final String restaurantsKey;
   const AddToCart({
     super.key,
     required this.foodData,
+    required this.categoryName,
     required this.restaurantsKey,
   });
 
@@ -273,19 +275,18 @@ class _AddToCartState extends State<AddToCart> {
 
     categoriesListItems =
         allrestaurantsMenuItems.keys.toList().where((element) {
-      final categoryTitle =
+      final categoryStatus =
           allrestaurantsMenuItems[element]["status"].toString().toLowerCase();
-      const status = "available";
-      return categoryTitle == status;
-    }).toList();
-
-    categoriesListItems =
-        allrestaurantsMenuItems.keys.toList().where((element) {
-      final categoryTitle =
+      final categoryName =
           allrestaurantsMenuItems[element]["name"].toString().toLowerCase();
-
-      return categoryTitle != name.toLowerCase();
+      final categoryCategory =
+          allrestaurantsMenuItems[element]["category"].toString().toLowerCase();
+      const status = "available";
+      return categoryStatus == status &&
+          categoryName != name.toLowerCase() &&
+          categoryCategory != widget.categoryName.toLowerCase();
     }).toList();
+
     return Container(
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.all(10),

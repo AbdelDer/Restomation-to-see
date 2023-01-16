@@ -1,9 +1,9 @@
-import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/Provider/cart_provider.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -12,6 +12,7 @@ import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 import 'package:restomation/Widgets/custom_text_field.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_button.dart';
 import '../../../Widgets/custom_cart_badge_icon.dart';
@@ -49,39 +50,63 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   final TextEditingController controller = TextEditingController();
   showInfoDialogue() {
     if (widget.name != null) {
-      Future.delayed(const Duration(seconds: 10), () {
+      Future.delayed(const Duration(seconds: 10), () async {
         if (isMounted) {
-          CoolAlert.show(
+          final ref = StorageService.storage
+              .ref()
+              .child("/food_images/4202bd5f8f50e41a596812828f7dd65b.jpg");
+          Alert(
               context: context,
-              type: CoolAlertType.info,
-              title: "ABC Juice",
-              text:
-                  "As a part of a healthy diet, ABC juice is nutritious and can aid weight loss as it promotes feelings of satiety and fullness. Since ABC juice is high in antioxidants and fibre, it is good for your heart.",
-              confirmBtnText: "Add to cart",
-              cancelBtnText: "Ignore",
-              onConfirmBtnTap: () {
-                context.read<Cart>().addCartItem({
-                  "category": "Best Seller",
-                  "cookingStatus": "pending",
-                  "description":
-                      "Packed with a lot of nutrients and antioxidants , ABC juice helps to boost your immunity. It also helps in detoxifying your skin and making it more healthy",
-                  "image": "food_images/abcdrink1.jpg",
-                  "key": "-NJyANFAiCkN4rsIy0zT",
-                  "name": "ABC Juice",
-                  "price": "80",
-                  "quantity": 1,
-                  "rating": "0",
-                  "reviews": "0",
-                  "status": "available",
-                  "type": "Veg",
-                  "upselling": false
-                });
-                KRoutes.pop(context);
-              },
-              showCancelBtn: true,
-              onCancelBtnTap: () {
-                KRoutes.pop(context);
-              });
+              title: "Mini Falooda",
+              style: const AlertStyle(
+                  titleStyle: TextStyle(fontWeight: FontWeight.bold)),
+              closeIcon: const Icon(Icons.close),
+              desc:
+                  "A cold dessert popular in the Indian subcontinent, traditionally made from rose syrup, vermicelli, sweet basil seeds and pieces of jelly with milk",
+              image: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.network(
+                  await ref.getDownloadURL(),
+                  height: MediaQuery.of(context).size.height / 2,
+                  width: double.maxFinite,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              buttons: [
+                DialogButton(
+                    child: const CustomText(
+                      text: "Ignore",
+                      color: kWhite,
+                    ),
+                    onPressed: () {
+                      KRoutes.pop(context);
+                    }),
+                DialogButton(
+                    child: const CustomText(
+                      text: "Add to Cart",
+                      color: kWhite,
+                    ),
+                    onPressed: () {
+                      context.read<Cart>().addCartItem({
+                        "category": "Falooda",
+                        "cookingStatus": "pending",
+                        "description":
+                            "A cold dessert popular in the Indian subcontinent, traditionally made from rose syrup, vermicelli, sweet basil seeds and pieces of jelly with milk",
+                        "image":
+                            "food_images/4202bd5f8f50e41a596812828f7dd65b.jpg",
+                        "key": "-NLuXc1Hcbq-AV5f-Vq9",
+                        "name": "Mini Falooda",
+                        "price": "90",
+                        "quantity": 1,
+                        "rating": "0",
+                        "reviews": "0",
+                        "status": "available",
+                        "type": "Veg",
+                        "upselling": false
+                      });
+                      KRoutes.pop(context);
+                    })
+              ]).show();
         }
       });
     }
