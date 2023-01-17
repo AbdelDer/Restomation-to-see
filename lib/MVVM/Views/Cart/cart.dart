@@ -1,11 +1,8 @@
-import 'package:beamer/beamer.dart';
-import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
+import 'package:restomation/MVVM/Views/Discount%20Page/discount_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -96,52 +93,24 @@ class CartPage extends StatelessWidget {
           const SizedBox(
             height: 20,
           ),
-          Builder(builder: (context) {
-            Cart cart = context.watch<Cart>();
-            return CustomButton(
-                buttonColor: primaryColor,
-                text: addMoreItems == "yes" ? "Update Order" : "Order",
-                textColor: kWhite,
-                function: () async {
-                  if (addMoreItems == "yes") {
-                    CoolAlert.show(
-                        context: context, type: CoolAlertType.loading);
-
-                    await DatabaseService()
-                        .updateOrderItems(restaurantsKey, cart.cartItems, phone,
-                            orderItemsKey!, int.parse(existingItemCount!), name)
-                        .then((value) {
-                      KRoutes.pop(context);
-                      Fluttertoast.showToast(msg: "Ordered Successfully");
-                      cart.clearCart();
-                      Beamer.of(context).beamToReplacementNamed(
-                          "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                    });
-                  } else {
-                    CoolAlert.show(
-                        context: context, type: CoolAlertType.loading);
-                    Map data = {
-                      "name": name,
-                      "phone": phone,
-                      "table_name": tableKey,
-                      "order_status": "pending",
-                      "isTableClean": isTableClean,
-                      "hasNewItems": false,
-                      "waiter": "none"
-                    };
-                    await DatabaseService()
-                        .createOrder(restaurantsKey, tableKey, data,
-                            cart.cartItems, phone)
-                        .then((value) {
-                      KRoutes.pop(context);
-                      Fluttertoast.showToast(msg: "Ordered Successfully");
-                      cart.clearCart();
-                      Beamer.of(context).beamToReplacementNamed(
-                          "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                    });
-                  }
-                });
-          }),
+          CustomButton(
+              buttonColor: primaryColor,
+              text: addMoreItems == "yes" ? "Update Order" : "Order",
+              textColor: kWhite,
+              function: () async {
+                KRoutes.push(
+                    context,
+                    DiscountPage(
+                      restaurantsKey: restaurantsKey,
+                      tableKey: tableKey,
+                      name: name,
+                      isTableClean: isTableClean,
+                      phone: phone,
+                      addMoreItems: addMoreItems,
+                      orderItemsKey: orderItemsKey,
+                      existingItemCount: existingItemCount,
+                    ));
+              }),
           const SizedBox(
             height: 20,
           ),

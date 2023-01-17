@@ -58,8 +58,10 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           Alert(
               context: context,
               title: "Mini Falooda",
-              style: const AlertStyle(
-                  titleStyle: TextStyle(fontWeight: FontWeight.bold)),
+              style: AlertStyle(
+                  overlayColor: kWhite.withOpacity(0.5),
+                  backgroundColor: kWhite,
+                  titleStyle: const TextStyle(fontWeight: FontWeight.bold)),
               closeIcon: const Icon(Icons.close),
               desc:
                   "A cold dessert popular in the Indian subcontinent, traditionally made from rose syrup, vermicelli, sweet basil seeds and pieces of jelly with milk",
@@ -67,7 +69,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                 borderRadius: BorderRadius.circular(20),
                 child: Image.network(
                   await ref.getDownloadURL(),
-                  height: MediaQuery.of(context).size.height / 2,
+                  height: 200,
                   width: double.maxFinite,
                   fit: BoxFit.cover,
                 ),
