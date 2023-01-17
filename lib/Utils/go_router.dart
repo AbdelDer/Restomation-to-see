@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:go_router/go_router.dart';
+import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
@@ -23,32 +26,50 @@ final GoRouter goRoute = GoRouter(
     GoRoute(
       name: "restaurant-details",
       path: "/restaurant-details",
-      builder: (context, state) => const RestaurantsDetailPage(),
+      builder: (context, state) => RestaurantsDetailPage(
+        restaurantModel:
+            RestaurantModel.fromJson(jsonDecode(state.extra as String)),
+      ),
     ),
     GoRoute(
       name: "menu",
       path: "/menu",
-      builder: (context, state) => const MenuCategoryPage(),
+      builder: (context, state) => MenuCategoryPage(
+        restaurantModel:
+            RestaurantModel.fromJson(jsonDecode(state.extra as String)),
+      ),
     ),
     GoRoute(
       name: "tables",
       path: "/tables",
-      builder: (context, state) => const TablesPage(),
+      builder: (context, state) => TablesPage(
+        restaurantModel:
+            RestaurantModel.fromJson(jsonDecode(state.extra as String)),
+      ),
     ),
     GoRoute(
       name: "staff",
       path: "/staff",
-      builder: (context, state) => const StaffPage(),
+      builder: (context, state) => StaffPage(
+        restaurantModel:
+            RestaurantModel.fromJson(jsonDecode(state.extra as String)),
+      ),
     ),
     GoRoute(
       name: "orders",
       path: "/orders",
-      builder: (context, state) => const OrderScreen(),
+      builder: (context, state) => OrderScreen(
+        restaurantModel:
+            RestaurantModel.fromJson(jsonDecode(state.extra as String)),
+      ),
     ),
     GoRoute(
       name: "admins",
       path: "/admins",
-      builder: (context, state) => const AdminScreen(),
+      builder: (context, state) => AdminScreen(
+        restaurantModel:
+            RestaurantModel.fromJson(jsonDecode(state.extra as String)),
+      ),
     ),
   ],
 );

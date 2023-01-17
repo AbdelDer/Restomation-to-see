@@ -20,20 +20,11 @@ class TablesService {
     });
   }
 
-  Future<Object> createTables(String name, String qrLink, String restaurantId) async {
+  Future<Object> createTables(
+      String name, String qrLink, String restaurantId) async {
     try {
-      var names;
-      final test= await FirebaseFirestore.instance.collection(
-          "/restaurants")
-          .doc(restaurantId ?? "")
-          .collection("tables").where("name",isEqualTo:name ).get();
-
-      for(var v in test.docs){
-       names = v.reference.delete();
-       print(names.toString());
-      }
-
-      _db.collection("/restaurants")
+      _db
+          .collection("/restaurants")
           .doc(restaurantId)
           .collection("tables")
           .doc()

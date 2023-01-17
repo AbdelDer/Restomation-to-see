@@ -8,23 +8,17 @@ import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_mo
 import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/View%20Model/Staff%20View%20Model/staff_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
-import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
 import 'package:restomation/MVVM/Views/Cart/cart.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/page_decider.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
-import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
-import 'package:restomation/MVVM/Views/OrderScreen/order_screen.dart';
-import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
-import 'package:restomation/MVVM/Views/Tables%20Page/tables_view.dart';
 import 'package:restomation/Provider/cart_provider.dart';
 import 'package:restomation/Utils/go_router.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'MVVM/View Model/Order View Model/order_view_model.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
-import 'MVVM/Views/Resturant Details/resturant_details.dart';
 import 'Provider/selected_restaurant_provider.dart';
 import 'firebase_options.dart';
 
@@ -48,44 +42,18 @@ class _MyAppState extends State<MyApp> {
   final routerDelegate = BeamerDelegate(
       initialPath: "/login",
       locationBuilder: RoutesLocationBuilder(routes: {
-        "/login": (p0, p1, p2) =>
-        const BeamPage(
-          key: ValueKey("login"),
-          title: "Login",
-          type: BeamPageType.scaleTransition,
-          child: Login(),
-        ),
-        "/home": (p0, p1, p2) =>
-        const BeamPage(
-          key: ValueKey("home"),
-          title: "Home",
-          type: BeamPageType.fadeTransition,
-          child: HomePage(),
-        ),
-        "/restaurants-details/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: ValueKey(parameters[0]),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: const RestaurantsDetailPage(),
-          );
-        },
-        "/restaurants-menu-category/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("menu-category"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: parameters.length == 2
-                ? const MenuCategoryPage()
-                : const MenuCategoryPage(),
-          );
-        },
+        "/login": (p0, p1, p2) => const BeamPage(
+              key: ValueKey("login"),
+              title: "Login",
+              type: BeamPageType.scaleTransition,
+              child: Login(),
+            ),
+        "/home": (p0, p1, p2) => const BeamPage(
+              key: ValueKey("home"),
+              title: "Home",
+              type: BeamPageType.fadeTransition,
+              child: HomePage(),
+            ),
         "/restaurants-page-decider/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
               p1.pathParameters["parameters"] ?? "";
@@ -99,48 +67,6 @@ class _MyAppState extends State<MyApp> {
               tableKey: parameters[1],
               restaurantsImageName: parameters[2],
             ),
-          );
-        },
-        "/restaurants-tables/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("restaurants-tables"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: const TablesPage(),
-          );
-        },
-        "/restaurants-staff/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-              key: const ValueKey("staff"),
-              title: parameters[0],
-              type: BeamPageType.fadeTransition,
-              child: const StaffPage());
-        },
-        "/restaurants-admins/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-              key: const ValueKey("staff"),
-              title: parameters[0],
-              type: BeamPageType.fadeTransition,
-              child: const AdminScreen());
-        },
-        "/restaurants-orders/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("orders"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: const OrderScreen(),
           );
         },
         "/customer-table/:parameters": (p0, p1, p2) {
@@ -197,46 +123,41 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-        providers: [
+      providers: [
         ChangeNotifierProvider(
-        create: (context)
-    =>
-        LoginViewModel()
-    ,
-    ),
-    ChangeNotifierProvider(
-    create: (context) => RestaurantsViewModel(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => Cart(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => TablesViewModel(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => SelectedRestaurantProvider(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => AdminViewModel(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => MenuCategoryViewModel(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => StaffViewModel(),
-    ),
-    ChangeNotifierProvider(
-    create: (context) => OrderViewModel()
-    )
-    ],
-    child: MaterialApp.router(
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-    dividerColor: Colors.transparent,
-    textTheme: GoogleFonts.poppinsTextTheme()),
-    routerDelegate: goRoute.routerDelegate,
-    routeInformationParser: goRoute.routeInformationParser,
-    ),
+          create: (context) => LoginViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => RestaurantsViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => Cart(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TablesViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => SelectedRestaurantProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AdminViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => MenuCategoryViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => StaffViewModel(),
+        ),
+        ChangeNotifierProvider(create: (context) => OrderViewModel())
+      ],
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+            dividerColor: Colors.transparent,
+            textTheme: GoogleFonts.poppinsTextTheme()),
+        routerDelegate: goRoute.routerDelegate,
+        routeInformationParser: goRoute.routeInformationParser,
+      ),
     );
   }
 }

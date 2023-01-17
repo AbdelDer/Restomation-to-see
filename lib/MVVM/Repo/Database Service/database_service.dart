@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -13,8 +11,8 @@ class DatabaseService extends StorageService {
   static FirebaseDatabase db = FirebaseDatabase.instance;
   static FirebaseStorage storage = FirebaseStorage.instance;
 
-  static Future<Object> createrestaurants(String name, String fileName,
-      Uint8List bytes) async {
+  static Future<Object> createrestaurants(
+      String name, String fileName, Uint8List bytes) async {
     try {
       await storage.ref("restaurantLogos/$fileName").putData(bytes);
       // await FirebaseFirestore.instance.collection("restaurants").doc().set(
@@ -104,8 +102,8 @@ class DatabaseService extends StorageService {
     return authUser;
   }
 
-  static Future createSubAdminRestaurant(String restaurantsKey, String name,
-      String email, String password,
+  static Future createSubAdminRestaurant(
+      String restaurantsKey, String name, String email, String password,
       {bool update = false, String? personKey}) async {
     if (update && personKey != null) {
       // await FirebaseFirestore.instance
@@ -144,8 +142,8 @@ class DatabaseService extends StorageService {
     }
   }
 
-  static Future createCategory(String restaurantsKey,
-      String categoryName) async {
+  static Future createCategory(
+      String restaurantsKey, String categoryName) async {
     // await FirebaseFirestore.instance
     //     .collection("menu_categories")
     //     .doc()
@@ -154,16 +152,16 @@ class DatabaseService extends StorageService {
     //     .set({
     //   "categoryName": categoryName,
     // });
-      await db
-          .ref()
-          .child("menu_categories")
-          .child(restaurantsKey)
-          .push()
-          .set({"categoryName": categoryName});
+    await db
+        .ref()
+        .child("menu_categories")
+        .child(restaurantsKey)
+        .push()
+        .set({"categoryName": categoryName});
   }
 
-  static Future createTable(String restaurantsKey, String tableName,
-      String qrLink) async {
+  static Future createTable(
+      String restaurantsKey, String tableName, String qrLink) async {
     // await FirebaseFirestore.instance
     //     .collection("tables")
     //     .doc()
@@ -204,9 +202,9 @@ class DatabaseService extends StorageService {
 
   static Future createCategoryItems(String restaurantsName, String categoryKey,
       {String? fileName,
-        required Map<String, Object?> item,
-        Uint8List? bytes,
-        required bool isExsiting}) async {
+      required Map<String, Object?> item,
+      Uint8List? bytes,
+      required bool isExsiting}) async {
     if (!isExsiting) {
       await storage.ref("food_images/$fileName").putData(bytes!);
     }
@@ -216,7 +214,7 @@ class DatabaseService extends StorageService {
     //     .collection(restaurantsName)
     //     .doc()
     //     .set(item);
-     await db.ref().child("menu_items").child(restaurantsName).push().set(item);
+    await db.ref().child("menu_items").child(restaurantsName).push().set(item);
   }
 
   static Future createStaffCategoryPerson(String restaurantsName,
@@ -229,9 +227,9 @@ class DatabaseService extends StorageService {
   static Future updateCategoryItems(String restaurantsName, String categoryKey,
       String itemKey, String oldImagePath,
       {String? fileName,
-        required Map<String, Object?> item,
-        Uint8List? bytes,
-        required bool isExsiting}) async {
+      required Map<String, Object?> item,
+      Uint8List? bytes,
+      required bool isExsiting}) async {
     if (!isExsiting) {
       if (!(bytes == null)) {
         await storage.ref("food_images/$fileName").putData(bytes);
@@ -252,7 +250,8 @@ class DatabaseService extends StorageService {
         .update(item);
   }
 
-  static Future updateStaffCategoryPerson(String restaurantsKey,
+  static Future updateStaffCategoryPerson(
+      String restaurantsKey,
       String itemKey,
       String oldImagePath,
       String fileName,
@@ -266,17 +265,17 @@ class DatabaseService extends StorageService {
     //     .collection(itemKey)
     //     .doc()
     //     .update(item);
-     await db.ref().child("staff").child(itemKey).update(item);
+    await db.ref().child("staff").child(itemKey).update(item);
   }
 
   Future createOrder(String restaurantsKey, String tableKey,
       Map<String, Object> data, List cartItems, String name) async {
     // await FirebaseFirestore.instance
-        // .collection("orders")
-        // .doc()
-        // .collection(restaurantsKey)
-        // .doc()
-        // .set(data);
+    // .collection("orders")
+    // .doc()
+    // .collection(restaurantsKey)
+    // .doc()
+    // .set(data);
     // await FirebaseFirestore.instance
     //     .collection("order_items")
     //     .doc()
@@ -311,7 +310,6 @@ class DatabaseService extends StorageService {
           .child(name)
           .child(orderItemsKey)
           .update({(i + (itemCount)).toString(): cartItems[i]});
-
     }
     itemCount++;
   }

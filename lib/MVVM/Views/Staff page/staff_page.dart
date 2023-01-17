@@ -1,12 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Models/Staff%20Model/staff_model.dart';
 import 'package:restomation/MVVM/Repo/Staff%20Service/staff_service.dart';
-import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
@@ -16,8 +13,10 @@ import '../../../Widgets/custom_search.dart';
 import '../../../Widgets/custom_text.dart';
 
 class StaffPage extends StatefulWidget {
+  final RestaurantModel restaurantModel;
   const StaffPage({
     super.key,
+    required this.restaurantModel,
   });
 
   @override
@@ -28,16 +27,15 @@ class _StaffPageState extends State<StaffPage> {
   final TextEditingController personNameController = TextEditingController();
   final TextEditingController personPhoneController = TextEditingController();
   final TextEditingController personEmailController = TextEditingController();
-  final TextEditingController personPasswordController = TextEditingController();
+  final TextEditingController personPasswordController =
+      TextEditingController();
   final TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    RestaurantModel? restaurantModel = context.read<SelectedRestaurantProvider>().restaurantModel;
-
     return Scaffold(
       appBar: BaseAppBar(
-        title: restaurantModel?.name ?? "No name",
+        title: widget.restaurantModel.name ?? "No name",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -47,7 +45,7 @@ class _StaffPageState extends State<StaffPage> {
           onPressed: () {
             EssentialFunctions().createStaffDialog(
               context,
-              restaurantModel!,
+              widget.restaurantModel,
               personNameController,
               personPhoneController,
               personEmailController,
@@ -78,9 +76,13 @@ class _StaffPageState extends State<StaffPage> {
                   ),
                   Expanded(
                     child: StreamBuilder(
-                        stream: StaffService().getStaff(restaurantModel?.id ?? " "),
-                        builder: (context, AsyncSnapshot<List<StaffModel>> snapshot) {
-                          return staffView(snapshot, restaurantModel!,
+                        stream: StaffService()
+                            .getStaff(widget.restaurantModel.id ?? " "),
+                        builder: (context,
+                            AsyncSnapshot<List<StaffModel>> snapshot) {
+                          return staffView(
+                            snapshot,
+                            widget.restaurantModel,
                           );
                         }),
                   ),
@@ -161,14 +163,15 @@ class _StaffPageState extends State<StaffPage> {
                     Icons.delete_outline,
                   ),
                   onPressed: () async {
-                    final test= await FirebaseFirestore.instance.collection(
-                        "/restaurants")
-                        .doc(restaurantModel?.id ?? "")
-                        .collection("staff").where("email",isEqualTo:e.email ).get();
-                    for(var v in test.docs){
+                    final test = await FirebaseFirestore.instance
+                        .collection("/restaurants")
+                        .doc(restaurantModel.id ?? "")
+                        .collection("staff")
+                        .where("email", isEqualTo: e.email)
+                        .get();
+                    for (var v in test.docs) {
                       await v.reference.delete();
                       await FirebaseAuth.instance.currentUser!.delete();
-
                     }
                   },
                 ),

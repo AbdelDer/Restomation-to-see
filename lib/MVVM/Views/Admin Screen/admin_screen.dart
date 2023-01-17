@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Repo/Admin%20Service/admin_service.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
-import '../../../Provider/selected_restaurant_provider.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_search.dart';
 import '../../../Widgets/custom_text.dart';
 import '../../Models/Admin Model/admin_model.dart';
 
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({
-    super.key,
-  });
+  final RestaurantModel restaurantModel;
+  const AdminScreen({super.key, required this.restaurantModel});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -28,18 +25,16 @@ class _AdminScreenState extends State<AdminScreen> {
   final TextEditingController password = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    RestaurantModel? restaurantModel =
-        context.read<SelectedRestaurantProvider>().restaurantModel;
     return Scaffold(
       appBar: BaseAppBar(
-          title: restaurantModel?.name ?? "No name",
+          title: widget.restaurantModel.name ?? "No name",
           appBar: AppBar(),
           widgets: const [],
           appBarHeight: 50),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
             EssentialFunctions().createAdminDialog(
-                context, name, email, password, restaurantModel!);
+                context, name, email, password, widget.restaurantModel);
           },
           label: const CustomText(
             text: "Create Admin",
@@ -65,11 +60,11 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                   Expanded(
                     child: StreamBuilder(
-                        stream:
-                            AdminService().getAdmin(restaurantModel?.id ?? ""),
+                        stream: AdminService()
+                            .getAdmin(widget.restaurantModel.id ?? ""),
                         builder: (context,
                             AsyncSnapshot<List<AdminModel>> snapshot) {
-                          return adminView(snapshot, restaurantModel!);
+                          return adminView(snapshot, widget.restaurantModel);
                         }),
                   ),
                 ],

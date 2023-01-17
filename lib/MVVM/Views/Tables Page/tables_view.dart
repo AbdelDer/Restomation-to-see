@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:restomation/MVVM/Models/Tables%20Model/tables_model.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
-import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -17,8 +15,10 @@ import '../../Repo/Tables Service/tables_service.dart';
 import '../../View Model/Tables View Model/tables_view_model.dart';
 
 class TablesPage extends StatefulWidget {
+  final RestaurantModel restaurantModel;
   const TablesPage({
     super.key,
+    required this.restaurantModel,
   });
 
   @override
@@ -32,11 +32,10 @@ class _TablesPageState extends State<TablesPage> {
 
   @override
   Widget build(BuildContext context) {
-    RestaurantModel? restaurantModel = context.read<SelectedRestaurantProvider>().restaurantModel;
     TablesViewModel tablesViewModel = context.watch<TablesViewModel>();
     return Scaffold(
       appBar: BaseAppBar(
-        title: restaurantModel?.name ?? "",
+        title: widget.restaurantModel.name ?? "",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -44,8 +43,8 @@ class _TablesPageState extends State<TablesPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            EssentialFunctions().createUpdateTable(
-                context, restaurantModel, tableController, tablesViewModel);
+            EssentialFunctions().createUpdateTable(context,
+                widget.restaurantModel, tableController, tablesViewModel);
           },
           label: const CustomText(
             text: "Create table",
@@ -70,12 +69,12 @@ class _TablesPageState extends State<TablesPage> {
                     },
                   ),
                   StreamBuilder(
-                      stream: TablesService().getTables(
-                          restaurantModel?.id ?? " "),
-                      builder: (context,
-                          AsyncSnapshot<List<TablesModel>> snapshot) {
+                      stream: TablesService()
+                          .getTables(widget.restaurantModel.id ?? " "),
+                      builder:
+                          (context, AsyncSnapshot<List<TablesModel>> snapshot) {
                         return tableView(
-                            snapshot, restaurantModel, tablesViewModel);
+                            snapshot, widget.restaurantModel, tablesViewModel);
                       }),
                 ],
               ))),
@@ -127,19 +126,15 @@ class _TablesPageState extends State<TablesPage> {
                       onTap: () {
                         showDialog(
                           context: context,
-                          builder: (context) =>
-                              AlertDialog(
-                                content: SizedBox(
-                                  width: MediaQuery
-                                      .of(context)
-                                      .size
-                                      .width / 2,
-                                  child: QrImage(
-                                    data: e.qrLink ?? "",
-                                    version: QrVersions.auto,
-                                  ),
-                                ),
+                          builder: (context) => AlertDialog(
+                            content: SizedBox(
+                              width: MediaQuery.of(context).size.width / 2,
+                              child: QrImage(
+                                data: e.qrLink ?? "",
+                                version: QrVersions.auto,
                               ),
+                            ),
+                          ),
                         );
                       },
                       child: QrImage(
@@ -161,9 +156,9 @@ class _TablesPageState extends State<TablesPage> {
                       onPressed: () {
                         tableController.text = e.name ?? "";
 
-                        EssentialFunctions().createUpdateTable(
-                            context, restaurantModel, tableController,
-                            tablesViewModel, table: e, update: true);
+                        EssentialFunctions().createUpdateTable(context,
+                            restaurantModel, tableController, tablesViewModel,
+                            table: e, update: true);
                       },
                     ),
                     const SizedBox(
@@ -179,15 +174,16 @@ class _TablesPageState extends State<TablesPage> {
                         //     restaurantModel?.id ?? "")
                         //     .child(e.id ?? "")
                         //     .remove();
-                        final test= await FirebaseFirestore.instance.collection(
-                            "/restaurants")
+                        final test = await FirebaseFirestore.instance
+                            .collection("/restaurants")
                             .doc(restaurantModel?.id ?? "")
-                            .collection("tables").where("name",isEqualTo:e.name ).get();
+                            .collection("tables")
+                            .where("name", isEqualTo: e.name)
+                            .get();
 
-                        for(var v in test.docs){
+                        for (var v in test.docs) {
                           await v.reference.delete();
                         }
-
                       },
                     ),
                   ],

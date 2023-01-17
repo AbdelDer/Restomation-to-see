@@ -1,19 +1,14 @@
-
-
 import 'package:flutter/foundation.dart';
-import 'package:restomation/MVVM/Models/Order%20Model/order_model.dart';
-import 'package:restomation/MVVM/Repo/Order%20Service/order_service.dart';
-import 'package:restomation/MVVM/Repo/api_status.dart';
 
 import '../../Models/model_error.dart';
 
-class OrderViewModel extends ChangeNotifier{
+class OrderViewModel extends ChangeNotifier {
   bool _loading = false;
   ModelError? _modelError;
   String? _orders;
 
   bool get loading => _loading;
-  ModelError? get modelError =>_modelError;
+  ModelError? get modelError => _modelError;
   String? get orders => _orders;
 
   setLoading(bool loading) {
@@ -21,7 +16,7 @@ class OrderViewModel extends ChangeNotifier{
     notifyListeners();
   }
 
-  setOrderResponse(String order){
+  setOrderResponse(String order) {
     _orders = order;
   }
 
@@ -42,7 +37,4 @@ class OrderViewModel extends ChangeNotifier{
   //     }
   //     setLoading(false);
   //   }
-  }
-
-
-
+}
