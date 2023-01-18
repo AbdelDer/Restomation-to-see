@@ -212,69 +212,6 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
             //         // }
             //       );
             //     })
-
-            CustomButton(
-                buttonColor: primaryColor,
-                text: "Pay",
-                textColor: kWhite,
-                function: () async {
-                  CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.info,
-                      text:
-                          "People says Cheese Toast tastes good at CoffeeHouse, Take a parcel and give it to your family",
-                      title: "",
-                      showCancelBtn: true,
-                      cancelBtnText: "Ignore",
-                      confirmBtnText: "Add to cart and Pay",
-                      onConfirmBtnTap: () async {
-                        final Cart cart = context.read<Cart>();
-                        cart.addCartItem(
-                          {
-                            "category": "Chat",
-                            "cookingStatus": "pending",
-                            "description":
-                                "a hot sandwich typically prepared by heating one or more slices of cheese",
-                            "image":
-                                "food_images/Veggie-Chilli-Cheese-Sandwich.jpg",
-                            "key": "-NJyANFAiCkN4rsIy0zT",
-                            "name": "Cheese Toast",
-                            "price": "70",
-                            "quantity": 1,
-                            "rating": "0",
-                            "reviews": "0",
-                            "status": "available",
-                            "type": "Veg",
-                            "upselling": false
-                          },
-                        );
-                        CoolAlert.show(
-                            context: context, type: CoolAlertType.loading);
-                        await DatabaseService()
-                            .updateOrderItems(
-                                widget.restaurantName,
-                                cart.cartItems,
-                                widget.phone,
-                                orderItemsKeys[0],
-                                items.length,
-                                widget.name)
-                            .then((value) {
-                          KRoutes.pop(context);
-                          KRoutes.pop(context);
-                          cart.clearCart();
-                          Fluttertoast.showToast(msg: "Added item to cart");
-                          CoolAlert.show(
-                            context: context,
-                            type: CoolAlertType.success,
-                            title: "Payment",
-                            text: "Please go to the counter and pay !!",
-                          );
-                        });
-                      },
-                      onCancelBtnTap: () {
-                        KRoutes.pop(context);
-                      });
-                })
           ],
         ),
       ),

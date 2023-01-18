@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,9 +21,11 @@ import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
 import 'MVVM/Views/Resturant Details/resturant_details.dart';
 import 'firebase_options.dart';
+import 'package:hive_flutter/adapters.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -36,6 +40,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    setCache();
+    super.initState();
+  }
+
+  setCache() async {
+    var box = await Hive.openBox('cache');
+    await box.put("first_time", true);
+  }
+
   final routerDelegate = BeamerDelegate(
       initialPath: "/login",
       locationBuilder: RoutesLocationBuilder(routes: {
@@ -69,6 +85,7 @@ class _MyAppState extends State<MyApp> {
           final String restaurantsParams =
               p1.pathParameters["parameters"] ?? "";
           List<String> parameters = restaurantsParams.split(",");
+
           return BeamPage(
             key: const ValueKey("menu-category"),
             title: parameters[0],

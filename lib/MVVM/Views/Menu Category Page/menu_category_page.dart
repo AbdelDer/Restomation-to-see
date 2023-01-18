@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
@@ -48,23 +51,39 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   int indexCheck = 0;
   final TextEditingController categoryController = TextEditingController();
   final TextEditingController controller = TextEditingController();
-  showInfoDialogue() {
+  showInfoDialogue() async {
+    var box = await Hive.openBox('cache');
+    final firstTime = await box.get('first_time');
     if (widget.name != null) {
-      Future.delayed(const Duration(seconds: 10), () async {
-        if (isMounted) {
+      Future.delayed(const Duration(seconds: 5), () async {
+        if (isMounted && firstTime) {
+          box.put("first_time", false);
           final ref = StorageService.storage
               .ref()
               .child("/food_images/4202bd5f8f50e41a596812828f7dd65b.jpg");
           Alert(
               context: context,
-              title: "Mini Falooda",
+              title: "Royal Falooda",
               style: AlertStyle(
                   overlayColor: kWhite.withOpacity(0.5),
                   backgroundColor: kWhite,
                   titleStyle: const TextStyle(fontWeight: FontWeight.bold)),
               closeIcon: const Icon(Icons.close),
-              desc:
-                  "A cold dessert popular in the Indian subcontinent, traditionally made from rose syrup, vermicelli, sweet basil seeds and pieces of jelly with milk",
+              content: Column(
+                children: const [
+                  Text(
+                    'You can’t forget only two things in life after having it. \none is “your First Love” and \nanother is “our Falooda”',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Only 2 Faloodas in stock. Order Soon!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ],
+              ),
               image: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.network(
