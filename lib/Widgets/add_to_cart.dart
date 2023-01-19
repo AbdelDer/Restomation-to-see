@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +17,13 @@ class AddToCart extends StatefulWidget {
   final Map foodData;
   final String categoryName;
   final String restaurantsKey;
-  const AddToCart({
-    super.key,
-    required this.foodData,
-    required this.categoryName,
-    required this.restaurantsKey,
-  });
+  final bool upscale;
+  const AddToCart(
+      {super.key,
+      required this.foodData,
+      required this.categoryName,
+      required this.restaurantsKey,
+      this.upscale = true});
 
   @override
   State<AddToCart> createState() => _AddToCartState();
@@ -41,7 +44,16 @@ class _AddToCartState extends State<AddToCart> {
 
     return InkWell(
       onTap: () {
-        showCustomDialogue(ref);
+        if (widget.upscale) {
+          showCustomDialogue(ref);
+        } else if (initialValue == 0) {
+          setState(() {
+            initialValue++;
+          });
+          Cart cart = context.read<Cart>();
+          widget.foodData["quantity"] = 1;
+          cart.addCartItem(widget.foodData);
+        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 5),
@@ -58,7 +70,7 @@ class _AddToCartState extends State<AddToCart> {
                   color: Colors.black12)
             ],
             color: Colors.white),
-        child: initialValue == 0
+        child: (initialValue == 0)
             ? const Text(
                 "ADD",
                 style:

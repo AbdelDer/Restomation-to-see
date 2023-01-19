@@ -19,6 +19,7 @@ class CustomFoodCard extends StatefulWidget {
   final String categoryName;
   final VoidCallback edit;
   final VoidCallback delete;
+  final bool instructions;
   const CustomFoodCard({
     super.key,
     required this.data,
@@ -28,6 +29,7 @@ class CustomFoodCard extends StatefulWidget {
     required this.categoryName,
     required this.edit,
     required this.delete,
+    this.instructions = true,
   });
 
   @override
@@ -140,6 +142,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
                         foodData: widget.data,
                         restaurantsKey: widget.restaurantsKey,
                         categoryName: widget.categoryName,
+                        upscale: widget.instructions,
                       ),
                     ),
                   if (widget.name == null)
@@ -238,7 +241,7 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
               ],
             );
           }),
-        if (widget.name != null)
+        if (widget.name != null && widget.instructions == true)
           StatefulBuilder(
             builder: (BuildContext context, refreshState) {
               Cart cart = context.watch<Cart>();

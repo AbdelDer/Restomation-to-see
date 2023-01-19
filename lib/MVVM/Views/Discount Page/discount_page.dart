@@ -43,15 +43,6 @@ class DiscountPage extends StatelessWidget {
           title: "Special Dishes",
           appBar: AppBar(),
           automaticallyImplyLeading: true,
-          leading: InkWell(
-            onTap: () {
-              KRoutes.pop(context);
-            },
-            child: const Icon(
-              Icons.arrow_back,
-              color: kblack,
-            ),
-          ),
           widgets: const [],
           appBarHeight: 50),
       bottomNavigationBar: Row(
@@ -175,6 +166,7 @@ class DiscountPage extends StatelessWidget {
               categoryName: "Specials",
               delete: () {},
               edit: () {},
+              instructions: false,
             ),
             if ((index + 1) == categoriesListItems.length)
               const SizedBox(
