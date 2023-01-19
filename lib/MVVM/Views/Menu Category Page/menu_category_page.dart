@@ -60,7 +60,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           box.put("first_time", false);
           final ref = StorageService.storage
               .ref()
-              .child("/food_images/4202bd5f8f50e41a596812828f7dd65b.jpg");
+              .child("/food_images/Falooda-recipe.png");
           Alert(
               context: context,
               title: "Royal Falooda",
@@ -112,12 +112,11 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
                         "category": "Falooda",
                         "cookingStatus": "pending",
                         "description":
-                            "A cold dessert popular in the Indian subcontinent, traditionally made from rose syrup, vermicelli, sweet basil seeds and pieces of jelly with milk",
-                        "image":
-                            "food_images/4202bd5f8f50e41a596812828f7dd65b.jpg",
+                            "A Royal combination of crunch, flavour and melt in a majestic way!",
+                        "image": "food_images/Falooda-recipe.png",
                         "key": "-NLuXc1Hcbq-AV5f-Vq9",
-                        "name": "Mini Falooda",
-                        "price": "90",
+                        "name": "Royal Falooda",
+                        "price": "199",
                         "quantity": 1,
                         "rating": "0",
                         "reviews": "0",

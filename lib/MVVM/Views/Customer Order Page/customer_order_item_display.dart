@@ -280,7 +280,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                   ),
                   CustomText(
                     text: data["cookingStatus"],
-                    color: data["cookingStatus"] == "pending"
+                    color: data["cookingStatus"] == "pe nding"
                         ? Colors.red
                         : data["cookingStatus"] == "cooking"
                             ? primaryColor
