@@ -39,12 +39,6 @@ class DiscountPage extends StatelessWidget {
   Widget build(BuildContext context) {
     Cart cart = context.watch<Cart>();
     return Scaffold(
-      appBar: BaseAppBar(
-          title: "Special Dishes",
-          appBar: AppBar(),
-          automaticallyImplyLeading: true,
-          widgets: const [],
-          appBarHeight: 50),
       bottomNavigationBar: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -105,8 +99,34 @@ class DiscountPage extends StatelessWidget {
               .equalTo("Specials")
               .onValue,
           builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-            return menuItemsView(
-              snapshot,
+            return Column(
+              children: [
+                const SizedBox(height: 80),
+                Image.network(
+                    "https://img.icons8.com/color/96/null/checked--v1.png"),
+                const CustomText(
+                  text:
+                      'Order placed Sucesfully!\nA wait will soon approach you to confirm the order.',
+                  fontsize: 20,
+                  fontWeight: FontWeight.bold,
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 40),
+                const CustomText(
+                  text:
+                      'Tonight surprise your family with the below items! Order now and carry it as you go home',
+                  fontsize: 16,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: menuItemsView(
+                    snapshot,
+                  ),
+                ),
+              ],
             );
           }),
     );
