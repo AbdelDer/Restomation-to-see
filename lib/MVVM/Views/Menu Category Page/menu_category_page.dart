@@ -55,7 +55,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
     var box = await Hive.openBox('cache');
     final firstTime = await box.get('first_time');
     if (widget.name != null) {
-      Future.delayed(const Duration(seconds: 5), () async {
+      Future.delayed(const Duration(seconds: 15), () async {
         if (isMounted && firstTime) {
           box.put("first_time", false);
           final ref = StorageService.storage
