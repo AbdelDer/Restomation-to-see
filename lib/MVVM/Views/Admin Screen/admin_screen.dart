@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Repo/Admin%20Service/admin_service.dart';
@@ -140,7 +141,14 @@ class _AdminScreenState extends State<AdminScreen> {
               icon: const Icon(
                 Icons.delete_outline,
               ),
-              onPressed: () async {},
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection("/restaurants")
+                    .doc(restaurantModel.id ?? "")
+                    .collection("admins")
+                    .doc(e.id)
+                    .delete();
+              },
             ),
           ],
         );

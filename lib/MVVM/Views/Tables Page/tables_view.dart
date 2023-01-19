@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:restomation/MVVM/Models/Tables%20Model/tables_model.dart';
@@ -116,7 +117,11 @@ class _TablesPageState extends State<TablesPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        context.push(
+                          "/customer-page/${restaurantModel?.id},${e.id},c93f245aa6c85b1b3bf5e2163c6b1405.jpg",
+                        );
+                      },
                       child: CustomText(
                         text: e.name ?? "",
                         fontsize: 20,
@@ -170,20 +175,12 @@ class _TablesPageState extends State<TablesPage> {
                         Icons.delete_outline,
                       ),
                       onPressed: () async {
-                        // DatabaseService.db.ref().child("tables").child(
-                        //     restaurantModel?.id ?? "")
-                        //     .child(e.id ?? "")
-                        //     .remove();
-                        final test = await FirebaseFirestore.instance
+                        await FirebaseFirestore.instance
                             .collection("/restaurants")
                             .doc(restaurantModel?.id ?? "")
                             .collection("tables")
-                            .where("name", isEqualTo: e.name)
-                            .get();
-
-                        for (var v in test.docs) {
-                          await v.reference.delete();
-                        }
+                            .doc(e.id)
+                            .delete();
                       },
                     ),
                   ],

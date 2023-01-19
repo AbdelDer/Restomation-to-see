@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
+import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
 import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
@@ -70,6 +71,18 @@ final GoRouter goRoute = GoRouter(
         restaurantModel:
             RestaurantModel.fromJson(jsonDecode(state.extra as String)),
       ),
+    ),
+    GoRoute(
+      name: "customer-page",
+      path: "/customer-page/:param",
+      builder: (context, state) {
+        List param = (state.params["param"] as String).split(",").toList();
+        return CustomerPage(
+          restaurantsKey: param[0] ?? "",
+          tableKey: param[1] ?? "",
+          restaurantsImageName: param[2] ?? "",
+        );
+      },
     ),
   ],
 );

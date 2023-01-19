@@ -28,8 +28,24 @@ class TablesViewModel extends ChangeNotifier {
 
   Future createTables(String name, String qrLink, String restaurantId) async {
     setLoading(true);
+    setModelError(null);
     var response =
         await TablesService().createTables(name, qrLink, restaurantId);
+    if (response is Success) {
+      setTablessResponse(response.response as String);
+    }
+    if (response is Failure) {
+      ModelError modelError = ModelError(response.code, response.errorResponse);
+      setModelError(modelError);
+    }
+    setLoading(false);
+  }
+
+  Future updateTables(String name, String restaurantId, String tableId) async {
+    setLoading(true);
+    setModelError(null);
+    var response =
+        await TablesService().updateTables(name, restaurantId, tableId);
     if (response is Success) {
       setTablessResponse(response.response as String);
     }

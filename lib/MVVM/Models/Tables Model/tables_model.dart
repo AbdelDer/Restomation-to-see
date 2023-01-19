@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class TablesModel {
   TablesModel({
     required this.id,
@@ -10,9 +12,11 @@ class TablesModel {
   final String? restaurantId;
   final String? qrLink;
 
-  factory TablesModel.fromFirestore(Map doc) {
+  factory TablesModel.fromFirestore(
+      QueryDocumentSnapshot<Map<String, dynamic>> table) {
+    Map doc = table.data();
     return TablesModel(
-        id: doc["id"] ?? "No id provided",
+        id: table.id,
         name: doc["name"] ?? "No name provided",
         qrLink: doc["qrLink"] ?? "No path provided",
         restaurantId: doc["restaurant_id"] ?? "No restaurant ID provided");

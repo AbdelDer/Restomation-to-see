@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:restomation/MVVM/Models/Menu%20Model/menu_model.dart';
 import 'package:restomation/MVVM/Models/model_error.dart';
 import 'package:restomation/MVVM/Repo/api_status.dart';
 
@@ -28,7 +30,24 @@ class MenuCategoryViewModel extends ChangeNotifier {
 
   Future createMenuCategory(String name, String restaurantId) async {
     setLoading(true);
+    setModelError(null);
     var response = await MenuService().createCategory(name, restaurantId);
+    if (response is Success) {
+      setMenuCategorysResponse(response.response as String);
+    }
+    if (response is Failure) {
+      ModelError modelError = ModelError(response.code, response.errorResponse);
+      setModelError(modelError);
+    }
+    setLoading(false);
+  }
+
+  Future createMenuCategoryItem(String categoryId, String restaurantId,
+      MenuModel menuModel, Uint8List imageBytes) async {
+    setLoading(true);
+    setModelError(null);
+    var response = await MenuService().createMenuCategoryItem(
+        categoryId, restaurantId, menuModel, imageBytes);
     if (response is Success) {
       setMenuCategorysResponse(response.response as String);
     }

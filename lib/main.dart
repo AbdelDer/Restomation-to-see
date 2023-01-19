@@ -9,7 +9,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/View%20Model/Staff%20View%20Model/staff_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
 import 'package:restomation/MVVM/Views/Cart/cart.dart';
-import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/page_decider.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
@@ -63,21 +62,6 @@ class _MyAppState extends State<MyApp> {
             title: parameters[0],
             type: BeamPageType.fadeTransition,
             child: PageDecider(
-              restaurantsKey: parameters[0],
-              tableKey: parameters[1],
-              restaurantsImageName: parameters[2],
-            ),
-          );
-        },
-        "/customer-table/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("customer-table"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: CustomerPage(
               restaurantsKey: parameters[0],
               tableKey: parameters[1],
               restaurantsImageName: parameters[2],

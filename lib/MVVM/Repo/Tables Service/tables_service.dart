@@ -15,7 +15,7 @@ class TablesService {
         .snapshots()
         .map((list) {
       return list.docs.map((e) {
-        return TablesModel.fromFirestore(e.data());
+        return TablesModel.fromFirestore(e);
       }).toList();
     });
   }
@@ -30,6 +30,23 @@ class TablesService {
           .doc()
           .set({"name": name, "qrLink": qrLink, "restaurant_id": restaurantId});
       return Success(200, "Tables created successfully !!");
+    } catch (e) {
+      return Failure(101, e.toString());
+    }
+  }
+
+  Future<Object> updateTables(
+      String name, String restaurantId, String tableId) async {
+    try {
+      _db
+          .collection("/restaurants")
+          .doc(restaurantId)
+          .collection("tables")
+          .doc(tableId)
+          .update({
+        "name": name,
+      });
+      return Success(200, "Tables update successfully !!");
     } catch (e) {
       return Failure(101, e.toString());
     }

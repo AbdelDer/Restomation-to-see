@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 class ListDropDown extends StatefulWidget {
+  final List dynamicList;
+  final TextEditingController selectedValue;
   const ListDropDown({
     Key? key,
+    required this.dynamicList,
+    required this.selectedValue,
   }) : super(key: key);
 
   @override
@@ -15,7 +18,7 @@ class _ListDropDownState extends State<ListDropDown> {
   @override
   void initState() {
     setState(() {
-      selectedMenuOption = menuOptions[0];
+      widget.selectedValue.text = widget.dynamicList[0];
     });
     super.initState();
   }
@@ -23,9 +26,9 @@ class _ListDropDownState extends State<ListDropDown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButton(
-      value: selectedMenuOption,
+      value: widget.selectedValue.text,
       underline: const CustomText(text: ""),
-      items: menuOptions
+      items: widget.dynamicList
           .map((value) => DropdownMenuItem(
                 value: value,
                 child: SizedBox(
@@ -39,7 +42,7 @@ class _ListDropDownState extends State<ListDropDown> {
           .toList(),
       onChanged: (dynamic value) {
         setState(() {
-          selectedMenuOption = value;
+          widget.selectedValue.text = value;
         });
       },
       // ...

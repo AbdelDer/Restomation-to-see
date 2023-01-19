@@ -6,7 +6,6 @@ const kWhite = Colors.white;
 const kGrey = Colors.grey;
 const ktransparent = Colors.transparent;
 List menuOptions = ["Veg", "Non-Veg"];
-String selectedMenuOption = "";
 List dataList = [
   {
     "name": "Sambar Rice",

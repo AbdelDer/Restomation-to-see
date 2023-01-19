@@ -30,4 +30,16 @@ class MenuModel {
         status: item["status"] ?? "unavailable",
         upselling: item["upselling"] ?? "No upselling provided");
   }
+  Map toJson(MenuModel menuModel) {
+    return {
+      "name": menuModel.name,
+      "description": menuModel.description,
+      "imagePath": menuModel.imagePath,
+      "price": menuModel.price,
+      "reviews": menuModel.reviews,
+      "type": menuModel.type,
+      "status": menuModel.status,
+      "upselling": menuModel.upselling
+    };
+  }
 }

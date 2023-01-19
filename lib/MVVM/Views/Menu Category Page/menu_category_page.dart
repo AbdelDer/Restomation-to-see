@@ -25,7 +25,14 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   int indexCheck = 0;
 
   final TextEditingController categoryController = TextEditingController();
+  final TextEditingController menuItemNameController = TextEditingController();
+  final TextEditingController menuItemPriceController = TextEditingController();
+  final TextEditingController menuItemDescriptionController =
+      TextEditingController();
   final TextEditingController controller = TextEditingController();
+  final TextEditingController menuItemTypeController = TextEditingController();
+  final TextEditingController mennuItemSelectedCategory =
+      TextEditingController();
   final ScrollController scrollController = ScrollController();
   List<double> offsetList = [];
   late TabController tabController;
@@ -76,14 +83,6 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
             ),
           ],
           appBarHeight: 50),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () async {
-            // EssentialFunctions().createMenuItemDialog(context, categoryController, restaurantModel!.id!);
-          },
-          label: const CustomText(
-            text: "+ Add Items",
-            color: kWhite,
-          )),
       body: StreamBuilder(
           stream: MenuService().getMenu(widget.restaurantModel.id ?? ""),
           builder: (context, AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
@@ -108,87 +107,106 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
     tabController =
         TabController(length: allrestaurantsMenuCategories.length, vsync: this);
 
-    return Column(
-      children: [
-        TabBar(
-          controller: tabController,
-          onTap: (value) async {
-            double offset = 0;
-            for (var i = 0; i < allrestaurantsMenuCategories.length; i++) {
-              if (allrestaurantsMenuCategories[i].categoryName ==
-                  allrestaurantsMenuCategories[value].categoryName) {
-                int j = i - 1;
-                for (j; j >= 0; j--) {
-                  offset += 60 +
-                      ((allrestaurantsMenuCategories[j].menuModel ?? [])
-                              .length *
-                          190);
-                }
-                tabController.animateTo(value);
-                scrollController.removeListener(scrollListener);
-                await scrollController.animateTo(offset,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.ease);
-                scrollController.addListener(scrollListener);
-                break;
-              }
-            }
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            EssentialFunctions().createMenuItemDialog(
+              context,
+              menuItemNameController,
+              menuItemDescriptionController,
+              menuItemPriceController,
+              menuItemTypeController,
+              mennuItemSelectedCategory,
+              widget.restaurantModel.id ?? "",
+              allrestaurantsMenuCategories,
+            );
           },
-          isScrollable: true,
-          tabs: allrestaurantsMenuCategories
-              .map((e) => Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 20),
-                    child: Text(
-                      e.categoryName ?? "",
-                      style: const TextStyle(
-                        color: kblack,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ))
-              .toList(),
-        ),
-        Expanded(
-          child: ListView.builder(
-            controller: scrollController,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            itemCount: allrestaurantsMenuCategories.length,
-            itemBuilder: (BuildContext context, int index) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 60,
-                    child: Row(
-                      children: [
-                        CustomText(
-                          text: allrestaurantsMenuCategories[index]
-                                  .categoryName ??
-                              "",
-                          fontsize: 25,
+          label: const CustomText(
+            text: "+ Add Items",
+            color: kWhite,
+          )),
+      body: Column(
+        children: [
+          TabBar(
+            controller: tabController,
+            onTap: (value) async {
+              double offset = 0;
+              for (var i = 0; i < allrestaurantsMenuCategories.length; i++) {
+                if (allrestaurantsMenuCategories[i].categoryName ==
+                    allrestaurantsMenuCategories[value].categoryName) {
+                  int j = i - 1;
+                  for (j; j >= 0; j--) {
+                    offset += 60 +
+                        ((allrestaurantsMenuCategories[j].menuModel ?? [])
+                                .length *
+                            190);
+                  }
+                  tabController.animateTo(value);
+                  scrollController.removeListener(scrollListener);
+                  await scrollController.animateTo(offset,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.ease);
+                  scrollController.addListener(scrollListener);
+                  break;
+                }
+              }
+            },
+            isScrollable: true,
+            tabs: allrestaurantsMenuCategories
+                .map((e) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                      child: Text(
+                        e.categoryName ?? "",
+                        style: const TextStyle(
+                          color: kblack,
+                          fontSize: 25,
                           fontWeight: FontWeight.bold,
                         ),
-                        const Expanded(
-                            child: Divider(
-                          endIndent: 20,
-                          indent: 20,
-                          thickness: 1,
-                          color: kGrey,
-                        ))
-                      ],
-                    ),
-                  ),
-                  MenuPage(
-                      itemsList:
-                          allrestaurantsMenuCategories[index].menuModel ?? [])
-                ],
-              );
-            },
+                      ),
+                    ))
+                .toList(),
           ),
-        ),
-      ],
+          Expanded(
+            child: ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+              itemCount: allrestaurantsMenuCategories.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 60,
+                      child: Row(
+                        children: [
+                          CustomText(
+                            text: allrestaurantsMenuCategories[index]
+                                    .categoryName ??
+                                "",
+                            fontsize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          const Expanded(
+                              child: Divider(
+                            endIndent: 20,
+                            indent: 20,
+                            thickness: 1,
+                            color: kGrey,
+                          ))
+                        ],
+                      ),
+                    ),
+                    MenuPage(
+                        itemsList:
+                            allrestaurantsMenuCategories[index].menuModel ?? [])
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -217,6 +235,11 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
     scrollController.dispose();
     tabController.dispose();
     categoryController.dispose();
+    menuItemNameController.dispose();
+    menuItemDescriptionController.dispose();
+    menuItemPriceController.dispose();
+    menuItemTypeController.dispose();
+    mennuItemSelectedCategory.dispose();
     controller.dispose();
     super.dispose();
   }
