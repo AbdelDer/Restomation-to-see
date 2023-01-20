@@ -188,16 +188,29 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                   Beamer.of(context).beamToNamed(
                       "/restaurants-menu-category/${widget.restaurantName},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},yes,${orderItemsKeys[0]},${items.length}");
                 }),
-            // if (widget.order["order_status"].toString().toLowerCase() == "done")
+            //if (widget.order["order_status"].toString().toLowerCase() == "done")
             CustomButton(
                 buttonColor: primaryColor,
-                text: "Pay Now",
+                text: "Pay",
                 textColor: kWhite,
-                function: () async {
-                  Navigator.pop(context);
-                  Fluttertoast.showToast(msg: "Redirecting to payment gateway");
-                  await payment(widget.order["name"], widget.order["name"],
-                      widget.order["phone"], getTotalPrice(items));
+                function: () {
+                  CoolAlert.show(
+                    context: context,
+                    type: CoolAlertType.confirm,
+                    width: 300,
+                    title: "",
+                    text: "Please go to the counter to pay",
+
+                    // onConfirmBtnTap: () async {
+                    //   Navigator.pop(context);
+                    //   Fluttertoast.showToast(msg: "Pay Now Clicked");
+                    //   await payment(
+                    //       widget.order["name"],
+                    //       widget.order["name"],
+                    //       widget.order["phone"],
+                    //       getTotalPrice(items));
+                    // }
+                  );
                 })
           ],
         ),
@@ -452,14 +465,15 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
       "callback_url": "https://eneqd3r9zrjok.x.pipedream.net/",
       "prefill": {
         "name": name.toString(),
-        "email": "restomation.team@gmail.com",
-        "contact": "+91$phone"
+        "email": email.toString(),
+        "contact": phone.toString()
       },
       "theme": {"color": "#e1679c"}
     };
 
     _razorpay.open(options);
   }
+
   String getTotalPrice(List items) {
     double total = 0;
     for (var element in items) {
