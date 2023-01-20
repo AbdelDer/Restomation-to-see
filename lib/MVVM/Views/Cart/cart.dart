@@ -34,7 +34,9 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
+      backgroundColor: const Color(0xFFF1F0F5),
       appBar: BaseAppBar(
         title: "Cart",
         appBar: AppBar(),
@@ -69,50 +71,79 @@ class CartPage extends StatelessWidget {
                   return menuItemsView(snapshot, cart);
                 });
               }),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //     children: [
+          //       const CustomText(
+          //         text: "Total :",
+          //         fontsize: 25,
+          //         fontWeight: FontWeight.bold,
+          //       ),
+          //       Builder(builder: (context) {
+          //         Cart cart = context.watch<Cart>();
+          //         return CustomText(
+          //           text: "Rs.  ${getTotalPrice(cart)}",
+          //           fontsize: 25,
+          //           fontWeight: FontWeight.bold,
+          //         );
+          //       })
+          //     ],
+          //   ),
+          // ),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            width: size.width,
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12))),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const CustomText(
-                  text: "Total :",
-                  fontsize: 25,
-                  fontWeight: FontWeight.bold,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Builder(builder: (context) {
+                      Cart cart = context.watch<Cart>();
+                      return CustomText(
+                        text: "₹${getTotalPrice(cart)}",
+                        fontsize: 18,
+                        fontWeight: FontWeight.bold,
+                      );
+                    }),
+                    const CustomText(
+                      text: "Total",
+                      fontsize: 12,
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                    )
+                  ],
                 ),
-                Builder(builder: (context) {
-                  Cart cart = context.watch<Cart>();
-                  return CustomText(
-                    text: "Rs.  ${getTotalPrice(cart)}",
-                    fontsize: 25,
-                    fontWeight: FontWeight.bold,
-                  );
-                })
+                CustomButton(
+                    buttonColor: primaryColor,
+                    text: addMoreItems == "yes" ? "Update Order" : "Order",
+                    textColor: kWhite,
+                    function: () async {
+                      KRoutes.push(
+                          context,
+                          DiscountPage(
+                            restaurantsKey: restaurantsKey,
+                            tableKey: tableKey,
+                            name: name,
+                            isTableClean: isTableClean,
+                            phone: phone,
+                            addMoreItems: addMoreItems,
+                            orderItemsKey: orderItemsKey,
+                            existingItemCount: existingItemCount,
+                          ));
+                    }),
               ],
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          CustomButton(
-              buttonColor: primaryColor,
-              text: addMoreItems == "yes" ? "Update Order" : "Order",
-              textColor: kWhite,
-              function: () async {
-                KRoutes.push(
-                    context,
-                    DiscountPage(
-                      restaurantsKey: restaurantsKey,
-                      tableKey: tableKey,
-                      name: name,
-                      isTableClean: isTableClean,
-                      phone: phone,
-                      addMoreItems: addMoreItems,
-                      orderItemsKey: orderItemsKey,
-                      existingItemCount: existingItemCount,
-                    ));
-              }),
-          const SizedBox(
-            height: 20,
           ),
         ],
       ),
