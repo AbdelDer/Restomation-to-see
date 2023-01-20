@@ -101,26 +101,24 @@ class DiscountPage extends StatelessWidget {
           builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
             return Column(
               children: [
-                const SizedBox(height: 80),
                 Image.network(
-                    "https://img.icons8.com/color/96/null/checked--v1.png"),
+                    "https://img.icons8.com/color/48/null/checked--v1.png"),
                 const CustomText(
                   text:
-                      'Order placed Sucesfully!\nA wait will soon approach you to confirm the order.',
-                  fontsize: 20,
+                      'Order placed Sucesfully!\nA waiter will soon approach you to confirm the order.',
+                  fontsize: 14,
                   fontWeight: FontWeight.bold,
                   textAlign: TextAlign.center,
                   maxLines: 3,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 6),
                 const CustomText(
                   text:
                       'Tonight surprise your family with the below items! Order now and carry it as you go home',
-                  fontsize: 16,
+                  fontsize: 14,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                 ),
-                const SizedBox(height: 10),
                 Expanded(
                   child: menuItemsView(
                     snapshot,
