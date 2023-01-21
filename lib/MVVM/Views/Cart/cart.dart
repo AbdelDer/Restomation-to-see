@@ -186,8 +186,12 @@ class _CartPageState extends State<CartPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(2),
-                  child:
-                      Image.asset('assets/veg-nonveg.png', color: Colors.green),
+                  child: Image.network(
+                    'https://img.icons8.com/small/16/000000/vegetarian-food-symbol.png',
+                    color: data["type"].toString().toLowerCase() == "veg"
+                        ? Colors.green
+                        : Colors.red,
+                  ),
                 ),
                 const SizedBox(width: 4),
                 Column(
@@ -471,18 +475,7 @@ class _CartPageState extends State<CartPage> {
                               Text(
                                 "₹${foodItem["price"]}  ",
                                 style: const TextStyle(
-                                  color: kGrey,
-                                  decoration: TextDecoration.lineThrough,
-                                ),
-                              ),
-                              CustomText(
-                                text:
-                                    "₹${getDiscountedPrice(foodItem["price"])}  ",
-                                fontWeight: FontWeight.bold,
-                              ),
-                              const CustomText(
-                                text: "( You save ₹20 )",
-                                color: Colors.black87,
+                                    color: kblack, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -495,8 +488,6 @@ class _CartPageState extends State<CartPage> {
                       onChanged: (value) {
                         if (index2 == -1) {
                           foodItem["quantity"] = 1;
-                          foodItem["price"] =
-                              getDiscountedPrice(foodItem["price"]);
                           cart.addCartItem(foodItem);
                         } else {
                           cart.removeCartItem(foodItem);
