@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
   final Color backgroundColor;
   final String title;
-  final AppBar appBar;
+  final AppBar? appBar;
   final bool automaticallyImplyLeading, centerTitle;
   final List<Widget> widgets;
   final double appBarHeight;
@@ -14,7 +14,7 @@ class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
   const BaseAppBar(
       {Key? key,
       required this.title,
-      required this.appBar,
+      this.appBar,
       required this.widgets,
       this.automaticallyImplyLeading = false,
       this.backgroundColor = Colors.transparent,

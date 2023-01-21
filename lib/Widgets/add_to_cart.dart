@@ -333,8 +333,8 @@ class _AddToCartState extends State<AddToCart> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.adjust_rounded,
+                        Image.network(
+                          'https://img.icons8.com/small/16/000000/vegetarian-food-symbol.png',
                           color:
                               foodItem["type"].toString().toLowerCase() == "veg"
                                   ? Colors.green

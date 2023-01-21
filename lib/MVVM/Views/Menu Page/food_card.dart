@@ -56,8 +56,8 @@ class _CustomFoodCardState extends State<CustomFoodCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.adjust_rounded,
+                  Image.network(
+                    'https://img.icons8.com/small/16/000000/vegetarian-food-symbol.png',
                     color: widget.data["type"].toString().toLowerCase() == "veg"
                         ? Colors.green
                         : Colors.red,

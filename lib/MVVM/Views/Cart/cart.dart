@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -44,11 +47,19 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F0F5),
       appBar: BaseAppBar(
-        title: "Cart",
-        appBar: AppBar(),
-        widgets: const [],
-        appBarHeight: 50,
-        automaticallyImplyLeading: true,
+        appBarHeight: 60,
+        title: 'Cart',
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
+          onPressed: () {
+            Beamer.of(context).beamToNamed(
+                "/restaurants-menu-category/${widget.restaurantsKey},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},${widget.addMoreItems},${widget.orderItemsKey},${widget.existingItemCount}");
+          },
+        ),
+        widgets: [],
       ),
       body: Stack(
         children: [
@@ -61,7 +72,7 @@ class _CartPageState extends State<CartPage> {
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12)),
-                  child: (cart.cartItems.length != 0)
+                  child: (cart.cartItems.isNotEmpty)
                       ? Column(
                           children: [
                             for (int i = 0; i < cart.cartItems.length; i++) ...[
@@ -69,9 +80,12 @@ class _CartPageState extends State<CartPage> {
                             ]
                           ],
                         )
-                      : Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: const CustomText(text: "Your Cart is Empty"),
+                      : SizedBox(
+                          width: size.width,
+                          child: const CustomText(
+                            text: "Your Cart is Empty",
+                            textAlign: TextAlign.center,
+                          ),
                         )),
               StreamBuilder(
                   stream: FirebaseDatabase.instance
@@ -82,10 +96,7 @@ class _CartPageState extends State<CartPage> {
                       .equalTo("Water")
                       .onValue,
                   builder: (context, AsyncSnapshot<DatabaseEvent?> snapshot) {
-                    return Builder(builder: (context) {
-                      Cart cart = context.watch<Cart>();
-                      return menuItemsView(snapshot, cart);
-                    });
+                    return menuItemsView(snapshot, cart);
                   }),
             ],
           ),
@@ -173,21 +184,27 @@ class _CartPageState extends State<CartPage> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.all(2),
+                Padding(
+                  padding: const EdgeInsets.all(2),
                   child:
-                      Icon(Icons.adjust_rounded, size: 16, color: Colors.green),
+                      Image.asset('assets/veg-nonveg.png', color: Colors.green),
                 ),
                 const SizedBox(width: 4),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomText(
-                      text: '${data["name"]}',
-                      maxLines: 2,
-                      fontWeight: FontWeight.normal,
+                    SizedBox(
+                      width: size.width * 0.4,
+                      child: CustomText(
+                        text: '${data["name"]}',
+                        maxLines: 2,
+                        fontWeight: FontWeight.normal,
+                      ),
                     ),
-                    CustomText(text: data["instructions"] ?? "No instructions"),
+                    CustomText(
+                      text: data["instructions"] ?? "No instructions",
+                      color: Colors.black45,
+                    ),
                   ],
                 ),
               ],
@@ -199,10 +216,13 @@ class _CartPageState extends State<CartPage> {
             qtyWidget(initialValue, data, cart),
             SizedBox(
               width: 80,
-              child: CustomText(
-                text: "₹${double.parse(data['price']) * data['quantity']}",
-                fontWeight: FontWeight.w600,
-                textAlign: TextAlign.end,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: CustomText(
+                  text: "₹${double.parse(data['price']) * data['quantity']}",
+                  fontWeight: FontWeight.w600,
+                  textAlign: TextAlign.end,
+                ),
               ),
             ),
           ],
@@ -347,7 +367,7 @@ class _CartPageState extends State<CartPage> {
                 size: 15,
                 color: primaryColor,
               )),
-          SizedBox(
+          const SizedBox(
             width: 8,
           ),
           CustomText(
@@ -355,7 +375,7 @@ class _CartPageState extends State<CartPage> {
             color: primaryColor,
             fontWeight: FontWeight.bold,
           ),
-          SizedBox(
+          const SizedBox(
             width: 8,
           ),
           InkWell(
@@ -408,8 +428,12 @@ class _CartPageState extends State<CartPage> {
                 fontsize: 15,
               ),
             )),
-        SizedBox(
-          height: 130,
+        Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 18),
+          decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          height: 145,
           child: ListView.separated(
             itemCount: categoriesListItems.length,
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -426,8 +450,8 @@ class _CartPageState extends State<CartPage> {
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        Icons.adjust_rounded,
+                      Image.network(
+                        'https://img.icons8.com/small/16/000000/vegetarian-food-symbol.png',
                         color:
                             foodItem["type"].toString().toLowerCase() == "veg"
                                 ? Colors.green
@@ -441,12 +465,11 @@ class _CartPageState extends State<CartPage> {
                         children: [
                           CustomText(
                             text: foodItem["name"],
-                            fontWeight: FontWeight.bold,
                           ),
                           Row(
                             children: [
                               Text(
-                                "Rs. ${foodItem["price"]}  ",
+                                "₹${foodItem["price"]}  ",
                                 style: const TextStyle(
                                   color: kGrey,
                                   decoration: TextDecoration.lineThrough,
@@ -454,11 +477,12 @@ class _CartPageState extends State<CartPage> {
                               ),
                               CustomText(
                                 text:
-                                    "Rs. ${getDiscountedPrice(foodItem["price"])}  ",
+                                    "₹${getDiscountedPrice(foodItem["price"])}  ",
                                 fontWeight: FontWeight.bold,
                               ),
                               const CustomText(
-                                text: "( You save Rs. 20 )",
+                                text: "( You save ₹20 )",
+                                color: Colors.black87,
                               ),
                             ],
                           ),
