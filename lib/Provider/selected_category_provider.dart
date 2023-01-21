@@ -15,10 +15,10 @@ class SelectedCategoryProvider with ChangeNotifier {
       final MenuCategoryModel menuCategoryModel = allrestaurantsMenuCategories[i];
 
       if (i > 0) {
-        offSetFrom += (allrestaurantsMenuCategories[i - 1].menuModel ?? []).length * 190;
+        offSetFrom += (allrestaurantsMenuCategories[i - 1].menuItemModel ?? []).length * 190;
       }
       if (i < allrestaurantsMenuCategories.length - 1) {
-        offSetTo = offSetFrom + (allrestaurantsMenuCategories[i + 1].menuModel ?? []).length * 190;
+        offSetTo = offSetFrom + (allrestaurantsMenuCategories[i + 1].menuItemModel ?? []).length * 190;
       } else {
         offSetTo = double.infinity;
       }
@@ -27,9 +27,9 @@ class SelectedCategoryProvider with ChangeNotifier {
         MenuTabCategory(categoryModel: menuCategoryModel, selected: i == 0, offSet: (i == 0) ? 0 : 50 + offSetFrom, offSetTo: offSetTo),
       );
       items.add(MenuTabObject(menuCategoryModel: menuCategoryModel));
-      for (var j = 0; j < (menuCategoryModel.menuModel ?? []).length; j++) {
-        final product = (menuCategoryModel.menuModel ?? [])[j];
-        items.add(MenuTabObject(menuModel: product));
+      for (var j = 0; j < (menuCategoryModel.menuItemModel ?? []).length; j++) {
+        final product = (menuCategoryModel.menuItemModel ?? [])[j];
+        items.add(MenuTabObject(menuItemModel: product));
       }
       scrollController.addListener(scrollControllerListener);
     }
@@ -79,10 +79,10 @@ class MenuTabCategory {
 
 class MenuTabObject {
   final MenuCategoryModel? menuCategoryModel;
-  final MenuModel? menuModel;
+  final MenuItemModel? menuItemModel;
   MenuTabObject({
     this.menuCategoryModel,
-    this.menuModel,
+    this.menuItemModel,
   });
   bool get isCategory => menuCategoryModel != null;
 }

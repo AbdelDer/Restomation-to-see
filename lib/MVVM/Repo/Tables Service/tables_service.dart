@@ -20,6 +20,20 @@ class TablesService {
     });
   }
 
+  Future<Object> getSingleTable(String restaurantId, String tableId) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> res = await _db
+          .collection("/restaurants")
+          .doc(restaurantId)
+          .collection("tables")
+          .doc(tableId)
+          .get();
+      return Success(200, TablesModel.fromDocumentSnapshot(res));
+    } catch (e) {
+      return Failure(101, e.toString());
+    }
+  }
+
   Future<Object> createTables(
       String name, String qrLink, String restaurantId) async {
     try {

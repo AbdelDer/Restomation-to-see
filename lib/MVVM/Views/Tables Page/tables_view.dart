@@ -119,7 +119,7 @@ class _TablesPageState extends State<TablesPage> {
                     InkWell(
                       onTap: () {
                         context.push(
-                          "/customer-page/${restaurantModel?.id},${e.id},c93f245aa6c85b1b3bf5e2163c6b1405.jpg",
+                          "/customer-page/${restaurantModel?.id},${e.id}",
                         );
                       },
                       child: CustomText(

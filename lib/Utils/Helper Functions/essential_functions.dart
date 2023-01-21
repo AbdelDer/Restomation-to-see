@@ -767,7 +767,7 @@ class EssentialFunctions {
                                     fileBytes = image?.files.single.bytes;
                                     fileName = image?.files.single.name;
                                   }
-                                  MenuModel menuModel = MenuModel(
+                                  MenuItemModel menuModel = MenuItemModel(
                                       name: menuItemNameController.text,
                                       description:
                                           menuItemDescriptionController.text,

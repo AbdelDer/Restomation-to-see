@@ -6,6 +6,5 @@ class SelectedRestaurantProvider extends ChangeNotifier {
   RestaurantModel? get restaurantModel => _restaurantModel;
   updateSelectedRestaurant(RestaurantModel restaurantModel) {
     _restaurantModel = restaurantModel;
-    notifyListeners();
   }
 }

@@ -5,7 +5,7 @@ import 'package:restomation/Widgets/custom_text.dart';
 import '../../Repo/Storage Service/storage_service.dart';
 
 class CustomFoodCard extends StatefulWidget {
-  final MenuModel item;
+  final MenuItemModel item;
   const CustomFoodCard({super.key, required this.item});
 
   @override

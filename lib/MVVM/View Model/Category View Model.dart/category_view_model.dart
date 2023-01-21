@@ -43,11 +43,11 @@ class MenuCategoryViewModel extends ChangeNotifier {
   }
 
   Future createMenuCategoryItem(String categoryId, String restaurantId,
-      MenuModel menuModel, Uint8List imageBytes) async {
+      MenuItemModel menuItemModel, Uint8List imageBytes) async {
     setLoading(true);
     setModelError(null);
     var response = await MenuService().createMenuCategoryItem(
-        categoryId, restaurantId, menuModel, imageBytes);
+        categoryId, restaurantId, menuItemModel, imageBytes);
     if (response is Success) {
       setMenuCategorysResponse(response.response as String);
     }

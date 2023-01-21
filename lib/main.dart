@@ -8,7 +8,6 @@ import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_mo
 import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/View%20Model/Staff%20View%20Model/staff_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
-import 'package:restomation/MVVM/Views/Cart/cart.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/page_decider.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
@@ -19,6 +18,7 @@ import 'MVVM/View Model/Order View Model/order_view_model.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
 import 'Provider/selected_restaurant_provider.dart';
+import 'Provider/user_provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -68,25 +68,6 @@ class _MyAppState extends State<MyApp> {
             ),
           );
         },
-        "/customer-cart/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-              key: const ValueKey("customer-cart"),
-              title: parameters[0],
-              type: BeamPageType.fadeTransition,
-              child: CartPage(
-                restaurantsKey: parameters[0],
-                tableKey: parameters[1],
-                name: parameters[2],
-                phone: parameters[3],
-                isTableClean: parameters[4],
-                addMoreItems: parameters[5],
-                orderItemsKey: parameters[6],
-                existingItemCount: parameters[7],
-              ));
-        },
         "/customer-order/:parameters": (p0, p1, p2) {
           final String restaurantsParams =
               p1.pathParameters["parameters"] ?? "";
@@ -132,7 +113,12 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(
           create: (context) => StaffViewModel(),
         ),
-        ChangeNotifierProvider(create: (context) => OrderViewModel())
+        ChangeNotifierProvider(
+          create: (context) => OrderViewModel(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CustomerProvider(),
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

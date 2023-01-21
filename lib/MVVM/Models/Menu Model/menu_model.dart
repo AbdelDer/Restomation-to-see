@@ -1,5 +1,5 @@
-class MenuModel {
-  MenuModel({
+class MenuItemModel {
+  MenuItemModel({
     required this.name,
     required this.description,
     required this.imagePath,
@@ -19,8 +19,8 @@ class MenuModel {
   final String? status;
   final String? upselling;
 
-  factory MenuModel.fromFirestore(Map item) {
-    return MenuModel(
+  factory MenuItemModel.fromFirestore(Map item) {
+    return MenuItemModel(
         name: item["name"] ?? "No name provided",
         description: item["description"] ?? "No description provided",
         imagePath: item["imagePath"] ?? "No imagePath provided",
@@ -30,16 +30,16 @@ class MenuModel {
         status: item["status"] ?? "unavailable",
         upselling: item["upselling"] ?? "No upselling provided");
   }
-  Map toJson(MenuModel menuModel) {
+  Map toJson(MenuItemModel menuItemModel) {
     return {
-      "name": menuModel.name,
-      "description": menuModel.description,
-      "imagePath": menuModel.imagePath,
-      "price": menuModel.price,
-      "reviews": menuModel.reviews,
-      "type": menuModel.type,
-      "status": menuModel.status,
-      "upselling": menuModel.upselling
+      "name": menuItemModel.name,
+      "description": menuItemModel.description,
+      "imagePath": menuItemModel.imagePath,
+      "price": menuItemModel.price,
+      "reviews": menuItemModel.reviews,
+      "type": menuItemModel.type,
+      "status": menuItemModel.status,
+      "upselling": menuItemModel.upselling
     };
   }
 }

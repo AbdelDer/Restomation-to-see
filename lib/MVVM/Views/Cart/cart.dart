@@ -1,11 +1,7 @@
-import 'package:beamer/beamer.dart';
-import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/MVVM/Models/Cart%20Item%20Model/cart_item_model.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
-import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
@@ -14,28 +10,14 @@ import 'package:restomation/Widgets/custom_text.dart';
 import '../../../Provider/cart_provider.dart';
 
 class CartPage extends StatelessWidget {
-  final String restaurantsKey;
-  final String tableKey;
-  final String name;
-  final String isTableClean;
-  final String phone;
-  final String? addMoreItems;
-  final String? orderItemsKey;
-  final String? existingItemCount;
-  const CartPage(
-      {super.key,
-      required this.restaurantsKey,
-      required this.tableKey,
-      required this.name,
-      required this.phone,
-      required this.isTableClean,
-      required this.addMoreItems,
-      required this.orderItemsKey,
-      required this.existingItemCount});
+  const CartPage({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     Cart cart = context.watch<Cart>();
+
     return Scaffold(
       appBar: BaseAppBar(
         title: "Cart",
@@ -80,43 +62,43 @@ class CartPage extends StatelessWidget {
           ),
           CustomButton(
               buttonColor: primaryColor,
-              text: addMoreItems == "yes" ? "Update Order" : "Order",
+              text: "Order",
               textColor: kWhite,
               function: () async {
-                if (addMoreItems == "yes") {
-                  CoolAlert.show(context: context, type: CoolAlertType.loading);
+                // if (addMoreItems == "yes") {
+                //   CoolAlert.show(context: context, type: CoolAlertType.loading);
 
-                  await DatabaseService()
-                      .updateOrderItems(restaurantsKey, cart.cartItems, phone,
-                          orderItemsKey!, int.parse(existingItemCount!))
-                      .then((value) {
-                    KRoutes.pop(context);
-                    Fluttertoast.showToast(msg: "Ordered Successfully");
+                //   await DatabaseService()
+                //       .updateOrderItems(restaurantsKey, cart.cartItems, phone,
+                //           orderItemsKey!, int.parse(existingItemCount!))
+                //       .then((value) {
+                //     KRoutes.pop(context);
+                //     Fluttertoast.showToast(msg: "Ordered Successfully");
 
-                    Beamer.of(context).beamToReplacementNamed(
-                        "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                  });
-                } else {
-                  CoolAlert.show(context: context, type: CoolAlertType.loading);
-                  Map<String,Object> data = {
-                    "name": name,
-                    "phone": phone,
-                    "table_name": tableKey,
-                    "order_status": "pending",
-                    "isTableClean": isTableClean,
-                    "waiter": "none"
-                  };
-                  await DatabaseService()
-                      .createOrder(
-                          restaurantsKey, tableKey, data, cart.cartItems, phone)
-                      .then((value) {
-                    KRoutes.pop(context);
-                    Fluttertoast.showToast(msg: "Ordered Successfully");
+                //     Beamer.of(context).beamToReplacementNamed(
+                //         "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
+                //   });
+                // } else {
+                //   CoolAlert.show(context: context, type: CoolAlertType.loading);
+                //   Map<String, Object> data = {
+                //     "name": name,
+                //     "phone": phone,
+                //     "table_name": tableKey,
+                //     "order_status": "pending",
+                //     "isTableClean": isTableClean,
+                //     "waiter": "none"
+                //   };
+                //   await DatabaseService()
+                //       .createOrder(
+                //           restaurantsKey, tableKey, data, cart.cartItems, phone)
+                //       .then((value) {
+                //     KRoutes.pop(context);
+                //     Fluttertoast.showToast(msg: "Ordered Successfully");
 
-                    Beamer.of(context).beamToReplacementNamed(
-                        "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                  });
-                }
+                //     Beamer.of(context).beamToReplacementNamed(
+                //         "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
+                //   });
+                // }
               }),
           const SizedBox(
             height: 20,
@@ -129,13 +111,13 @@ class CartPage extends StatelessWidget {
   String getTotalPrice(Cart cart) {
     double total = 0;
     for (var element in cart.cartItems) {
-      total += double.parse(element["price"]) * element["quantity"];
+      total += double.parse(element.price) * element.quantity;
     }
     return total.toString();
   }
 
-  Widget cartItemDisplay(BuildContext context, Map data, Cart cart) {
-    final ref = StorageService.storage.ref().child(data["image"]);
+  Widget cartItemDisplay(BuildContext context, CartItemModel data, Cart cart) {
+    final ref = StorageService.storage.ref().child(data.imagePath);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -152,22 +134,21 @@ class CartPage extends StatelessWidget {
                 height: 10,
               ),
               Text(
-                data["name"],
+                data.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
                 height: 10,
               ),
               Text(
-                "₹${data["price"]} x ${data["quantity"]}",
+                "₹${data.price} x ${data.quantity}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
                 height: 10,
               ),
               CustomText(
-                  text:
-                      "total  ${double.parse(data["price"]) * data["quantity"]}"),
+                  text: "total  ${double.parse(data.price) * data.quantity}"),
               const SizedBox(
                 height: 10,
               ),
@@ -179,7 +160,7 @@ class CartPage extends StatelessWidget {
                 height: 10,
               ),
               CustomText(
-                text: data["instructions"] ?? "No instructions",
+                text: data.instructions ?? "No instructions",
               ),
               const SizedBox(
                 height: 10,
@@ -233,7 +214,7 @@ class CartPage extends StatelessWidget {
         ),
         InkWell(
             onTap: () {
-              cart.removeCartItem(data);
+              cart.deleteCartItem(data);
             },
             child: const Icon(Icons.delete))
       ],

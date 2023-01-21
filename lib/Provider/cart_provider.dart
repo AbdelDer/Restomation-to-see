@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:restomation/MVVM/Models/Cart%20Item%20Model/cart_item_model.dart';
 
 class Cart extends ChangeNotifier {
-  List<Map> cartItems = [];
-  addCartItem(Map value) {
-    if (cartItems.contains(value) && value["quantity"] > 1) {
-      int index =
-          cartItems.indexWhere((element) => element["name"] == value["name"]);
+  List<CartItemModel> cartItems = [];
+  addCartItem(CartItemModel value) {
+    int index = cartItems.indexWhere((element) => element.name == value.name);
+    if (index != -1 && value.quantity > 1) {
+      int index = cartItems.indexWhere((element) => element.name == value.name);
       cartItems[index] = value;
     } else {
       cartItems.add(value);
@@ -18,38 +19,31 @@ class Cart extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getTotalPrice(List items) {
+  String getTotalPrice(List<CartItemModel> items) {
     double total = 0;
     for (var element in items) {
-      total += double.parse(element["price"]) * element["quantity"];
+      total += double.parse(element.price) * element.quantity;
     }
     return total.toString();
   }
 
-  updateCartItem(Map value, String instructions) {
-    int index =
-        cartItems.indexWhere((element) => element["name"] == value["name"]);
-    cartItems[index]["instructions"] = instructions;
+  updateCartItem(CartItemModel value, String instructions) {
+    int index = cartItems.indexWhere((element) => element.name == value.name);
+    cartItems[index].instructions = instructions;
     Fluttertoast.showToast(msg: "Instructions added successfully !");
   }
 
-  deleteCartItem(value) {
-    if (cartItems.contains(value) && value["quantity"] > 0) {
-      int index = cartItems.indexWhere((element) {
-        return element["name"] == value["name"];
-      });
-      cartItems[index] = value;
-    } else {
-      cartItems.remove(value);
-    }
+  deleteCartItem(CartItemModel value) {
+    int index = cartItems.indexWhere((element) {
+      return element.name == value.name;
+    });
+    cartItems.removeAt(index);
+
     notifyListeners();
   }
 
-  removeCartItem(value) {
-    int index = cartItems.indexWhere((element) {
-      return element["name"] == value["name"];
-    });
-    cartItems.removeAt(index);
+  clearCart() {
+    cartItems.clear();
     notifyListeners();
   }
 }

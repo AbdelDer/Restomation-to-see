@@ -18,6 +18,16 @@ class RestaurantService {
     });
   }
 
+  Future<Object> getSingleRestaurant(String restaurantId) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> res =
+          await _db.collection("restaurants").doc(restaurantId).get();
+      return Success(200, RestaurantModel.fromJson(res.data() ?? {}));
+    } catch (e) {
+      return Failure(101, e.toString());
+    }
+  }
+
   Future<Object> createrestaurants(
       String name, String fileName, Uint8List bytes) async {
     try {

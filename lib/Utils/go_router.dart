@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:go_router/go_router.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Views/Admin%20Screen/admin_screen.dart';
+import 'package:restomation/MVVM/Views/Cart/cart.dart';
+import 'package:restomation/MVVM/Views/Customer%20Menu%20Page/customer_menu_page.dart';
 import 'package:restomation/MVVM/Views/Customer%20Page/customer_page.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
-import 'package:restomation/MVVM/Views/Menu%20Category%20Page/menu_category_page.dart';
+import 'package:restomation/MVVM/Views/Menu%20Page/menu_page.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_screen.dart';
 import 'package:restomation/MVVM/Views/Resturant%20Details/resturant_details.dart';
 import 'package:restomation/MVVM/Views/Staff%20page/staff_page.dart';
@@ -78,11 +80,20 @@ final GoRouter goRoute = GoRouter(
       builder: (context, state) {
         List param = (state.params["param"] as String).split(",").toList();
         return CustomerPage(
-          restaurantsKey: param[0] ?? "",
+          restaurantKey: param[0] ?? "",
           tableKey: param[1] ?? "",
-          restaurantsImageName: param[2] ?? "",
         );
       },
+    ),
+    GoRoute(
+      name: "customer-menu-page",
+      path: "/customer-menu-page",
+      builder: (context, state) => const CustomerMenuPage(),
+    ),
+    GoRoute(
+      name: "cart-page",
+      path: "/cart-page",
+      builder: (context, state) => const CartPage(),
     ),
   ],
 );

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Models/Cart%20Item%20Model/cart_item_model.dart';
+import 'package:restomation/MVVM/Models/Menu%20Model/menu_model.dart';
 import 'package:restomation/Provider/cart_provider.dart';
 
 class AddToCart extends StatefulWidget {
-  final Map foodData;
-  const AddToCart({super.key, required this.foodData,});
+  final MenuItemModel menuItemModel;
+  const AddToCart({
+    super.key,
+    required this.menuItemModel,
+  });
 
   @override
   State<AddToCart> createState() => _AddToCartState();
@@ -16,10 +21,13 @@ class _AddToCartState extends State<AddToCart> {
   Widget build(BuildContext context) {
     Cart cart = context.watch<Cart>();
     int index = cart.cartItems.indexWhere((element) =>
-        element["name"].toString().toLowerCase() ==
-        widget.foodData["name"].toString().toLowerCase());
+        element.name.toString().toLowerCase() ==
+        widget.menuItemModel.name.toString().toLowerCase());
+    if (index == -1) {
+      initialValue = 0;
+    }
     if (index != -1) {
-      initialValue = cart.cartItems[index]["quantity"];
+      initialValue = cart.cartItems[index].quantity;
     }
     return InkWell(
       onTap: () {
@@ -27,8 +35,18 @@ class _AddToCartState extends State<AddToCart> {
           setState(() {
             initialValue++;
           });
-          widget.foodData["quantity"] = initialValue;
-          context.read<Cart>().addCartItem(widget.foodData);
+
+          context.read<Cart>().addCartItem(CartItemModel(
+              name: widget.menuItemModel.name ?? "",
+              description: widget.menuItemModel.description ?? "",
+              imagePath: widget.menuItemModel.imagePath ?? "",
+              price: widget.menuItemModel.price ?? "",
+              reviews: widget.menuItemModel.reviews ?? "",
+              status: widget.menuItemModel.status ?? "",
+              type: widget.menuItemModel.type ?? "",
+              upselling: widget.menuItemModel.upselling ?? "",
+              quantity: initialValue,
+              cookingStatus: "pending"));
         }
       },
       child: Container(
@@ -59,11 +77,22 @@ class _AddToCartState extends State<AddToCart> {
                       onTap: () {
                         setState(() {
                           initialValue--;
-                          cart.cartItems[index]["quantity"] = initialValue;
+                          cart.cartItems[index].quantity = initialValue;
                           cart.updateState();
                         });
                         if (initialValue == 0) {
-                          cart.deleteCartItem(widget.foodData);
+                          cart.deleteCartItem(CartItemModel(
+                              name: widget.menuItemModel.name ?? "",
+                              description:
+                                  widget.menuItemModel.description ?? "",
+                              imagePath: widget.menuItemModel.imagePath ?? "",
+                              price: widget.menuItemModel.price ?? "",
+                              reviews: widget.menuItemModel.reviews ?? "",
+                              status: widget.menuItemModel.status ?? "",
+                              type: widget.menuItemModel.type ?? "",
+                              upselling: widget.menuItemModel.upselling ?? "",
+                              quantity: initialValue,
+                              cookingStatus: "pending"));
                         }
                       },
                       child: const Icon(
@@ -75,7 +104,7 @@ class _AddToCartState extends State<AddToCart> {
                       onTap: () {
                         setState(() {
                           initialValue++;
-                          cart.cartItems[index]["quantity"] = initialValue;
+                          cart.cartItems[index].quantity = initialValue;
                           cart.updateState();
                         });
                       },

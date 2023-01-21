@@ -21,4 +21,13 @@ class TablesModel {
         qrLink: doc["qrLink"] ?? "No path provided",
         restaurantId: doc["restaurant_id"] ?? "No restaurant ID provided");
   }
+  factory TablesModel.fromDocumentSnapshot(
+      DocumentSnapshot<Map<String, dynamic>> table) {
+    Map? doc = table.data();
+    return TablesModel(
+        id: table.id,
+        name: doc?["name"] ?? "No name provided",
+        qrLink: doc?["qrLink"] ?? "No path provided",
+        restaurantId: doc?["restaurant_id"] ?? "No restaurant ID provided");
+  }
 }

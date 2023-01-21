@@ -41,9 +41,9 @@ class MenuService {
 //
 //        CREATE MENU ITEMS
   Future<Object> createMenuCategoryItem(String categoryId, String restaurantId,
-      MenuModel menuModel, Uint8List imageBytes) async {
+      MenuItemModel menuItemModel, Uint8List imageBytes) async {
     try {
-      await storage.ref(menuModel.imagePath).putData(imageBytes);
+      await storage.ref(menuItemModel.imagePath).putData(imageBytes);
       await _db
           .collection("/restaurants")
           .doc(restaurantId)
@@ -52,7 +52,7 @@ class MenuService {
           .update(
         {
           "menuItems": FieldValue.arrayUnion(
-            [menuModel.toJson(menuModel)],
+            [menuItemModel.toJson(menuItemModel)],
           ),
         },
       );
@@ -66,9 +66,9 @@ class MenuService {
 //
 //      DELETE MENU ITEMS
   Future<Object> deleteMenuCategoryItem(String categoryId, String restaurantId,
-      MenuModel menuModel, Uint8List imageBytes) async {
+      MenuItemModel menuItemModel, Uint8List imageBytes) async {
     try {
-      await storage.ref(menuModel.imagePath).putData(imageBytes);
+      await storage.ref(menuItemModel.imagePath).putData(imageBytes);
       await _db
           .collection("/restaurants")
           .doc(restaurantId)
@@ -77,7 +77,7 @@ class MenuService {
           .update(
         {
           "menuItems": FieldValue.arrayRemove(
-            [menuModel.toJson(menuModel)],
+            [menuItemModel.toJson(menuItemModel)],
           ),
         },
       );

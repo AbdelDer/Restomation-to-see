@@ -6,11 +6,11 @@ class MenuCategoryModel {
       {required this.id,
       required this.categoryName,
       required this.restaurantId,
-      required this.menuModel});
+      required this.menuItemModel});
   final String? id;
   final String? categoryName;
   final String? restaurantId;
-  final List<MenuModel>? menuModel;
+  final List<MenuItemModel>? menuItemModel;
 
   factory MenuCategoryModel.fromFirestore(
       QueryDocumentSnapshot<Map<String, dynamic>> e) {
@@ -19,8 +19,8 @@ class MenuCategoryModel {
       id: e.id,
       categoryName: doc["categoryName"] ?? "No category name provided",
       restaurantId: doc["restaurant_id"] ?? "No restaurant id provided",
-      menuModel: (doc["menuItems"] as List)
-          .map((e) => MenuModel.fromFirestore(e))
+      menuItemModel: (doc["menuItems"] as List)
+          .map((e) => MenuItemModel.fromFirestore(e))
           .toList(),
     );
   }
