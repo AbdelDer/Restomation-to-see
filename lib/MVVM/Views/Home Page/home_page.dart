@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/Restaurant%20Service/restaurant_service.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
@@ -69,8 +71,12 @@ class _HomePageState extends State<HomePage> {
             final ref = StorageService.storage.ref().child(e.imagePath!);
             return GestureDetector(
               onTap: () {
-                context.push("/restaurant-details",
-                    extra: RestaurantModel.toJson(e));
+                SelectedRestaurantProvider selectedRestaurantProvider =
+                    context.read<SelectedRestaurantProvider>();
+                selectedRestaurantProvider.updateSelectedRestaurant(e);
+                context.push(
+                  "/restaurant-details",
+                );
               },
               child: Padding(
                 padding: const EdgeInsets.all(10),

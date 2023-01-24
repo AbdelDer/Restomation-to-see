@@ -36,7 +36,8 @@ class CartItemModel {
       "status": cartItemModel.status,
       "upselling": cartItemModel.upselling,
       "quantity": cartItemModel.quantity,
-      "instructions": cartItemModel.instructions
+      "instructions": cartItemModel.instructions,
+      "cookingStatus": cartItemModel.cookingStatus
     };
   }
 }

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:restomation/MVVM/Models/Order%20Model/order_model.dart';
 
+import '../api_status.dart';
+
 class OrderService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -26,5 +28,33 @@ class OrderService {
         });
       }
     });
+  }
+
+  Future createOrder(String restaurantId, Map<String, dynamic> data) async {
+    try {
+      await _db
+          .collection("/restaurants")
+          .doc(restaurantId)
+          .collection("orders")
+          .doc()
+          .set(data);
+      return Success(200, "Order created Succesfully");
+    } on FirebaseException catch (e) {
+      return Failure(404, e.code);
+    }
+  }
+
+  Future checkExisitingOrder(String restaurantId, String tableId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> doc = await _db
+          .collection("/restaurants")
+          .doc(restaurantId)
+          .collection("orders")
+          .where("tableId", isEqualTo: tableId)
+          .get();
+      return Success(200, doc);
+    } on FirebaseException catch (e) {
+      return Failure(404, e.code);
+    }
   }
 }

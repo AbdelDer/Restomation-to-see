@@ -268,32 +268,7 @@ class DatabaseService extends StorageService {
     await db.ref().child("staff").child(itemKey).update(item);
   }
 
-  Future createOrder(String restaurantsKey, String tableKey,
-      Map<String, Object> data, List cartItems, String name) async {
-    // await FirebaseFirestore.instance
-    // .collection("orders")
-    // .doc()
-    // .collection(restaurantsKey)
-    // .doc()
-    // .set(data);
-    // await FirebaseFirestore.instance
-    //     .collection("order_items")
-    //     .doc()
-    //     .collection(restaurantsKey)
-    //     .doc()
-    //     .collection(name)
-    //     .doc()
-    //     .set(cartItems);
 
-    await db.ref().child("orders").child(restaurantsKey).push().set(data);
-    db
-        .ref()
-        .child("order_items")
-        .child(restaurantsKey)
-        .child(name)
-        .push()
-        .set(cartItems);
-  }
 
   Future updateOrderItems(String restaurantsKey, List cartItems, String name,
       String orderItemsKey, int itemCount) async {

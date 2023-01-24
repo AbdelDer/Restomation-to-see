@@ -22,7 +22,7 @@ class RestaurantService {
     try {
       DocumentSnapshot<Map<String, dynamic>> res =
           await _db.collection("restaurants").doc(restaurantId).get();
-      return Success(200, RestaurantModel.fromJson(res.data() ?? {}));
+      return Success(200, RestaurantModel.fromJson(res));
     } catch (e) {
       return Failure(101, e.toString());
     }

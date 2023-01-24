@@ -11,15 +11,14 @@ import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_search.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
+import '../../../Provider/selected_restaurant_provider.dart';
 import '../../Models/RestaurantsModel/restaurants_model.dart';
 import '../../Repo/Tables Service/tables_service.dart';
 import '../../View Model/Tables View Model/tables_view_model.dart';
 
 class TablesPage extends StatefulWidget {
-  final RestaurantModel restaurantModel;
   const TablesPage({
     super.key,
-    required this.restaurantModel,
   });
 
   @override
@@ -33,10 +32,12 @@ class _TablesPageState extends State<TablesPage> {
 
   @override
   Widget build(BuildContext context) {
+    SelectedRestaurantProvider selectedRestaurantProvider =
+        context.read<SelectedRestaurantProvider>();
     TablesViewModel tablesViewModel = context.watch<TablesViewModel>();
     return Scaffold(
       appBar: BaseAppBar(
-        title: widget.restaurantModel.name ?? "",
+        title: selectedRestaurantProvider.restaurantModel?.name ?? "",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -44,8 +45,11 @@ class _TablesPageState extends State<TablesPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            EssentialFunctions().createUpdateTable(context,
-                widget.restaurantModel, tableController, tablesViewModel);
+            EssentialFunctions().createUpdateTable(
+                context,
+                selectedRestaurantProvider.restaurantModel,
+                tableController,
+                tablesViewModel);
           },
           label: const CustomText(
             text: "Create table",
@@ -70,12 +74,15 @@ class _TablesPageState extends State<TablesPage> {
                     },
                   ),
                   StreamBuilder(
-                      stream: TablesService()
-                          .getTables(widget.restaurantModel.id ?? " "),
+                      stream: TablesService().getTables(
+                          selectedRestaurantProvider.restaurantModel?.id ??
+                              " "),
                       builder:
                           (context, AsyncSnapshot<List<TablesModel>> snapshot) {
                         return tableView(
-                            snapshot, widget.restaurantModel, tablesViewModel);
+                            snapshot,
+                            selectedRestaurantProvider.restaurantModel,
+                            tablesViewModel);
                       }),
                 ],
               ))),
@@ -119,7 +126,7 @@ class _TablesPageState extends State<TablesPage> {
                     InkWell(
                       onTap: () {
                         context.push(
-                          "/customer-page/${restaurantModel?.id},${e.id}",
+                          "/page-decider/${restaurantModel?.id},${e.id}",
                         );
                       },
                       child: CustomText(

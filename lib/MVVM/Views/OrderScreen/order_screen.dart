@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/all_waiters_display.dart';
 import 'package:restomation/MVVM/Views/OrderScreen/order_item_display.dart';
+import 'package:restomation/Provider/selected_restaurant_provider.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -19,8 +21,9 @@ import '../../Models/RestaurantsModel/restaurants_model.dart';
 import '../../Repo/Database Service/database_service.dart';
 
 class OrderScreen extends StatefulWidget {
-  final RestaurantModel restaurantModel;
-  const OrderScreen({super.key, required this.restaurantModel});
+  const OrderScreen({
+    super.key,
+  });
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
@@ -37,9 +40,11 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SelectedRestaurantProvider selectedRestaurantProvider =
+        context.read<SelectedRestaurantProvider>();
     return Scaffold(
         appBar: BaseAppBar(
-          title: widget.restaurantModel.name ?? "",
+          title: selectedRestaurantProvider.restaurantModel?.name ?? "",
           appBar: AppBar(),
           widgets: const [],
           appBarHeight: 50,
@@ -49,14 +54,14 @@ class _OrderScreenState extends State<OrderScreen> {
           child: FutureBuilder(
               future: FirebaseFirestore.instance
                   .collection("/restaurants")
-                  .doc(widget.restaurantModel.id ?? "")
+                  .doc(selectedRestaurantProvider.restaurantModel?.id ?? "")
                   .collection("orders")
                   .snapshots()
                   .forEach((element) async {
                 for (var elements in element.docs) {
                   await FirebaseFirestore.instance
                       .collection("/restaurants")
-                      .doc(widget.restaurantModel.id ?? "")
+                      .doc(selectedRestaurantProvider.restaurantModel?.id ?? "")
                       .collection("orders")
                       .doc(elements.id.toString())
                       .collection("order_items")

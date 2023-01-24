@@ -29,11 +29,12 @@ class RestaurantModel {
     });
   }
 
-  factory RestaurantModel.fromJson(Map e) {
+  factory RestaurantModel.fromJson(DocumentSnapshot<Map<String, dynamic>> e) {
+    Map? doc = e.data();
     return RestaurantModel(
-      id: e["id"],
-      name: e["name"] ?? "No name provided",
-      imagePath: e["imagePath"] ?? "No path provided",
+      id: e.id,
+      name: doc?["name"] ?? "No name provided",
+      imagePath: doc?["imagePath"] ?? "No path provided",
     );
   }
 }

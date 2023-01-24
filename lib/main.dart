@@ -8,7 +8,6 @@ import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_mo
 import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/View%20Model/Staff%20View%20Model/staff_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
-import 'package:restomation/MVVM/Views/Customer%20Page/page_decider.dart';
 import 'package:restomation/MVVM/Views/Home%20Page/home_page.dart';
 import 'package:restomation/MVVM/Views/Login%20Page/login_page.dart';
 import 'package:restomation/Provider/cart_provider.dart';
@@ -16,7 +15,6 @@ import 'package:restomation/Utils/go_router.dart';
 import 'package:url_strategy/url_strategy.dart';
 import 'MVVM/View Model/Order View Model/order_view_model.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
-import 'MVVM/Views/Customer Order Page/customer_order_page.dart';
 import 'Provider/selected_restaurant_provider.dart';
 import 'Provider/user_provider.dart';
 import 'firebase_options.dart';
@@ -53,36 +51,6 @@ class _MyAppState extends State<MyApp> {
               type: BeamPageType.fadeTransition,
               child: HomePage(),
             ),
-        "/restaurants-page-decider/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-            key: const ValueKey("customer-table"),
-            title: parameters[0],
-            type: BeamPageType.fadeTransition,
-            child: PageDecider(
-              restaurantsKey: parameters[0],
-              tableKey: parameters[1],
-              restaurantsImageName: parameters[2],
-            ),
-          );
-        },
-        "/customer-order/:parameters": (p0, p1, p2) {
-          final String restaurantsParams =
-              p1.pathParameters["parameters"] ?? "";
-          List<String> parameters = restaurantsParams.split(",");
-          return BeamPage(
-              key: const ValueKey("customer-order"),
-              title: parameters[0],
-              type: BeamPageType.fadeTransition,
-              child: CustomerOrderPage(
-                restaurantsKey: parameters[0],
-                tableKey: parameters[1],
-                name: parameters[2],
-                phone: parameters[3],
-              ));
-        }
       }));
 
   @override

@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/Menu%20Category%20Model/menu_category_model.dart';
-import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Views/Menu%20Page/food_card.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 import 'package:restomation/Widgets/custom_text.dart';
+import '../../../Provider/selected_restaurant_provider.dart';
 import '../../../Utils/contants.dart';
 import '../../Repo/Menu Service/menu_service.dart';
 
 class MenuCategoryPage extends StatefulWidget {
-  final RestaurantModel restaurantModel;
   const MenuCategoryPage({
     super.key,
-    required this.restaurantModel,
   });
 
   @override
@@ -52,7 +51,8 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
   @override
   Widget build(BuildContext context) {
     scrollController.addListener(scrollListener);
-
+    SelectedRestaurantProvider selectedRestaurantProvider =
+        context.read<SelectedRestaurantProvider>();
     return Scaffold(
       appBar: BaseAppBar(
           title: "Menu",
@@ -60,8 +60,10 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           widgets: [
             InkWell(
               onTap: () {
-                EssentialFunctions().createCategoryDialog(context,
-                    categoryController, widget.restaurantModel.id ?? "");
+                EssentialFunctions().createCategoryDialog(
+                    context,
+                    categoryController,
+                    selectedRestaurantProvider.restaurantModel?.id ?? "");
               },
               child: Row(
                 children: const [
@@ -84,14 +86,16 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
           ],
           appBarHeight: 50),
       body: StreamBuilder(
-          stream: MenuService().getMenu(widget.restaurantModel.id ?? ""),
+          stream: MenuService()
+              .getMenu(selectedRestaurantProvider.restaurantModel?.id ?? ""),
           builder: (context, AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
-            return menuCategoryView(snapshot);
+            return menuCategoryView(snapshot, selectedRestaurantProvider);
           }),
     );
   }
 
-  Widget menuCategoryView(AsyncSnapshot<List<MenuCategoryModel>> snapshot) {
+  Widget menuCategoryView(AsyncSnapshot<List<MenuCategoryModel>> snapshot,
+      SelectedRestaurantProvider selectedRestaurantProvider) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const CustomLoader();
     }
@@ -117,7 +121,7 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
               menuItemPriceController,
               menuItemTypeController,
               mennuItemSelectedCategory,
-              widget.restaurantModel.id ?? "",
+              selectedRestaurantProvider.restaurantModel?.id ?? "",
               allrestaurantsMenuCategories,
             );
           },
@@ -224,7 +228,8 @@ class _MenuCategoryPageState extends State<MenuCategoryPage>
         int j = i - 1;
         for (j; j >= 0; j--) {
           localOffSet += 60 +
-              ((allrestaurantsMenuCategories[j].menuItemModel ?? []).length * 190);
+              ((allrestaurantsMenuCategories[j].menuItemModel ?? []).length *
+                  190);
         }
       }
       offsetListDuplicate.add(localOffSet);

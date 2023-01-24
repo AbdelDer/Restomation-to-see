@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/Cart%20Item%20Model/cart_item_model.dart';
+import 'package:restomation/MVVM/Repo/Order%20Service/order_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
+import 'package:restomation/MVVM/Repo/api_status.dart';
+import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
+import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
+import 'package:restomation/Provider/user_provider.dart';
+import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
+import 'package:restomation/Widgets/custom_alert.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -65,40 +74,7 @@ class CartPage extends StatelessWidget {
               text: "Order",
               textColor: kWhite,
               function: () async {
-                // if (addMoreItems == "yes") {
-                //   CoolAlert.show(context: context, type: CoolAlertType.loading);
-
-                //   await DatabaseService()
-                //       .updateOrderItems(restaurantsKey, cart.cartItems, phone,
-                //           orderItemsKey!, int.parse(existingItemCount!))
-                //       .then((value) {
-                //     KRoutes.pop(context);
-                //     Fluttertoast.showToast(msg: "Ordered Successfully");
-
-                //     Beamer.of(context).beamToReplacementNamed(
-                //         "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                //   });
-                // } else {
-                //   CoolAlert.show(context: context, type: CoolAlertType.loading);
-                //   Map<String, Object> data = {
-                //     "name": name,
-                //     "phone": phone,
-                //     "table_name": tableKey,
-                //     "order_status": "pending",
-                //     "isTableClean": isTableClean,
-                //     "waiter": "none"
-                //   };
-                //   await DatabaseService()
-                //       .createOrder(
-                //           restaurantsKey, tableKey, data, cart.cartItems, phone)
-                //       .then((value) {
-                //     KRoutes.pop(context);
-                //     Fluttertoast.showToast(msg: "Ordered Successfully");
-
-                //     Beamer.of(context).beamToReplacementNamed(
-                //         "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
-                //   });
-                // }
+                await createOrder(context, cart);
               }),
           const SizedBox(
             height: 20,
@@ -219,5 +195,40 @@ class CartPage extends StatelessWidget {
             child: const Icon(Icons.delete))
       ],
     );
+  }
+
+  Future<void> createOrder(BuildContext context, Cart cart) async {
+    CustomerProvider customerProvider = context.read<CustomerProvider>();
+    TablesViewModel tablesViewModel = context.read<TablesViewModel>();
+    RestaurantsViewModel restaurantsViewModel =
+        context.read<RestaurantsViewModel>();
+    Alerts.customLoadingAlert(context, text: "Ordering ... !!");
+    await OrderService().createOrder(
+      restaurantsViewModel.restaurantModel?.id ?? "",
+      {
+        "name": customerProvider.customerModel?.name ?? "",
+        "phone": customerProvider.customerModel?.phone ?? "",
+        "isTableClean": customerProvider.customerModel?.isTableClean ?? "",
+        "tableId": tablesViewModel.tablesModel?.id ?? "",
+        "tableName": tablesViewModel.tablesModel?.name ?? "",
+        "hasNewItems": "false",
+        "orderStatus": "pending",
+        "waiter": "none",
+        "orderItems": cart.cartItems.map((e) => e.toJson(e)).toList()
+      },
+    ).then((value) {
+      if (value is Success) {
+        KRoutes.pop(context);
+        KRoutes.pop(context);
+        KRoutes.pop(context);
+        Fluttertoast.showToast(msg: value.response.toString());
+        context.replace(
+            "/customer-order-page/${restaurantsViewModel.restaurantModel?.id},${tablesViewModel.tablesModel?.id}");
+      }
+      if (value is Failure) {
+        KRoutes.pop(context);
+        Fluttertoast.showToast(msg: value.errorResponse.toString());
+      }
+    });
   }
 }

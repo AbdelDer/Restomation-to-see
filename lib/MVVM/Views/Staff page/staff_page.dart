@@ -1,22 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import 'package:restomation/MVVM/Models/Staff%20Model/staff_model.dart';
 import 'package:restomation/MVVM/Repo/Staff%20Service/staff_service.dart';
 import 'package:restomation/Utils/Helper%20Functions/essential_functions.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
+import '../../../Provider/selected_restaurant_provider.dart';
 import '../../../Utils/contants.dart';
 import '../../../Widgets/custom_app_bar.dart';
 import '../../../Widgets/custom_search.dart';
 import '../../../Widgets/custom_text.dart';
 
 class StaffPage extends StatefulWidget {
-  final RestaurantModel restaurantModel;
   const StaffPage({
     super.key,
-    required this.restaurantModel,
   });
 
   @override
@@ -33,9 +33,11 @@ class _StaffPageState extends State<StaffPage> {
 
   @override
   Widget build(BuildContext context) {
+    SelectedRestaurantProvider selectedRestaurantProvider =
+        context.read<SelectedRestaurantProvider>();
     return Scaffold(
       appBar: BaseAppBar(
-        title: widget.restaurantModel.name ?? "No name",
+        title: selectedRestaurantProvider.restaurantModel?.name ?? "No name",
         appBar: AppBar(),
         widgets: const [],
         appBarHeight: 50,
@@ -45,7 +47,7 @@ class _StaffPageState extends State<StaffPage> {
           onPressed: () {
             EssentialFunctions().createStaffDialog(
               context,
-              widget.restaurantModel,
+              selectedRestaurantProvider.restaurantModel!,
               personNameController,
               personPhoneController,
               personEmailController,
@@ -76,13 +78,14 @@ class _StaffPageState extends State<StaffPage> {
                   ),
                   Expanded(
                     child: StreamBuilder(
-                        stream: StaffService()
-                            .getStaff(widget.restaurantModel.id ?? " "),
+                        stream: StaffService().getStaff(
+                            selectedRestaurantProvider.restaurantModel?.id ??
+                                " "),
                         builder: (context,
                             AsyncSnapshot<List<StaffModel>> snapshot) {
                           return staffView(
                             snapshot,
-                            widget.restaurantModel,
+                            selectedRestaurantProvider.restaurantModel!,
                           );
                         }),
                   ),
