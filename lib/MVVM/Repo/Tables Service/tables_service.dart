@@ -34,15 +34,28 @@ class TablesService {
     }
   }
 
-  Future<Object> createTables(
-      String name, String qrLink, String restaurantId) async {
+  Future<Object> createTables(String name, String restaurantId) async {
     try {
       _db
           .collection("/restaurants")
           .doc(restaurantId)
           .collection("tables")
           .doc()
-          .set({"name": name, "qrLink": qrLink, "restaurant_id": restaurantId});
+          .get()
+          .then((value) {
+        _db
+            .collection("/restaurants")
+            .doc(restaurantId)
+            .collection("tables")
+            .doc(value.id)
+            .set({
+          "name": name,
+          "qrLink":
+              "https://test.restomation.in/page-decider/$restaurantId,${value.id}",
+          "restaurant_id": restaurantId
+        });
+      });
+
       return Success(200, "Tables created successfully !!");
     } catch (e) {
       return Failure(101, e.toString());
