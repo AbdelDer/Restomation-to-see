@@ -396,37 +396,38 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: size.width * 0.4,
-                        child: CustomText(
+                  SizedBox(
+                    width: size.width * 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CustomText(
                           text: '${data["name"]}',
                           maxLines: 2,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
-                      ),
-                      CustomText(
-                        text: data["description"],
-                        color: Colors.black87,
-                      ),
-                      Row(
-                        children: [
-                          CustomText(
-                            text: "₹${data["price"]} x ${data["quantity"]} = ",
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54,
-                          ),
-                          CustomText(
-                            text:
-                                "₹${(double.parse(data["price"]) * data["quantity"])}",
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ],
-                      ),
-                    ],
+                        CustomText(
+                          text: data["description"],
+                          color: Colors.black87,
+                        ),
+                        Row(
+                          children: [
+                            CustomText(
+                              text:
+                                  "₹${data["price"]} x ${data["quantity"]} = ",
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
+                            CustomText(
+                              text:
+                                  "₹${(double.parse(data["price"]) * data["quantity"])}",
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -437,23 +438,24 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
             children: [
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: data["cookingStatus"] == "pending"
                       ? kYellow
                       : data["cookingStatus"] == "cooking"
-                          ? kYellow
+                          ? Colors.green.shade600
                           : data["cookingStatus"] == "ready"
                               ? kGreen
                               : data["cookingStatus"] == "delivered"
-                                  ? Colors.green
+                                  ? kGreen
                                   : Colors.red,
                 ),
                 child: CustomText(
                   text: data["cookingStatus"],
                   color: Colors.white,
-                  fontsize: 10,
+                  fontsize: 12,
+                  maxLines: 1,
                   fontWeight: FontWeight.bold,
                 ),
               ),

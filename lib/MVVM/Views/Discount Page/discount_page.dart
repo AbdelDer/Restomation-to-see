@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:beamer/beamer.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -50,6 +52,7 @@ class DiscountPage extends StatelessWidget {
                 textColor: kWhite,
                 function: () async {
                   if (addMoreItems == "yes") {
+                    log("if");
                     CoolAlert.show(
                         context: context, type: CoolAlertType.loading);
 
@@ -64,6 +67,7 @@ class DiscountPage extends StatelessWidget {
                           "/customer-order/$restaurantsKey,$tableKey,$name,$phone");
                     });
                   } else {
+                    log("else");
                     CoolAlert.show(
                         context: context, type: CoolAlertType.loading);
                     Map data = {

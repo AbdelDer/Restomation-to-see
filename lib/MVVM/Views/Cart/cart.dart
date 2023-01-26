@@ -1,7 +1,10 @@
 import 'package:beamer/beamer.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/Views/Discount%20Page/discount_page.dart';
 import 'package:restomation/Utils/app_routes.dart';
@@ -100,14 +103,14 @@ class _CartPageState extends State<CartPage> {
           ),
           Positioned(
             bottom: 0,
-            child: bottomBar(size, context),
+            child: bottomBar(size, context, cart),
           )
         ],
       ),
     );
   }
 
-  Container bottomBar(Size size, BuildContext context) {
+  Container bottomBar(Size size, BuildContext context, Cart cart) {
     return Container(
       padding: const EdgeInsets.all(16),
       width: size.width,
@@ -139,23 +142,76 @@ class _CartPageState extends State<CartPage> {
             ],
           ),
           CustomButton(
-              buttonColor: primaryColor,
-              text: widget.addMoreItems == "yes" ? "Update Order" : "Order",
-              textColor: kWhite,
-              function: () async {
-                KRoutes.push(
-                    context,
-                    DiscountPage(
-                      restaurantsKey: widget.restaurantsKey,
-                      tableKey: widget.tableKey,
-                      name: widget.name,
-                      isTableClean: widget.isTableClean,
-                      phone: widget.phone,
-                      addMoreItems: widget.addMoreItems,
-                      orderItemsKey: widget.orderItemsKey,
-                      existingItemCount: widget.existingItemCount,
-                    ));
-              }),
+            buttonColor: primaryColor,
+            text: widget.addMoreItems == "yes" ? "Update Order" : "Order",
+            textColor: kWhite,
+            function: () async {
+              if (widget.addMoreItems == "yes") {
+                CoolAlert.show(context: context, type: CoolAlertType.loading);
+                await DatabaseService()
+                    .updateOrderItems(
+                        widget.restaurantsKey,
+                        cart.cartItems,
+                        widget.phone,
+                        widget.orderItemsKey!,
+                        int.parse(widget.existingItemCount!),
+                        widget.name)
+                    .then((value) async {
+                  KRoutes.pop(context);
+                  Fluttertoast.showToast(msg: "Ordered Successfully");
+                  // cart.clearCart();
+
+                  KRoutes.push(
+                      context,
+                      DiscountPage(
+                        restaurantsKey: widget.restaurantsKey,
+                        tableKey: widget.tableKey,
+                        name: widget.name,
+                        isTableClean: widget.isTableClean,
+                        phone: widget.phone,
+                        addMoreItems: widget.addMoreItems,
+                        orderItemsKey: widget.orderItemsKey,
+                        existingItemCount: widget.existingItemCount,
+                      ));
+                });
+              } else {
+                CoolAlert.show(context: context, type: CoolAlertType.loading);
+                Map data = {
+                  "name": widget.name,
+                  "phone": widget.phone,
+                  "table_name": widget.tableKey,
+                  "order_status": "pending",
+                  "isTableClean": widget.isTableClean,
+                  "hasNewItems": false,
+                  "waiter": "none"
+                };
+                await DatabaseService()
+                    .createOrder(widget.restaurantsKey, widget.tableKey, data,
+                        cart.cartItems, widget.phone)
+                    .then((value) {
+                  KRoutes.pop(context);
+                  Fluttertoast.showToast(msg: "Ordered Successfully");
+                  // cart.clearCart();
+                  Beamer.of(context).beamToNamed(
+                      "/customer-order/${widget.restaurantsKey},${widget.tableKey},${widget.name},${widget.phone}");
+
+                  KRoutes.push(
+                      context,
+                      DiscountPage(
+                        restaurantsKey: widget.restaurantsKey,
+                        tableKey: widget.tableKey,
+                        name: widget.name,
+                        isTableClean: widget.isTableClean,
+                        phone: widget.phone,
+                        addMoreItems: widget.addMoreItems,
+                        orderItemsKey: widget.orderItemsKey,
+                        existingItemCount: widget.existingItemCount,
+                      ));
+                });
+              }
+              print(cart.cartItems);
+            },
+          ),
         ],
       ),
     );
