@@ -1,6 +1,5 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Repo/RestaurantService/restaurant_service.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
@@ -227,8 +226,7 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-            dividerColor: Colors.transparent,
-            textTheme: GoogleFonts.poppinsTextTheme()),
+            dividerColor: Colors.transparent, fontFamily: 'RedHatDisplay'),
         routeInformationParser: BeamerParser(),
         routerDelegate: routerDelegate,
       ),

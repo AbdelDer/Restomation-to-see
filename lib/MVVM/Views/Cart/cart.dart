@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:beamer/beamer.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +43,7 @@ class _CartPageState extends State<CartPage> {
     Cart cart = context.watch<Cart>();
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F0F5),
+      backgroundColor: kBackground,
       appBar: BaseAppBar(
         appBarHeight: 60,
         title: 'Cart',

@@ -23,11 +23,9 @@ class CustomerOrderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     Beamer.of(context).beamingHistory.clear();
     return Scaffold(
+      backgroundColor: kBackground,
       appBar: BaseAppBar(
-          title: "Table Order",
-          appBar: AppBar(),
-          widgets: const [],
-          appBarHeight: 50),
+          title: "Bill", appBar: AppBar(), widgets: const [], appBarHeight: 40),
       body: StreamBuilder(
         stream: DatabaseService.db
             .ref()
@@ -63,51 +61,18 @@ class CustomerOrderPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: kGrey.shade300),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10)),
+                      color: kWhite),
                   child: Column(
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const CustomText(
-                            text: "Customer name :",
-                            fontWeight: FontWeight.bold,
+                            text: "Assigned Waiter",
                             fontsize: 20,
-                          ),
-                          CustomText(
-                            text: order[orderKey]["name"] ?? "none",
-                            fontsize: 20,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const CustomText(
-                            text: "Customer phone :",
-                            fontWeight: FontWeight.bold,
-                            fontsize: 20,
-                          ),
-                          CustomText(
-                            text: order[orderKey]["phone"] ?? "none",
-                            fontsize: 20,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const CustomText(
-                            text: "Assigned Waiter :",
-                            fontWeight: FontWeight.bold,
-                            fontsize: 20,
+                            color: kGrey,
                           ),
                           CustomText(
                             text: order[orderKey]["waiter"] ?? "none",
@@ -115,6 +80,7 @@ class CustomerOrderPage extends StatelessWidget {
                                 ? Colors.red
                                 : Colors.green,
                             fontsize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ],
                       ),
@@ -146,13 +112,10 @@ class CustomerOrderPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 6,
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(
-                  height: 10,
                 ),
                 Expanded(
                     child: CustomerOrderItemsView(

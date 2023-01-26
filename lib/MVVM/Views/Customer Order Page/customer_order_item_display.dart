@@ -148,6 +148,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
     List items = orderItems[orderItemsKeys[0]];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       floatingActionButton: (widget.order["waiter"] != "none")
           ? FloatingActionButton.extended(
               onPressed: () async {
@@ -226,19 +227,13 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                 fontsize: 20,
               ),
               CustomText(
-                text: getTotalPrice(items),
+                text: "₹${getTotalPrice(items)}",
                 fontsize: 20,
               ),
             ],
           ),
           const SizedBox(
-            height: 10,
-          ),
-          const Divider(
-            thickness: 1,
-            indent: 100,
-            endIndent: 100,
-            color: kblack,
+            height: 4,
           ),
           const SizedBox(
             height: 10,
@@ -303,7 +298,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                 height: 10,
               ),
               Text(
-                "Rs. ${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
+                "₹${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
