@@ -44,6 +44,25 @@ class OrderService {
     }
   }
 
+  Future updateOrder(
+      String restaurantId, String tableId, List cartItems) async {
+    try {
+      await _db
+          .collection("/restaurants")
+          .doc(restaurantId)
+          .collection("orders")
+          .doc(tableId)
+          .update(
+        {
+          "menuItems": FieldValue.arrayUnion(cartItems),
+        },
+      );
+      return Success(200, "Menu Item added Succesfully");
+    } on FirebaseException catch (e) {
+      return Failure(404, e.code);
+    }
+  }
+
   Future checkExisitingOrder(String restaurantId, String tableId) async {
     try {
       QuerySnapshot<Map<String, dynamic>> doc = await _db

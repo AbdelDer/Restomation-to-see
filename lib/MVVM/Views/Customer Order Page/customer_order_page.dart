@@ -1,14 +1,13 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:restomation/MVVM/Repo/Customer%20Service/customer_service.dart';
 import 'package:restomation/MVVM/Views/Customer%20Order%20Page/customer_order_item_display.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
-import 'package:restomation/Widgets/custom_button.dart';
 import 'package:restomation/Widgets/custom_text.dart';
 
 import '../../../Widgets/custom_loader.dart';
+import '../../Models/Customer Model/customer_order_model.dart';
 import '../../View Model/Resturants View Model/resturants_view_model.dart';
 import '../../View Model/Tables View Model/tables_view_model.dart';
 
@@ -60,151 +59,144 @@ class CustomerOrderPage extends StatelessWidget {
       );
     }
     return StreamBuilder(
-      stream: DatabaseService.db
-          .ref()
-          .child("orders")
-          .child(restaurantKey)
-          .orderByChild("name")
-          .onValue,
-      builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+      stream: CustomerService().getCustomerOrder(restaurantKey, tableKey),
+      builder: (context, AsyncSnapshot<List<CustomerOrderModel>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const CustomLoader();
         }
         if (snapshot.hasError) {
-          return const CustomText(
-            text: "Error",
-          );
-        }
-        if (snapshot.data!.snapshot.children.isEmpty) {
           return const Center(
-            child: CustomText(text: "No Orders Yet !!"),
+            child: CustomText(text: "Error"),
           );
         }
-        Map? order = snapshot.data!.snapshot.value as Map;
-        List orderKeys = order.keys.toList();
-        String orderKey = orderKeys[0];
-        return Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: kGrey.shade300),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const CustomText(
-                          text: "Customer name :",
-                          fontWeight: FontWeight.bold,
-                          fontsize: 20,
-                        ),
-                        CustomText(
-                          text: order[orderKey]["name"] ?? "none",
-                          fontsize: 20,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const CustomText(
-                          text: "Customer phone :",
-                          fontWeight: FontWeight.bold,
-                          fontsize: 20,
-                        ),
-                        CustomText(
-                          text: order[orderKey]["phone"] ?? "none",
-                          fontsize: 20,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const CustomText(
-                          text: "Assigned Waiter :",
-                          fontWeight: FontWeight.bold,
-                          fontsize: 20,
-                        ),
-                        CustomText(
-                          text: order[orderKey]["waiter"] ?? "none",
-                          color: order[orderKey]["waiter"] == "none"
-                              ? Colors.red
-                              : Colors.green,
-                          fontsize: 20,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const CustomText(
-                          text: "Order Status :",
-                          fontWeight: FontWeight.bold,
-                          fontsize: 20,
-                        ),
-                        CustomText(
-                          text: order[orderKey]["order_status"] ?? "none",
-                          color: order[orderKey]["order_status"]
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "done" ||
-                                  order[orderKey]["order_status"]
-                                          .toString()
-                                          .toLowerCase() ==
-                                      "ready to deliver"
-                              ? Colors.green
-                              : Colors.red,
-                          fontsize: 20,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                  ],
+        if (snapshot.data!.isEmpty) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [CustomText(text: "No Order placed Yet !!")],
+          );
+        }
+        List<CustomerOrderModel> order = snapshot.data!;
+        return Scaffold(
+          floatingActionButton: (order[0].waiter != "none")
+              ? FloatingActionButton.extended(
+                  onPressed: () async {},
+                  label: Row(
+                    children: const [
+                      Icon(Icons.notifications),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      CustomText(
+                        text: "Call waiter",
+                        color: kWhite,
+                      ),
+                    ],
+                  ))
+              : null,
+          body: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: kGrey.shade300),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const CustomText(
+                            text: "Customer name :",
+                            fontWeight: FontWeight.bold,
+                            fontsize: 20,
+                          ),
+                          CustomText(
+                            text: order[0].name ?? "none",
+                            fontsize: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const CustomText(
+                            text: "Customer phone :",
+                            fontWeight: FontWeight.bold,
+                            fontsize: 20,
+                          ),
+                          CustomText(
+                            text: order[0].phone ?? "none",
+                            fontsize: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const CustomText(
+                            text: "Assigned Waiter :",
+                            fontWeight: FontWeight.bold,
+                            fontsize: 20,
+                          ),
+                          CustomText(
+                            text: order[0].waiter ?? "none",
+                            color: order[0].waiter == "none"
+                                ? Colors.red
+                                : Colors.green,
+                            fontsize: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const CustomText(
+                            text: "Order Status :",
+                            fontWeight: FontWeight.bold,
+                            fontsize: 20,
+                          ),
+                          CustomText(
+                            text: order[0].orderStatus ?? "none",
+                            color:
+                                order[0].orderStatus.toString().toLowerCase() ==
+                                            "done" ||
+                                        order[0]
+                                                .orderStatus
+                                                .toString()
+                                                .toLowerCase() ==
+                                            "ready to deliver"
+                                    ? Colors.green
+                                    : Colors.red,
+                            fontsize: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Expanded(
-                  child: CustomerOrderItemsView(
-                phone: "phone",
-                restaurantName: "restaurantsKey",
-                name: "name",
-                tableKey: tableKey,
-                isTableClean: order[orderKey]["isTableClean"],
-              )),
-              if (order["order_status"].toString().toLowerCase() == "done")
-                Column(
-                  children: [
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    CustomButton(
-                        buttonColor: primaryColor,
-                        text: "Pay",
-                        textColor: kWhite,
-                        function: () {}),
-                  ],
-                )
-            ],
+                const SizedBox(
+                  height: 10,
+                ),
+                Expanded(
+                    child: CustomerOrderItemsView(
+                  order: order[0],
+                )),
+              ],
+            ),
           ),
         );
       },

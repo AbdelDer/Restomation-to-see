@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/Customer%20Model/customer_model.dart';
 import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
-import 'package:restomation/Provider/user_provider.dart';
+import 'package:restomation/Provider/customer_provider.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_app_bar.dart';
 import 'package:restomation/Widgets/custom_button.dart';

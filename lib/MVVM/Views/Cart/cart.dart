@@ -8,7 +8,7 @@ import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/MVVM/Repo/api_status.dart';
 import 'package:restomation/MVVM/View%20Model/Resturants%20View%20Model/resturants_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Tables%20View%20Model/tables_view_model.dart';
-import 'package:restomation/Provider/user_provider.dart';
+import 'package:restomation/Provider/customer_provider.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_alert.dart';
@@ -26,7 +26,6 @@ class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Cart cart = context.watch<Cart>();
-
     return Scaffold(
       appBar: BaseAppBar(
         title: "Cart",
@@ -74,7 +73,7 @@ class CartPage extends StatelessWidget {
               text: "Order",
               textColor: kWhite,
               function: () async {
-                await createOrder(context, cart);
+                prepareOrder(context, cart);
               }),
           const SizedBox(
             height: 20,
@@ -197,26 +196,69 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  Future<void> createOrder(BuildContext context, Cart cart) async {
+  Future<void> prepareOrder(BuildContext context, Cart cart) async {
     CustomerProvider customerProvider = context.read<CustomerProvider>();
     TablesViewModel tablesViewModel = context.read<TablesViewModel>();
     RestaurantsViewModel restaurantsViewModel =
         context.read<RestaurantsViewModel>();
     Alerts.customLoadingAlert(context, text: "Ordering ... !!");
-    await OrderService().createOrder(
+    Map<String, dynamic> customerOrder = {
+      "name": customerProvider.customerModel?.name ?? "",
+      "phone": customerProvider.customerModel?.phone ?? "",
+      "isTableClean": customerProvider.customerModel?.isTableClean ?? "",
+      "tableId": tablesViewModel.tablesModel?.id ?? "",
+      "tableName": tablesViewModel.tablesModel?.name ?? "",
+      "hasNewItems": "false",
+      "orderStatus": "pending",
+      "waiter": "none",
+      "orderItems": cart.cartItems.map((e) => e.toJson(e)).toList()
+    };
+    if (customerProvider.customerModel!.hasNewItems != null &&
+        customerProvider.customerModel!.hasNewItems == "true") {
+    } else {
+      await createOrder(
+          context, restaurantsViewModel, customerOrder, tablesViewModel);
+    }
+  }
+
+  Future<void> updateOrder(
+      BuildContext context,
+      RestaurantsViewModel restaurantsViewModel,
+      List cartItems,
+      TablesViewModel tablesViewModel) async {
+    await OrderService()
+        .updateOrder(
       restaurantsViewModel.restaurantModel?.id ?? "",
-      {
-        "name": customerProvider.customerModel?.name ?? "",
-        "phone": customerProvider.customerModel?.phone ?? "",
-        "isTableClean": customerProvider.customerModel?.isTableClean ?? "",
-        "tableId": tablesViewModel.tablesModel?.id ?? "",
-        "tableName": tablesViewModel.tablesModel?.name ?? "",
-        "hasNewItems": "false",
-        "orderStatus": "pending",
-        "waiter": "none",
-        "orderItems": cart.cartItems.map((e) => e.toJson(e)).toList()
-      },
-    ).then((value) {
+      tablesViewModel.tablesModel?.id ?? "",
+      cartItems
+    )
+        .then((value) {
+      if (value is Success) {
+        KRoutes.pop(context);
+        KRoutes.pop(context);
+        KRoutes.pop(context);
+        Fluttertoast.showToast(msg: value.response.toString());
+        context.replace(
+            "/customer-order-page/${restaurantsViewModel.restaurantModel?.id},${tablesViewModel.tablesModel?.id}");
+      }
+      if (value is Failure) {
+        KRoutes.pop(context);
+        Fluttertoast.showToast(msg: value.errorResponse.toString());
+      }
+    });
+  }
+
+  Future<void> createOrder(
+      BuildContext context,
+      RestaurantsViewModel restaurantsViewModel,
+      Map<String, dynamic> customerOrder,
+      TablesViewModel tablesViewModel) async {
+    await OrderService()
+        .createOrder(
+      restaurantsViewModel.restaurantModel?.id ?? "",
+      customerOrder,
+    )
+        .then((value) {
       if (value is Success) {
         KRoutes.pop(context);
         KRoutes.pop(context);

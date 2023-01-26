@@ -25,6 +25,20 @@ class CartItemModel {
   String? instructions;
   final String cookingStatus;
 
+  factory CartItemModel.fromFirestore(e) {
+    return CartItemModel(
+        name: e["name"],
+        description: e["description"],
+        imagePath: e["imagePath"],
+        price: e["price"],
+        reviews: e["reviews"],
+        status: e["status"],
+        type: e["type"],
+        upselling: e["upselling"],
+        quantity: e["quantity"],
+        cookingStatus: e["cookingStatus"]);
+  }
+
   Map toJson(CartItemModel cartItemModel) {
     return {
       "name": cartItemModel.name,

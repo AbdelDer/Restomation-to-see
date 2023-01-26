@@ -2,8 +2,8 @@ import 'package:beamer/beamer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:restomation/MVVM/View%20Model/Admin%20View%20Model.dart/admin_view_model.dart';
-import 'package:restomation/MVVM/View%20Model/Category%20View%20Model.dart/category_view_model.dart';
+import 'package:restomation/MVVM/View%20Model/Admin%20View%20Model/admin_view_model.dart';
+import 'package:restomation/MVVM/View%20Model/Category%20View%20Model/category_view_model.dart';
 import 'package:restomation/MVVM/View%20Model/Login%20View%20Model/login_view_model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:restomation/MVVM/View%20Model/Staff%20View%20Model/staff_view_model.dart';
@@ -16,7 +16,7 @@ import 'package:url_strategy/url_strategy.dart';
 import 'MVVM/View Model/Order View Model/order_view_model.dart';
 import 'MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import 'Provider/selected_restaurant_provider.dart';
-import 'Provider/user_provider.dart';
+import 'Provider/customer_provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {

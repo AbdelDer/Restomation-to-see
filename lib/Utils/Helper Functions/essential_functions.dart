@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:restomation/MVVM/Models/Menu%20Model/menu_model.dart';
-import 'package:restomation/MVVM/View%20Model/Category%20View%20Model.dart/category_view_model.dart';
+import 'package:restomation/MVVM/View%20Model/Category%20View%20Model/category_view_model.dart';
 import 'package:restomation/Utils/app_routes.dart';
 import 'package:restomation/Widgets/custom_loader.dart';
 
 import '../../MVVM/Models/Menu Category Model/menu_category_model.dart';
 import '../../MVVM/Models/RestaurantsModel/restaurants_model.dart';
 import '../../MVVM/Models/Tables Model/tables_model.dart';
-import '../../MVVM/View Model/Admin View Model.dart/admin_view_model.dart';
+import '../../MVVM/View Model/Admin View Model/admin_view_model.dart';
 import '../../MVVM/View Model/Resturants View Model/resturants_view_model.dart';
 import '../../MVVM/View Model/Staff View Model/staff_view_model.dart';
 import '../../MVVM/View Model/Tables View Model/tables_view_model.dart';

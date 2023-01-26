@@ -1,8 +1,8 @@
-import 'package:beamer/beamer.dart';
 import 'package:cool_alert/cool_alert.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:restomation/MVVM/Repo/Database%20Service/database_service.dart';
+import 'package:go_router/go_router.dart';
+import 'package:restomation/MVVM/Models/Cart%20Item%20Model/cart_item_model.dart';
+import 'package:restomation/MVVM/Models/Customer%20Model/customer_order_model.dart';
 import 'package:restomation/MVVM/Repo/Storage%20Service/storage_service.dart';
 import 'package:restomation/Utils/contants.dart';
 import 'package:restomation/Widgets/custom_text.dart';
@@ -10,55 +10,24 @@ import 'package:restomation/Widgets/custom_text.dart';
 import '../../../Widgets/custom_button.dart';
 
 class CustomerOrderItemsView extends StatelessWidget {
-  final String restaurantName;
-  final String phone;
-  final String tableKey;
-  final String name;
-  final String isTableClean;
-  const CustomerOrderItemsView(
-      {super.key,
-      required this.restaurantName,
-      required this.phone,
-      required this.tableKey,
-      required this.name,
-      required this.isTableClean});
+  final CustomerOrderModel order;
+  const CustomerOrderItemsView({
+    super.key,
+    required this.order,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-      stream: DatabaseService.db
-          .ref()
-          .child("order_items")
-          .child(restaurantName)
-          .child(phone)
-          .limitToLast(1)
-          .onValue,
-      builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) =>
-          orderItemView(context, snapshot),
+    return orderItemView(
+      context,
+      order,
     );
   }
 
   Widget orderItemView(
-      BuildContext context, AsyncSnapshot<DatabaseEvent> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-    if (snapshot.hasError) {
-      return const CustomText(
-        text: "Error",
-      );
-    }
-    if (snapshot.data!.snapshot.children.isEmpty) {
-      return const Center(
-        child: CustomText(text: "No Orders Yet !!"),
-      );
-    }
-    Map orderItems = snapshot.data!.snapshot.value as Map;
-    List orderItemsKeys = orderItems.keys.toList();
-    List items = orderItems[orderItemsKeys[0]];
-
+    BuildContext context,
+    CustomerOrderModel order,
+  ) {
     return Column(
       children: [
         Row(
@@ -70,7 +39,7 @@ class CustomerOrderItemsView extends StatelessWidget {
               fontsize: 20,
             ),
             CustomText(
-              text: getTotalPrice(items),
+              text: getTotalPrice(order.orderItems ?? []),
               fontsize: 20,
             ),
           ],
@@ -89,11 +58,11 @@ class CustomerOrderItemsView extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: items.length,
+            itemCount: order.orderItems?.length ?? 0,
             itemBuilder: (context, itemIndex) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
-                child: myOrderedItems(context, items[itemIndex]),
+                child: myOrderedItems(context, order.orderItems![itemIndex]),
               );
             },
           ),
@@ -108,8 +77,7 @@ class CustomerOrderItemsView extends StatelessWidget {
                   text: "Add more items",
                   textColor: kWhite,
                   function: () {
-                    Beamer.of(context).beamToNamed(
-                        "/restaurants-menu-category/$restaurantName,$tableKey,$name,$phone,$isTableClean,yes,${orderItemsKeys[0]},${items.length}");
+                    context.push("/customer-menu-page");
                   }),
               CustomButton(
                   buttonColor: primaryColor,
@@ -132,8 +100,8 @@ class CustomerOrderItemsView extends StatelessWidget {
     );
   }
 
-  Widget myOrderedItems(BuildContext context, Map data) {
-    final ref = StorageService.storage.ref().child(data["image"]);
+  Widget myOrderedItems(BuildContext context, CartItemModel item) {
+    final ref = StorageService.storage.ref().child(item.imagePath);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -142,29 +110,50 @@ class CustomerOrderItemsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.adjust_rounded,
-                color: Colors.green,
+              Row(
+                children: [
+                  Icon(
+                    Icons.adjust_rounded,
+                    color: item.type.toString().toLowerCase() == "veg"
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  CustomText(
+                    text: item.cookingStatus,
+                    color: item.cookingStatus == "pending"
+                        ? Colors.red
+                        : item.cookingStatus == "cooking"
+                            ? primaryColor
+                            : item.cookingStatus == "ready"
+                                ? Colors.amber
+                                : item.cookingStatus == "delivered"
+                                    ? Colors.green
+                                    : Colors.red,
+                  )
+                ],
               ),
               const SizedBox(
                 height: 10,
               ),
               Text(
-                data["name"],
+                item.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
                 height: 10,
               ),
               Text(
-                "₹${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
+                "₹${item.price} x ${item.quantity} = ${(double.parse(item.price) * item.quantity)}",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(
                 height: 10,
               ),
               Text(
-                "${data["type"]}",
+                item.type,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.grey.shade600,
@@ -174,7 +163,7 @@ class CustomerOrderItemsView extends StatelessWidget {
                 height: 10,
               ),
               CustomText(
-                text: data["description"],
+                text: item.description,
                 color: Colors.grey.shade600,
               ),
             ],
@@ -223,10 +212,10 @@ class CustomerOrderItemsView extends StatelessWidget {
     );
   }
 
-  String getTotalPrice(List items) {
+  String getTotalPrice(List<CartItemModel> items) {
     double total = 0;
     for (var element in items) {
-      total += double.parse(element["price"]) * element["quantity"];
+      total += double.parse(element.price) * element.quantity;
     }
     return total.toString();
   }
