@@ -172,7 +172,6 @@ class _CartPageState extends State<CartPage> {
   Widget cartItemDisplay(BuildContext context, Map data, Cart cart) {
     final size = MediaQuery.of(context).size;
     var initialValue = data['quantity'];
-    final ref = StorageService.storage.ref().child(data["image"]);
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

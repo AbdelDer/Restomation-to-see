@@ -148,7 +148,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
     List items = orderItems[orderItemsKeys[0]];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: kBackground,
       floatingActionButton: (widget.order["waiter"] != "none")
           ? FloatingActionButton.extended(
               onPressed: () async {
@@ -172,6 +172,7 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                   CustomText(
                     text: "Call waiter",
                     color: kWhite,
+                    fontWeight: FontWeight.bold,
                   ),
                 ],
               ))
@@ -189,64 +190,72 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                   Beamer.of(context).beamToNamed(
                       "/restaurants-menu-category/${widget.restaurantName},${widget.tableKey},${widget.name},${widget.phone},${widget.isTableClean},yes,${orderItemsKeys[0]},${items.length}");
                 }),
-            //if (widget.order["order_status"].toString().toLowerCase() == "done")
+            // if (widget.order["order_status"].toString().toLowerCase() == "done")
             CustomButton(
                 buttonColor: primaryColor,
-                text: "Pay",
+                text: "Pay Now",
                 textColor: kWhite,
-                function: () {
-                  CoolAlert.show(
-                    context: context,
-                    type: CoolAlertType.confirm,
-                    width: 300,
-                    title: "",
-                    text: "Please go to the counter to pay",
-
-                    // onConfirmBtnTap: () async {
-                    //   Navigator.pop(context);
-                    //   Fluttertoast.showToast(msg: "Pay Now Clicked");
-                    //   await payment(
-                    //       widget.order["name"],
-                    //       widget.order["name"],
-                    //       widget.order["phone"],
-                    //       getTotalPrice(items));
-                    // }
-                  );
+                function: () async {
+                  Navigator.pop(context);
+                  Fluttertoast.showToast(msg: "Redirecting to payment gateway");
+                  await payment(widget.order["name"], widget.order["name"],
+                      widget.order["phone"], getTotalPrice(items));
                 })
           ],
         ),
       ),
       body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const CustomText(
-                text: "Total Bill",
-                fontWeight: FontWeight.bold,
-                fontsize: 20,
-              ),
-              CustomText(
-                text: "₹${getTotalPrice(items)}",
-                fontsize: 20,
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 4,
+          Container(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const CustomText(
+                  text: "Total Bill",
+                  fontWeight: FontWeight.bold,
+                  fontsize: 20,
+                  color: Colors.black87,
+                ),
+                const SizedBox(
+                  width: 4,
+                ),
+                CustomText(
+                  text: "₹${getTotalPrice(items)}",
+                  fontsize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: kblack,
+                ),
+              ],
+            ),
           ),
           const SizedBox(
             height: 10,
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, itemIndex) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: myOrderedItems(context, items[itemIndex]),
-                );
-              },
+            child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, itemIndex) {
+                  if (itemIndex == items.length - 1) {
+                    return Column(
+                      children: [
+                        myOrderedItems(context, items[itemIndex]),
+                        const SizedBox(height: 200)
+                      ],
+                    );
+                  } else {
+                    return myOrderedItems(context, items[itemIndex]);
+                  }
+                },
+              ),
             ),
           ),
         ],
@@ -255,82 +264,112 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
   }
 
   Widget myOrderedItems(BuildContext context, Map data) {
+    final size = MediaQuery.of(context).size;
     final ref = StorageService.storage.ref().child(data["image"]);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(
-          width: MediaQuery.of(context).size.width / 2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    // return Padding(
+    //   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+    //   child: Row(
+    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    //     children: [
+    //       SizedBox(
+    //         width: MediaQuery.of(context).size.width / 2 - 10,
+    //         child: Column(
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //             Row(
+    //               children: [
+    //                 const Icon(
+    //                   Icons.adjust_rounded,
+    //                   color: Colors.green,
+    //                 ),
+    //                 const SizedBox(
+    //                   width: 10,
+    //                 ),
+    //                 CustomText(
+    //                   text: data["cookingStatus"],
+    //                   color: data["cookingStatus"] == "pending"
+    //                       ? Colors.red
+    //                       : data["cookingStatus"] == "cooking"
+    //                           ? primaryColor
+    //                           : data["cookingStatus"] == "ready"
+    //                               ? Colors.amber
+    //                               : data["cookingStatus"] == "delivered"
+    //                                   ? Colors.green
+    //                                   : Colors.red,
+    //                 )
+    //               ],
+    //             ),
+    //             const SizedBox(
+    //               height: 10,
+    //             ),
+    //             Text(
+    //               data["name"],
+    //               style: const TextStyle(fontWeight: FontWeight.bold),
+    //             ),
+    //             const SizedBox(
+    //               height: 10,
+    //             ),
+    //             Text(
+    //               "₹${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
+    //               style: const TextStyle(fontWeight: FontWeight.bold),
+    //             ),
+    //             const SizedBox(
+    //               height: 10,
+    //             ),
+    //             Text(
+    //               "${data["type"]}",
+    //               style: TextStyle(
+    //                 fontWeight: FontWeight.bold,
+    //                 color: Colors.grey.shade600,
+    //               ),
+    //             ),
+    //             const SizedBox(
+    //               height: 10,
+    //             ),
+    //             CustomText(
+    //               text: data["description"],
+    //               color: Colors.grey.shade600,
+    //             ),
+    //           ],
+    //         ),
+    //       ),
+
+    //     ],
+    //   ),
+    // );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.adjust_rounded,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  CustomText(
-                    text: data["cookingStatus"],
-                    color: data["cookingStatus"] == "pe nding"
-                        ? Colors.red
-                        : data["cookingStatus"] == "cooking"
-                            ? primaryColor
-                            : data["cookingStatus"] == "ready"
-                                ? Colors.amber
-                                : data["cookingStatus"] == "delivered"
-                                    ? Colors.green
-                                    : Colors.red,
-                  )
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                data["name"],
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                "₹${data["price"]} x ${data["quantity"]} = ${(double.parse(data["price"]) * data["quantity"])}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Text(
-                "${data["type"]}",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              CustomText(
-                text: data["description"],
-                color: Colors.grey.shade600,
-              ),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 180,
-          child: FutureBuilder(
-              future: ref.getDownloadURL(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Container(
-                    width: 170,
-                    height: 150,
-                    decoration: BoxDecoration(
+              FutureBuilder(
+                  future: ref.getDownloadURL(),
+                  builder: (BuildContext context, AsyncSnapshot snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return Container(
+                        width: 70,
+                        height: 70,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: const [
+                              BoxShadow(
+                                  offset: Offset(0, 0),
+                                  spreadRadius: 2,
+                                  blurRadius: 2,
+                                  color: Colors.black12)
+                            ],
+                            image: DecorationImage(
+                                image: NetworkImage(snapshot.data!),
+                                fit: BoxFit.fill)),
+                      );
+                    }
+                    return Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         boxShadow: const [
                           BoxShadow(
@@ -339,28 +378,89 @@ class _CustomerOrderItemsViewState extends State<CustomerOrderItemsView> {
                               blurRadius: 2,
                               color: Colors.black12)
                         ],
-                        image: DecorationImage(
-                            image: NetworkImage(snapshot.data!),
-                            fit: BoxFit.cover)),
-                  );
-                }
-                return Container(
-                  width: 170,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: const [
-                      BoxShadow(
-                          offset: Offset(0, 0),
-                          spreadRadius: 2,
-                          blurRadius: 2,
-                          color: Colors.black12)
+                      ),
+                    );
+                  }),
+              const SizedBox(width: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: Image.network(
+                      'https://img.icons8.com/small/16/000000/vegetarian-food-symbol.png',
+                      color: data["type"].toString().toLowerCase() == "veg"
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: size.width * 0.4,
+                        child: CustomText(
+                          text: '${data["name"]}',
+                          maxLines: 2,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      CustomText(
+                        text: data["description"],
+                        color: Colors.black87,
+                      ),
+                      Row(
+                        children: [
+                          CustomText(
+                            text: "₹${data["price"]} x ${data["quantity"]} = ",
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black54,
+                          ),
+                          CustomText(
+                            text:
+                                "₹${(double.parse(data["price"]) * data["quantity"])}",
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                );
-              }),
-        )
-      ],
+                ],
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: data["cookingStatus"] == "pending"
+                      ? kYellow
+                      : data["cookingStatus"] == "cooking"
+                          ? kYellow
+                          : data["cookingStatus"] == "ready"
+                              ? kGreen
+                              : data["cookingStatus"] == "delivered"
+                                  ? Colors.green
+                                  : Colors.red,
+                ),
+                child: CustomText(
+                  text: data["cookingStatus"],
+                  color: Colors.white,
+                  fontsize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

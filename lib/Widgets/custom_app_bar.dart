@@ -32,7 +32,8 @@ class BaseAppBar extends StatelessWidget with PreferredSizeWidget {
         elevation: 0,
         title: Text(
           title,
-          style: const TextStyle(color: Colors.black),
+          style:
+              const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         automaticallyImplyLeading: automaticallyImplyLeading,
         leading: leading,

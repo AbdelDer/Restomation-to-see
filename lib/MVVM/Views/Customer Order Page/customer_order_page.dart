@@ -60,7 +60,7 @@ class CustomerOrderPage extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10)),
@@ -68,51 +68,65 @@ class CustomerOrderPage extends StatelessWidget {
                   child: Column(
                     children: [
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const CustomText(
                             text: "Assigned Waiter",
-                            fontsize: 20,
-                            color: kGrey,
+                            fontsize: 16,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          const SizedBox(
+                            width: 10,
                           ),
                           CustomText(
                             text: order[orderKey]["waiter"] ?? "none",
                             color: order[orderKey]["waiter"] == "none"
                                 ? Colors.red
                                 : Colors.green,
-                            fontsize: 20,
+                            fontsize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ],
                       ),
                       const SizedBox(
-                        height: 10,
+                        height: 8,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const CustomText(
-                            text: "Order Status :",
+                            text: "Order Status",
+                            fontsize: 16,
+                            color: Colors.black54,
                             fontWeight: FontWeight.bold,
-                            fontsize: 20,
                           ),
-                          CustomText(
-                            text: order[orderKey]["order_status"] ?? "none",
-                            color: order[orderKey]["order_status"]
-                                            .toString()
-                                            .toLowerCase() ==
-                                        "done" ||
-                                    order[orderKey]["order_status"]
-                                            .toString()
-                                            .toLowerCase() ==
-                                        "ready to deliver"
-                                ? Colors.green
-                                : Colors.red,
-                            fontsize: 20,
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: order[orderKey]["order_status"]
+                                                .toString()
+                                                .toLowerCase() ==
+                                            "done" ||
+                                        order[orderKey]["order_status"]
+                                                .toString()
+                                                .toLowerCase() ==
+                                            "ready to deliver"
+                                    ? kGreen
+                                    : kRed),
+                            child: CustomText(
+                              text: order[orderKey]["order_status"] ?? "none",
+                              fontWeight: FontWeight.bold,
+                              color: kWhite,
+                              fontsize: 16,
+                            ),
                           ),
                         ],
-                      ),
-                      const SizedBox(
-                        height: 6,
                       ),
                     ],
                   ),
